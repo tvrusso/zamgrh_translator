@@ -45,6 +45,7 @@ def grammar_postprocess(text):
         "human", "brains", "brain", "zombie", "group",
         "barricades", "headhunter"
     }
+    COMMON_CONJUNCTIONS = {"or", "and"}
 
     words = text.split()
 
@@ -58,8 +59,13 @@ def grammar_postprocess(text):
         if i > 0:
             prev = result[-1] if result else ""
 
-            if prev.endswith("s"):  # likely plural noun
-                if w not in COMMON_VERBS and w not in COMMON_NOUNS and w != "not":
+            if prev.endswith("s"):
+                if (
+                        w not in COMMON_VERBS
+                        and w not in COMMON_NOUNS
+                        and w not in COMMON_CONJUNCTIONS
+                        and w != "not"
+                ):
                     if not w.endswith("s"):
                         result.append("are")
 
