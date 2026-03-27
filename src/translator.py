@@ -21,15 +21,17 @@ def clean(word):
     return re.sub(r'[^\w!]', '', word.lower())
 
 
-def normalize(word):
+def normalize(word, lookup):
     """
     Normalize simple morphology:
-    - plural 'z' → base word
+    - Only strip plural 'z' if the base word exists in dictionary
     """
     if word.endswith("z") and len(word) > 1:
-        return word[:-1], "plural"
-    return word, None
+        base = word[:-1]
+        if base in lookup:
+            return base, "plural"
 
+    return word, None
 
 # --- updated translator ---
 
@@ -39,9 +41,17 @@ def zamgrh_to_english(text, lookup):
 
     for raw in words:
         w = clean(raw)
-        base, modifier = normalize(w)
 
-        entry = lookup.get(base)
+        # FIRST: try exact match
+        entry = lookup.get(w)
+
+        if entry:
+            base = w
+            modifier = None
+        else:
+            # THEN try normalization
+            base, modifier = normalize(w, lookup)
+            entry = lookup.get(base)
 
         if entry:
             gloss = entry["english"][0]["gloss"]
