@@ -17,6 +17,18 @@ TEST_CASES = [
     ("bangbangman nah bang bang mah zambah", "Headhunter do not shoot shoot I zombie"),
     ("zambahz zmazh barragahz", "Zombies smash barricades"),
     ("narz! mah zambah maz hab bra!n zarram!", "Nurse I zombie must have brain serum"),
+    ("g!b bra!nz", "Give brains"),
+    ("g!b mah bra!nz", "Give me brains"),
+    ("barg bra!nz", "Eat brains"),
+    ("grahm haarh", "Come here"),
+    ("ran nahaarh", "Go away"),
+    ("hab mah","Help me"),
+    ("hab mah zambah","Help me"),
+    ("nah ran nahaarh","Do not go away"),
+    ("nah hab harman","Do not help human"),
+    ("mah zambah zmazh harman", "I smash human"),
+    ("zambahz zmazh gaa", "Zombies smash you"),
+    ("g!b bra!nz arh zambahz zmazh gaa", "Give brains or zombies smash you"),
 ]
 
 
