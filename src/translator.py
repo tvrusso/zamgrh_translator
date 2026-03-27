@@ -82,6 +82,8 @@ def grammar_postprocess(text):
     return " ".join(result)
 
 # --- updated translator ---
+# NOTE: POS (including "conj") is currently not used in translation logic,
+# but is preserved for future grammar-layer improvements.
 
 def zamgrh_to_english(text, lookup):
     words = text.split()

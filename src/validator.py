@@ -1,6 +1,6 @@
 import json
 
-ALLOWED_POS = {"noun", "verb", "adj", "adv", "interj", "aux", "pron"}
+ALLOWED_POS = {"noun", "verb", "adj", "adv", "interj", "aux", "pron", "conj"}
 
 def validate_entry(entry):
     required_fields = ["word", "pos", "english"]
