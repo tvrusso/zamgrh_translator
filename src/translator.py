@@ -17,9 +17,15 @@ def build_lookup(data):
 # --- NEW: normalization helpers ---
 
 def clean(word):
-    """Remove punctuation except ! (used in Zamgrh words)."""
-    return re.sub(r'[^\w!]', '', word.lower())
+    word = word.lower()
 
+    # remove leading punctuation (keep ! if internal)
+    word = re.sub(r'^[^\w!]+', '', word)
+
+    # remove trailing punctuation INCLUDING !
+    word = re.sub(r'[^\w]+$', '', word)
+
+    return word
 
 def normalize(word, lookup):
     """
