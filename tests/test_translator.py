@@ -56,6 +56,8 @@ def run_tests():
             print(f"FAIL: {zamgrh}")
             print(f"  expected: {expected}")
             print(f"  got:      {result}")
+            print(f"\nDEBUG for {zamgrh}:")
+            zamgrh_to_english(zamgrh, lookup, debug=True)
             failed += 1
 
     print("\n---")

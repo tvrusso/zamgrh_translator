@@ -14,16 +14,22 @@ def build_lookup(data):
     return {entry["word"]: entry for entry in data}
 
 # translation pipeline
-def apply_grammar_pipeline(words):
+def apply_grammar_pipeline(words, debug=False):
     PIPELINE = [
-        resolve_hab_ambiguity,
-        simplify_subject,
-        fix_possession,
-        fix_object_pronouns,
+        ("resolve_hab", resolve_hab_ambiguity),
+        ("simplify_subject", simplify_subject),
+        ("fix_possession", fix_possession),
+        ("fix_pronouns", fix_object_pronouns),
     ]
 
-    for step in PIPELINE:
+    if debug:
+        print(f"[INPUT]        {' '.join(words)}")
+
+    for name, step in PIPELINE:
         words = step(words)
+
+        if debug:
+            print(f"[{name:<14}] {' '.join(words)}")
 
     return words
 
@@ -110,7 +116,7 @@ def normalize(word, lookup):
 
     return word, None
 
-def grammar_postprocess(text):
+def grammar_postprocess(text, debug=False):
     COMMON_VERBS = {"eat", "eats", "make", "shoot", "have", "give", "smash", "must"}
     COMMON_NOUNS = {
         "human", "brains", "brain", "zombie", "group",
@@ -126,41 +132,39 @@ def grammar_postprocess(text):
     while i < len(words):
         w = words[i]
 
-        # Rule 1: noun + adjective → insert "are"
-        if i > 0:
-            prev = result[-1] if result else ""
-
-            if prev.endswith("s"):
-                if (
-                        w not in COMMON_VERBS
-                        and w not in COMMON_NOUNS
-                        and w not in COMMON_CONJUNCTIONS
-                        and w != "not"
-                ):
-                    if not w.endswith("s"):
-                        result.append("are")
-
-        # Rule 2: "not <verb>" → "do not <verb>"
+        # Rule: "not" → "do not"
         if w == "not":
             result.append("do")
             result.append("not")
             i += 1
             continue
 
+        # Rule: noun + adj → "are" (your existing logic)
+        if i > 0:
+            prev = result[-1] if result else ""
+            if prev.endswith("s") and w not in ("not",):
+                if w not in COMMON_VERBS and w not in COMMON_NOUNS and w not in COMMON_CONJUNCTIONS:
+                    if not w.endswith("s"):
+                        result.append("are")
+
         result.append(w)
         i += 1
 
-    # Capitalize first word
     if result:
         result[0] = result[0].capitalize()
 
-    return " ".join(result)
+    output = " ".join(result)
+
+    if debug:
+        print(f"[grammar]      {output}")
+
+    return output
 
 # --- updated translator ---
 # NOTE: POS (including "conj") is currently not used in translation logic,
 # but is preserved for future grammar-layer improvements.
 
-def zamgrh_to_english(text, lookup):
+def zamgrh_to_english(text, lookup, debug=False):
     words = text.split()
     out = []
 
@@ -192,10 +196,10 @@ def zamgrh_to_english(text, lookup):
     sentence = " ".join(out)
     words = sentence.split()
 
-    words = apply_grammar_pipeline(words)
+    words = apply_grammar_pipeline(words, debug=debug)
 
     sentence = " ".join(words)
-    sentence = grammar_postprocess(sentence)
+    sentence = grammar_postprocess(sentence, debug=debug)
 
     return sentence
 
