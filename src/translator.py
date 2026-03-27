@@ -31,6 +31,7 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
         ("fix_pronouns", fix_object_pronouns),
         ("fix_prepositions", fix_prepositions),
         ("insert_are", insert_are),
+        ("fix_verb_agreement", fix_verb_agreement),
     ]
 
     if debug:
@@ -144,6 +145,35 @@ def fix_prepositions(words, lookup, eng_lookup):
             result.append("me")
         else:
             result.append(w)
+    return result
+
+def fix_verb_agreement(words, lookup, eng_lookup):
+    IRREGULAR = {
+    "has": "have",
+    "does": "do",
+    "is": "are",
+    }
+
+    result = []
+
+    for i, w in enumerate(words):
+        if i > 0:
+            prev = words[i - 1]
+
+            # detect subject pronouns
+            if prev in {"I", "you", "we", "they"}:
+                pos = get_pos(w, lookup, eng_lookup)
+
+                # if it's a verb ending in 's', deconjugate
+                if "verb" in pos:
+                    if w in IRREGULAR:
+                        result.append(IRREGULAR[w])
+                        continue
+                    if w.endswith("s"):
+                        result.append(w[:-1])
+                        continue
+        result.append(w)
+
     return result
 
 # Helpers for dictionary-driven POS logic

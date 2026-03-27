@@ -9,7 +9,7 @@ from translator import load_dictionary, build_lookup, build_english_pos_lookup, 
 
 TEST_CASES = [
     ("zambahz maz barg bra!nz", "Zombies must eat brains"),
-    ("mah zambah bargz bra!nz", "I eats brains"),
+    ("mah zambah bargz bra!nz", "I eat brains"),
     ("harmanz bah! nah ma!g barragahz", "Humans are bad do not make barricades"),
     ("bah harman, nah bang bang mah zambah", "Bad human do not shoot shoot me"),
     ("g!b bra!nz, harman", "Give brains human"),
