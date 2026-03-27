@@ -150,30 +150,64 @@ def fix_prepositions(words, lookup, eng_lookup):
     return result
 
 def fix_verb_agreement(words, lookup, eng_lookup):
-    IRREGULAR = {
-    "has": "have",
-    "does": "do",
-    "is": "are",
-    }
-
     result = []
 
     for i, w in enumerate(words):
-        if i > 0:
-            prev = words[i - 1]
+        pos = get_pos(w, lookup, eng_lookup)
 
-            # detect subject pronouns
-            if prev in {"I", "you", "we", "they"}:
-                pos = get_pos(w, lookup, eng_lookup)
+        if "verb" in pos:
+            if i > 0:
+                prev = result[-1]
+                prev_pos = get_pos(prev, lookup, eng_lookup)
 
-                # if it's a verb ending in 's', deconjugate
-                if "verb" in pos:
-                    if w in IRREGULAR:
-                        result.append(IRREGULAR[w])
-                        continue
-                    if w.endswith("s"):
-                        result.append(w[:-1])
-                        continue
+                # --- NEW: detect imperative (vocative + verb)
+                is_sentence_start = (i == 1)
+                is_prev_noun = "noun" in prev_pos
+
+                if is_sentence_start and is_prev_noun:
+                    # treat as imperative → do NOT change verb
+                    result.append(w)
+                    continue
+
+                is_subject_noun = "noun" in prev_pos
+                is_pronoun = prev in {"I", "you", "we", "they"}
+                is_third_person = is_subject_noun and not prev.endswith("s")
+
+                # check for auxiliaries
+                if i > 1:
+                    prev2 = result[-2]
+                    prev2_pos = get_pos(prev2, lookup, eng_lookup)
+                else:
+                    prev2 = None
+                    prev2_pos = set()
+
+                has_aux = (
+                    ("aux" in prev2_pos) or
+                    prev in {"must", "will", "can", "should"}
+                )
+
+                if not has_aux:
+                    # --- CASE 1: 3rd person singular → ADD "s"
+                    if is_third_person:
+                        if not w.endswith("s"):
+                            if w.endswith("y"):
+                                w = w[:-1] + "ies"
+                            elif w.endswith(("s", "sh", "ch", "x", "z", "o")):
+                                w = w + "es"
+                            else:
+                                w = w + "s"
+
+                    # --- CASE 2: NOT 3rd person → REMOVE "s"
+                    else:
+                        if w.endswith("s"):
+                            # simple rollback rules
+                            if w.endswith("ies"):
+                                w = w[:-3] + "y"
+                            elif w.endswith("es"):
+                                w = w[:-2]
+                            else:
+                                w = w[:-1]
+
         result.append(w)
 
     return result

@@ -30,7 +30,7 @@ TEST_CASES = [
     ("zambahz zmazh gaa", "Zombies smash you"),
     ("g!b bra!nz arh zambahz zmazh gaa", "Give brains or zombies smash you"),
     ("nah g!b bra!nz an zambahz zmazh gaa", "Do not give brains and zombies smash you"),
-    ("mah gang zmazh barragahz", "My group smash barricades"),
+    ("mah gang zmazh barragahz", "My group smashes barricades"),
     ("mah gang nah ran nahaarh", "My group do not go away"),
     ("narz g!b zarram", "Nurse give a serum"),
     ("mah zambah maz haz zarram", "I must have a serum"),
@@ -65,7 +65,7 @@ TEST_CASES = [
     ("zambahz flargh bra!nz", "Zombies [flargh] brains"),
 
     # 🔤 Morphology / plural interaction
-    ("zambah zmazh harmanz", "Zombie smash humans"),
+    ("zambahz zmazh harmanz", "Zombies smash humans"),
     ("harmanz zmazh zambahz", "Humans smash zombies"),
 
     # 🧠 Longer sentences
@@ -73,7 +73,7 @@ TEST_CASES = [
      "I must eat brains and smash a human"),
 
     ("nah g!b bra!nz arh zambahz zmazh gaa an harman ran nahaarh",
-     "Do not give brains or zombies smash you and a human go away"),
+     "Do not give brains or zombies smash you and a human goes away"),
 
     # ⚠️ Grammar collision tests (are-insertion edge cases)
     ("bra!nz an zarram", "Brains and serum"),
@@ -86,7 +86,6 @@ TEST_CASES = [
 
     # 3rd person agreement
     ("zambah bargz bra!nz", "Zombie eats brains"),
-    ("zambah barg bra!n", "zombie eats a brain"),
 
     # is/are agreement
     ("harmanz bah", "Humans are bad"),
@@ -96,6 +95,11 @@ TEST_CASES = [
     ("zambah", "Zombie"),
     ("harman", "Human"),
     ("zambahz barg bra!nz", "Zombies eat brains"),
+
+    # Imperatives
+    ("zambah zmazh harmanz", "Zombie smash humans"),
+    ("zambah barg bra!n", "Zombie eat a brain"),
+
 ]
 
 
