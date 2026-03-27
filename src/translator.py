@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "zamgrh_dictionary.json"
@@ -13,16 +14,45 @@ def build_lookup(data):
     return {entry["word"]: entry for entry in data}
 
 
+# --- NEW: normalization helpers ---
+
+def clean(word):
+    """Remove punctuation except ! (used in Zamgrh words)."""
+    return re.sub(r'[^\w!]', '', word.lower())
+
+
+def normalize(word):
+    """
+    Normalize simple morphology:
+    - plural 'z' → base word
+    """
+    if word.endswith("z") and len(word) > 1:
+        return word[:-1], "plural"
+    return word, None
+
+
+# --- updated translator ---
+
 def zamgrh_to_english(text, lookup):
-    words = text.lower().split()
+    words = text.split()
     out = []
 
-    for w in words:
-        entry = lookup.get(w)
+    for raw in words:
+        w = clean(raw)
+        base, modifier = normalize(w)
+
+        entry = lookup.get(base)
+
         if entry:
-            out.append(entry["english"][0]["gloss"])
+            gloss = entry["english"][0]["gloss"]
+
+            # optional: mark plural (simple version)
+            if modifier == "plural":
+                gloss = gloss + "s"
+
+            out.append(gloss)
         else:
-            out.append(f"[{w}]")
+            out.append(f"[{raw}]")
 
     return " ".join(out)
 
