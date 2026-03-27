@@ -232,5 +232,175 @@
     "usage": { "tone": ["neutral"] },
     "source": "group_standard",
     "confidence": 0.8
+  },
+  {
+    "word": "maz",
+    "pos": ["aux"],
+    "english": [
+      { "gloss": "must", "weight": 1.0 }
+    ],
+    "phonetic": { "approx": "must", "syllables": ["maz"] },
+    "examples": [
+      { "zamgrh": "Zambahz maz barg bra!nz.", "english": "Zombies must eat brains." }
+    ],
+    "usage": { "tone": ["urgent"] },
+    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "bah",
+    "pos": ["adj", "interj"],
+    "english": [
+      { "gloss": "bad", "weight": 1.0 }
+    ],
+    "phonetic": { "approx": "bah", "syllables": ["bah"] },
+    "examples": [
+      { "zamgrh": "Bah harman!", "english": "Bad human!" }
+    ],
+    "usage": { "tone": ["aggressive"] },
+    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "ma!g",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "make", "weight": 1.0 }
+    ],
+    "phonetic": { "approx": "make", "syllables": ["ma!g"] },
+    "examples": [
+      { "zamgrh": "Nah ma!g barragahz.", "english": "Do not make barricades." }
+    ],
+    "usage": { "tone": ["neutral"] },
+    "source": "group_standard",
+    "confidence": 0.85
+  },
+  {
+    "word": "barragah",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "barricade", "weight": 1.0 }
+    ],
+    "phonetic": { "approx": "barricade", "syllables": ["bar", "ra", "gah"] },
+    "examples": [
+      { "zamgrh": "Zambahz zmazh barragahz.", "english": "Zombies smash barricades." }
+    ],
+    "usage": { "tone": ["neutral"] },
+    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "bang",
+    "pos": ["verb", "noun"],
+    "english": [
+      { "gloss": "shoot", "weight": 1.0 },
+      { "gloss": "gunshot", "weight": 0.8 }
+    ],
+    "phonetic": { "approx": "bang", "syllables": ["bang"] },
+    "examples": [
+      { "zamgrh": "Nah bang bang mah zambah.", "english": "Do not shoot me." }
+    ],
+    "usage": { "tone": ["violent"] },
+    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "g!b",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "give", "weight": 1.0 }
+    ],
+    "phonetic": { "approx": "give", "syllables": ["g!b"] },
+    "examples": [
+      { "zamgrh": "G!b bra!nz, harman.", "english": "Give brains, human." }
+    ],
+    "usage": { "tone": ["command"] },
+    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "gang",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "group", "weight": 1.0 },
+      { "gloss": "gang", "weight": 0.9 }
+    ],
+    "phonetic": { "approx": "gang", "syllables": ["gang"] },
+    "examples": [
+      { "zamgrh": "Mah gang zambahz.", "english": "My group are zombies." }
+    ],
+    "usage": { "tone": ["neutral"] },
+    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "habbah",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "happy", "weight": 1.0 }
+    ],
+    "phonetic": { "approx": "happy", "syllables": ["hab", "bah"] },
+    "examples": [
+      { "zamgrh": "Zambahz habbah.", "english": "Zombies are happy." }
+    ],
+    "usage": { "tone": ["positive"] },
+    "source": "group_standard",
+    "confidence": 0.85
+  },
+  {
+    "word": "bangbangman",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "headhunter", "weight": 1.0 }
+    ],
+    "phonetic": { "approx": "headhunter", "syllables": ["bang", "bang", "man"] },
+    "examples": [
+      { "zamgrh": "Bangbangman nah bang bang mah zambah.", "english": "Headhunter, do not shoot me." }
+    ],
+    "usage": { "tone": ["hostile"] },
+    "source": "group_standard",
+    "confidence": 0.8
+  },
+  {
+    "word": "zmazh",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "smash", "weight": 1.0 }
+    ],
+    "phonetic": { "approx": "smash", "syllables": ["zmazh"] },
+    "examples": [
+      { "zamgrh": "Zambahz zmazh barragahz.", "english": "Zombies smash barricades." }
+    ],
+    "usage": { "tone": ["aggressive"] },
+    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "hab",
+    "pos": ["verb", "aux"],
+    "english": [
+      { "gloss": "have", "weight": 1.0 }
+    ],
+    "phonetic": { "approx": "have", "syllables": ["hab"] },
+    "examples": [
+      { "zamgrh": "Mah maz hab bra!n.", "english": "I must have a brain." }
+    ],
+    "usage": { "tone": ["neutral"] },
+    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "zarram",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "serum", "weight": 1.0 }
+    ],
+    "phonetic": { "approx": "serum", "syllables": ["zar", "ram"] },
+    "examples": [
+      { "zamgrh": "Mah maz hab bra!n zarram!", "english": "I must have brain serum!" }
+    ],
+    "usage": { "tone": ["urgent"] },
+    "source": "group_standard",
+    "confidence": 0.85
   }
 ]
