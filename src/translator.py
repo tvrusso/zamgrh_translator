@@ -41,6 +41,10 @@ def normalize(word, lookup):
 
 def grammar_postprocess(text):
     COMMON_VERBS = {"eat", "eats", "make", "shoot", "have", "give", "smash", "must"}
+    COMMON_NOUNS = {
+        "human", "brains", "brain", "zombie", "group",
+        "barricades", "headhunter"
+    }
 
     words = text.split()
 
@@ -55,8 +59,7 @@ def grammar_postprocess(text):
             prev = result[-1] if result else ""
 
             if prev.endswith("s"):  # likely plural noun
-                if w not in COMMON_VERBS and w != "not":
-                    # avoid inserting before obvious nouns (very rough)
+                if w not in COMMON_VERBS and w not in COMMON_NOUNS and w != "not":
                     if not w.endswith("s"):
                         result.append("are")
 
