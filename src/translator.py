@@ -36,13 +36,20 @@ def apply_grammar_pipeline(words, debug=False):
 def resolve_hab_ambiguity(words):
     result = []
     i = 0
-
     while i < len(words):
         w = words[i]
 
-        if w == "have" and i + 1 < len(words):
-            if words[i + 1] in {"I", "me", "human"}:
-                result.append("help")
+        # default = help → upgrade to "have" in possession contexts
+        if w == "help":
+            # patterns like: "I help brains" → "I have brains"
+            if i > 0 and words[i - 1] in {"I", "zombie"}:
+                result.append("have")
+                i += 1
+                continue
+
+            # "must help" → "must have"
+            if i > 0 and words[i - 1] == "must":
+                result.append("have")
                 i += 1
                 continue
 

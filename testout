@@ -1,0 +1,97 @@
+PASS: zambahz maz barg bra!nz
+PASS: mah zambah bargz bra!nz
+PASS: harmanz bah! nah ma!g barragahz
+PASS: bah harman, nah bang bang mah zambah
+PASS: g!b bra!nz, harman
+PASS: mah gang habbah zambahz
+PASS: bangbangman nah bang bang mah zambah
+PASS: zambahz zmazh barragahz
+PASS: narz! mah zambah maz haz bra!n zarram!
+PASS: g!b bra!nz
+PASS: g!b mah bra!nz
+PASS: barg bra!nz
+PASS: grahm haarh
+PASS: ran nahaarh
+PASS: hab mah
+PASS: hab mah zambah
+PASS: nah ran nahaarh
+PASS: nah hab harman
+PASS: mah zambah zmazh harman
+PASS: zambahz zmazh gaa
+PASS: g!b bra!nz arh zambahz zmazh gaa
+PASS: nah g!b bra!nz an zambahz zmazh gaa
+PASS: mah gang zmazh barragahz
+PASS: mah gang nah ran nahaarh
+PASS: narz g!b zarram
+PASS: mah zambah maz haz zarram
+PASS: bra!nz bra!nz bra!nz
+PASS: nah nah g!b bra!nz
+FAIL: hab bra!nz
+  expected: Have brains
+  got:      Help brains
+
+DEBUG for hab bra!nz:
+[INPUT]        help brains
+[resolve_hab   ] help brains
+[simplify_subject] help brains
+[fix_possession] help brains
+[fix_pronouns  ] help brains
+[grammar]      Help brains
+PASS: hab mah bra!nz
+FAIL: mah zambah hab bra!nz
+  expected: I have brains
+  got:      I help brains
+
+DEBUG for mah zambah hab bra!nz:
+[INPUT]        I zombie help brains
+[resolve_hab   ] I zombie help brains
+[simplify_subject] I help brains
+[fix_possession] I help brains
+[fix_pronouns  ] I help brains
+[grammar]      I help brains
+PASS: mah zambah haz bra!nz
+PASS: nah hab mah zambah
+PASS: g!b gaa bra!nz
+PASS: gaa g!b mah bra!nz
+PASS: zambahz zmazh gaa
+FAIL: g!b bra!nz zaa mah zambah
+  expected: Give brains to me
+  got:      Give brains are to I
+
+DEBUG for g!b bra!nz zaa mah zambah:
+[INPUT]        give brains to I zombie
+[resolve_hab   ] give brains to I zombie
+[simplify_subject] give brains to I
+[fix_possession] give brains to I
+[fix_pronouns  ] give brains to I
+[grammar]      Give brains are to I
+PASS: mah zambah g!b bra!nz
+PASS: g!b bra!nz an g!b zarram
+PASS: g!b bra!nz arh g!b zarram
+PASS: nah g!b bra!nz an nah g!b zarram
+PASS: g!b g!b bra!nz
+PASS: nah nah nah g!b bra!nz
+FAIL: zambahz flargh bra!nz
+  expected: Zombies [flargh] brains
+  got:      Zombies are [flargh] brains
+
+DEBUG for zambahz flargh bra!nz:
+[INPUT]        zombies [flargh] brains
+[resolve_hab   ] zombies [flargh] brains
+[simplify_subject] zombies [flargh] brains
+[fix_possession] zombies [flargh] brains
+[fix_pronouns  ] zombies [flargh] brains
+[grammar]      Zombies are [flargh] brains
+PASS: zambah zmazh harmanz
+PASS: harmanz zmazh zambahz
+PASS: mah zambah maz barg bra!nz an zmazh harman
+PASS: nah g!b bra!nz arh zambahz zmazh gaa an harman ran nahaarh
+PASS: bra!nz an zarram
+PASS: zambahz arh harmanz
+PASS: 
+PASS: nah
+PASS: bra!nz
+
+---
+Passed: 49
+Failed: 4
