@@ -385,6 +385,86 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=False):
 
     return sentence
 
+# Early attempt to parse out Zamgrh sentences into a structure
+# does nothing with the structure yet
+def zamgrh_to_structure(text, lookup):
+    words = text.split()
+
+    structure = {
+        "subject": None,
+        "verb": None,
+        "object": None,
+        "plural": False,
+        "negated": False,
+        "imperative": False,
+    }
+
+    tokens = []
+
+    # --- normalize + map to base + POS ---
+    for raw in words:
+        w = clean(raw)
+
+        entry = lookup.get(w)
+        if entry:
+            base = w
+            modifier = None
+        else:
+            base, modifier = normalize(w, lookup)
+            entry = lookup.get(base)
+
+        if entry:
+            gloss = entry["english"][0]["gloss"]
+            pos = set(entry.get("pos", []))
+        else:
+            gloss = w
+            pos = set()
+
+        tokens.append({
+            "raw": raw,
+            "word": gloss,
+            "base": base,
+            "pos": pos,
+            "modifier": modifier
+        })
+
+    # --- detect negation ---
+    for t in tokens:
+        if t["base"] == "nah":
+            structure["negated"] = True
+
+    # --- find verb (first verb) ---
+    for t in tokens:
+        if "verb" in t["pos"]:
+            structure["verb"] = t["word"]
+            break
+
+    # --- find subject (first noun before verb) ---
+    for t in tokens:
+        if t["word"] == structure["verb"]:
+            break
+        if "noun" in t["pos"]:
+            structure["subject"] = t["word"]
+            if t["modifier"] == "plural" or t["word"].endswith("s"):
+                structure["plural"] = True
+            break
+
+    # --- detect imperative (no subject before verb) ---
+    if structure["verb"] and not structure["subject"]:
+        structure["imperative"] = True
+
+    # --- find object (first noun after verb) ---
+    seen_verb = False
+    for t in tokens:
+        if t["word"] == structure["verb"]:
+            seen_verb = True
+            continue
+        if seen_verb and "noun" in t["pos"]:
+            structure["object"] = t["word"]
+            break
+
+    return structure
+
 def main():
     data = load_dictionary()
     lookup = build_lookup(data)
@@ -394,7 +474,7 @@ def main():
         if text == "quit":
             break
         print(zamgrh_to_english(text, lookup, eng_lookup))
-
+        print(zamgrh_to_structure(text, lookup))
 
 if __name__ == "__main__":
     main()
