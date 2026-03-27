@@ -36,6 +36,54 @@ TEST_CASES = [
     ("mah zambah maz haz zarram", "I must have serum"),
     ("bra!nz bra!nz bra!nz", "Brains brains brains"),
     ("nah nah g!b bra!nz", "Do not do not give brains"),
+
+    # 🔀 Ambiguity (hab: have vs help)
+    ("hab bra!nz", "Have brains"),
+    ("hab mah bra!nz", "Help me brains"),
+    ("mah zambah hab bra!nz", "I have brains"),
+    ("mah zambah haz bra!nz", "I have brains"),
+    ("nah hab mah zambah", "Do not help me"),
+
+    # 👥 Pronouns
+    ("g!b gaa bra!nz", "Give you brains"),
+    ("gaa g!b mah bra!nz", "You give me brains"),
+    ("zambahz zmazh gaa", "Zombies smash you"),
+
+    # 🔁 Word order variants
+    ("g!b bra!nz zaa mah zambah", "Give brains to me"),
+    ("mah zambah g!b bra!nz", "I give brains"),
+
+    # 🔗 Conjunction chains
+    ("g!b bra!nz an g!b zarram", "Give brains and give serum"),
+    ("g!b bra!nz arh g!b zarram", "Give brains or give serum"),
+    ("nah g!b bra!nz an nah g!b zarram", "Do not give brains and do not give serum"),
+
+    # ❗ Repetition / emphasis
+    ("g!b g!b bra!nz", "Give give brains"),
+    ("nah nah nah g!b bra!nz", "Do not do not do not give brains"),
+
+    # 🧩 Unknown words (fallback behavior)
+    ("zambahz flargh bra!nz", "Zombies [flargh] brains"),
+
+    # 🔤 Morphology / plural interaction
+    ("zambah zmazh harmanz", "Zombie smash humans"),
+    ("harmanz zmazh zambahz", "Humans smash zombies"),
+
+    # 🧠 Longer sentences
+    ("mah zambah maz barg bra!nz an zmazh harman",
+     "I must eat brains and smash human"),
+
+    ("nah g!b bra!nz arh zambahz zmazh gaa an harman ran nahaarh",
+     "Do not give brains or zombies smash you and human go away"),
+
+    # ⚠️ Grammar collision tests (are-insertion edge cases)
+    ("bra!nz an zarram", "Brains and serum"),
+    ("zambahz arh harmanz", "Zombies or humans"),
+
+    # 🧪 Minimal inputs
+    ("", ""),
+    ("nah", "Do not"),
+    ("bra!nz", "Brains"),
 ]
 
 
