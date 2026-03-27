@@ -39,6 +39,41 @@ def normalize(word, lookup):
 
     return word, None
 
+def grammar_postprocess(text):
+    words = text.split()
+
+    result = []
+    i = 0
+
+    while i < len(words):
+        w = words[i]
+
+        # Rule 1: noun + adj → insert "are"
+        if i > 0:
+            prev = result[-1] if result else ""
+            if prev.endswith("s") and w not in ("not",):
+                # crude heuristic: plural noun + next word → assume adjective
+                if w not in ("make", "eat", "shoot", "have", "give"):
+                    result.append("are")
+
+        # Rule 2: "not <verb>" → "do not <verb>"
+        if w == "not" and i + 1 < len(words):
+            result.append("do")
+            result.append("not")
+            i += 1
+            result.append(words[i])
+            i += 1
+            continue
+
+        result.append(w)
+        i += 1
+
+    # Capitalize first word
+    if result:
+        result[0] = result[0].capitalize()
+
+    return " ".join(result)
+
 # --- updated translator ---
 
 def zamgrh_to_english(text, lookup):
@@ -70,7 +105,9 @@ def zamgrh_to_english(text, lookup):
         else:
             out.append(f"[{raw}]")
 
-    return " ".join(out)
+    sentence = " ".join(out)
+    sentence = grammar_postprocess(sentence)
+    return sentence
 
 
 def main():
