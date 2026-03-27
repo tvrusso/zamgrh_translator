@@ -40,6 +40,8 @@ def normalize(word, lookup):
     return word, None
 
 def grammar_postprocess(text):
+    COMMON_VERBS = {"eat", "eats", "make", "shoot", "have", "give", "smash", "must"}
+
     words = text.split()
 
     result = []
@@ -48,13 +50,15 @@ def grammar_postprocess(text):
     while i < len(words):
         w = words[i]
 
-        # Rule 1: noun + adj → insert "are"
+        # Rule 1: noun + adjective → insert "are"
         if i > 0:
             prev = result[-1] if result else ""
-            if prev.endswith("s") and w not in ("not",):
-                # crude heuristic: plural noun + next word → assume adjective
-                if w not in ("make", "eat", "shoot", "have", "give"):
-                    result.append("are")
+
+            if prev.endswith("s"):  # likely plural noun
+                if w not in COMMON_VERBS and w != "not":
+                    # avoid inserting before obvious nouns (very rough)
+                    if not w.endswith("s"):
+                        result.append("are")
 
         # Rule 2: "not <verb>" → "do not <verb>"
         if w == "not" and i + 1 < len(words):
