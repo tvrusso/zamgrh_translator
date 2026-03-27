@@ -13,7 +13,7 @@ TEST_CASES = [
     ("harmanz bah! nah ma!g barragahz", "Humans are bad do not make barricades"),
     ("bah harman, nah bang bang mah zambah", "Bad human do not shoot shoot me"),
     ("g!b bra!nz, harman", "Give brains human"),
-    ("mah gang habbah zambahz", "My group are happy zombies"),
+    ("mah gang habbah zambahz", "My group is happy zombies"),
     ("bangbangman nah bang bang mah zambah", "Headhunter do not shoot shoot me"),
     ("zambahz zmazh barragahz", "Zombies smash barricades"),
     ("narz! mah zambah maz haz bra!n zarram!", "Nurse I must have brain serum"),
@@ -86,6 +86,10 @@ TEST_CASES = [
 
     # 3rd person agreement
     ("zambah bargz bra!nz", "Zombie eats brains"),
+
+    # is/are agreement
+    ("harmanz bah", "Humans are bad"),
+    ("harman bah", "Human is bad"),
 ]
 
 

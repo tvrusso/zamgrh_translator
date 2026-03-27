@@ -30,7 +30,7 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
         ("fix_possession", fix_possession),
         ("fix_pronouns", fix_object_pronouns),
         ("fix_prepositions", fix_prepositions),
-        ("insert_are", insert_are),
+        ("insert_copula", insert_copula),
         ("fix_verb_agreement", fix_verb_agreement),
     ]
 
@@ -110,7 +110,7 @@ def fix_object_pronouns(words, lookup, eng_lookup):
 
     return result
 
-def insert_are(words, lookup, eng_lookup):
+def insert_copula(words, lookup, eng_lookup):
     result = []
     seen_verb = False
 
@@ -124,15 +124,16 @@ def insert_are(words, lookup, eng_lookup):
             prev = result[-1]
             prev_pos = get_pos(prev, lookup, eng_lookup)
 
-            should_insert_are = (
-                not seen_verb and
-                "noun" in prev_pos and
-                "adj" in pos and
-                not w.startswith("[")
-            )
+            is_noun = "noun" in prev_pos
+            is_adj = "adj" in pos
+            is_unknown = w.startswith("[")
 
-            if should_insert_are:
-                result.append("are")
+            if not seen_verb and is_noun and is_adj and not is_unknown:
+                # decide is vs are
+                if prev.endswith("s"):
+                    result.append("are")
+                else:
+                    result.append("is")
 
         result.append(w)
 
