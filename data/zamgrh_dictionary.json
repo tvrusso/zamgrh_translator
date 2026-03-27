@@ -379,11 +379,14 @@
     "word": "hab",
     "pos": ["verb", "aux"],
     "english": [
-      { "gloss": "have", "weight": 1.0 }
+        { "gloss": "have", "weight": 1.0 },
+        { "gloss": "help", "weight": 0.8 }
     ],
-    "phonetic": { "approx": "have", "syllables": ["hab"] },
+    "phonetic": { "approx": "hab", "syllables": ["hab"] },
     "examples": [
-      { "zamgrh": "Mah maz hab bra!n.", "english": "I must have a brain." }
+        { "zamgrh": "Mah maz hab bra!n.", "english": "I must have a brain." },
+        { "zamgrh": "Hab mah!", "english": "Help me." }
+
     ],
     "usage": { "tone": ["neutral"] },
     "source": "group_standard",
@@ -402,5 +405,78 @@
     "usage": { "tone": ["urgent"] },
     "source": "group_standard",
     "confidence": 0.85
+  },
+  {
+      "word": "ran",
+      "pos": ["verb"],
+      "english": [
+          { "gloss": "go", "weight": 1.0},
+          { "gloss": "run", "weight": 0.8}
+      ],
+      "phonetic": { "approx": "run", "syllables": ["ran"] },
+      "examples": [
+          { "zamgrh": "Ran nahaarh.", "english": "Go away."}
+      ],
+      "usage": { "tone": ["neutral"]},
+      "source": "canon",
+      "confidence": 0.9
+  },
+  {
+      "word": "haarh",
+      "pos": ["adv"],
+      "english": [
+          { "gloss": "here", "weight": 1.0}
+      ],
+      "phonetic": { "approx": "har", "syllables": ["haarh"] },
+      "examples": [
+          { "zamgrh": "Grahm haarh.", "english": "Come here."}
+      ],
+      "usage": { "tone": ["neutral"]},
+      "source": "canon",
+      "confidence": 0.9
+  },
+  {
+      "word": "nahaarh",
+      "pos": ["adj"],
+      "english": [
+          { "gloss": "away", "weight": 1.0},
+          { "gloss": "not here", "weight": 0.5}
+      ],
+      "phonetic": { "approx": "nahhar", "syllables": ["nah","haarh"] },
+      "examples": [
+          { "zamgrh": "Ran nahaarh.", "english": "Go away."}
+      ],
+      "usage": { "tone": ["neutral"]},
+      "source": "canon",
+      "confidence": 0.9
+  },
+  {
+      "word": "grahm",
+      "pos": ["verb"],
+      "english": [
+          { "gloss": "come", "weight": 1.0}
+      ],
+      "phonetic": { "approx": "gram", "syllables": ["grahm"] },
+      "examples": [
+          { "zamgrh": "Grahm haarh.", "english": "Come here."}
+      ],
+      "usage": { "tone": ["neutral"]},
+      "source": "canon",
+      "confidence": 0.9
+  },
+  {
+      "word": "arh",
+      "pos": ["conj"],
+      "english": [
+          { "gloss": "or", "weight": 1.0}
+      ],
+      "phonetic": { "approx": "are", "syllables": ["arh"] },
+      "examples": [
+          { "zamgrh": "G!b bra!nz arh zambahz smash.", "english": "Give brains or zombies smash."}
+      ],
+      "usage": { "tone": ["neutral"]},
+      "source": "canon",
+      "confidence": 0.9
   }
+
 ]
