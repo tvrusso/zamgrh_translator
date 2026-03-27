@@ -13,6 +13,77 @@ def load_dictionary():
 def build_lookup(data):
     return {entry["word"]: entry for entry in data}
 
+# translation pipeline
+def apply_grammar_pipeline(words):
+    PIPELINE = [
+        resolve_hab_ambiguity,
+        simplify_subject,
+        fix_possession,
+        fix_object_pronouns,
+    ]
+
+    for step in PIPELINE:
+        words = step(words)
+
+    return words
+
+def resolve_hab_ambiguity(words):
+    result = []
+    i = 0
+
+    while i < len(words):
+        w = words[i]
+
+        if w == "have" and i + 1 < len(words):
+            if words[i + 1] in {"I", "me", "human"}:
+                result.append("help")
+                i += 1
+                continue
+
+        result.append(w)
+        i += 1
+
+    return result
+
+def simplify_subject(words):
+    result = []
+    i = 0
+
+    while i < len(words):
+        if i > 0 and words[i] == "zombie" and words[i - 1] == "I":
+            i += 1
+            continue
+
+        result.append(words[i])
+        i += 1
+
+    return result
+
+def fix_possession(words):
+    result = []
+
+    for i, w in enumerate(words):
+        if w == "I" and i + 1 < len(words):
+            if words[i + 1] in {"group", "gang"}:
+                result.append("my")
+                continue
+
+        result.append(w)
+
+    return result
+
+def fix_object_pronouns(words):
+    VERBS = {"give", "help", "shoot", "eat", "smash", "have"}
+
+    result = []
+
+    for i, w in enumerate(words):
+        if w == "I" and i > 0 and words[i - 1] in VERBS:
+            result.append("me")
+        else:
+            result.append(w)
+
+    return result
 
 # --- NEW: normalization helpers ---
 
@@ -70,11 +141,9 @@ def grammar_postprocess(text):
                         result.append("are")
 
         # Rule 2: "not <verb>" → "do not <verb>"
-        if w == "not" and i + 1 < len(words):
+        if w == "not":
             result.append("do")
             result.append("not")
-            i += 1
-            result.append(words[i])
             i += 1
             continue
 
@@ -121,9 +190,14 @@ def zamgrh_to_english(text, lookup):
             out.append(f"[{raw}]")
 
     sentence = " ".join(out)
-    sentence = grammar_postprocess(sentence)
-    return sentence
+    words = sentence.split()
 
+    words = apply_grammar_pipeline(words)
+
+    sentence = " ".join(words)
+    sentence = grammar_postprocess(sentence)
+
+    return sentence
 
 def main():
     data = load_dictionary()
