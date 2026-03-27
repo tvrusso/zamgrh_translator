@@ -379,11 +379,14 @@
     "word": "hab",
     "pos": ["verb", "aux"],
     "english": [
-        { "gloss": "help", "weight": 1.0 }
+        { "gloss": "help", "weight": 1.0 },
+        { "gloss": "have", "weight": 0.5}
     ],
     "phonetic": { "approx": "hab", "syllables": ["hab"] },
     "examples": [
-        { "zamgrh": "Hab mah!", "english": "Help me." }
+        { "zamgrh": "Hab mah!", "english": "Help me." },
+        { "zamgrh": "Maz hab bra!nz", "english": "Must have brains." }
+
     ],
     "usage": { "tone": ["neutral"] },
     "source": "group_standard",
