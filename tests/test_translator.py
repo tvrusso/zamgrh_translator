@@ -4,7 +4,7 @@ from pathlib import Path
 # Ensure src/ is on path
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 
-from translator import load_dictionary, build_lookup, zamgrh_to_english
+from translator import load_dictionary, build_lookup, build_english_pos_lookup, zamgrh_to_english
 
 
 TEST_CASES = [
@@ -13,7 +13,7 @@ TEST_CASES = [
     ("harmanz bah! nah ma!g barragahz", "Humans are bad do not make barricades"),
     ("bah harman, nah bang bang mah zambah", "Bad human do not shoot shoot me"),
     ("g!b bra!nz, harman", "Give brains human"),
-    ("mah gang habbah zambahz", "My group happy zombies"),
+    ("mah gang habbah zambahz", "My group are happy zombies"),
     ("bangbangman nah bang bang mah zambah", "Headhunter do not shoot shoot me"),
     ("zambahz zmazh barragahz", "Zombies smash barricades"),
     ("narz! mah zambah maz haz bra!n zarram!", "Nurse I must have brain serum"),
@@ -89,12 +89,13 @@ TEST_CASES = [
 def run_tests():
     data = load_dictionary()
     lookup = build_lookup(data)
+    eng_lookup = build_english_pos_lookup(data)
 
     passed = 0
     failed = 0
 
     for zamgrh, expected in TEST_CASES:
-        result = zamgrh_to_english(zamgrh, lookup)
+        result = zamgrh_to_english(zamgrh, lookup, eng_lookup)
 
         if result == expected:
             print(f"PASS: {zamgrh}")
@@ -104,7 +105,7 @@ def run_tests():
             print(f"  expected: {expected}")
             print(f"  got:      {result}")
             print(f"\nDEBUG for {zamgrh}:")
-            zamgrh_to_english(zamgrh, lookup, debug=True)
+            zamgrh_to_english(zamgrh, lookup, eng_lookup, debug=True)
             failed += 1
 
     print("\n---")
