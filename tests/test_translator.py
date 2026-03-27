@@ -29,6 +29,13 @@ TEST_CASES = [
     ("mah zambah zmazh harman", "I smash human"),
     ("zambahz zmazh gaa", "Zombies smash you"),
     ("g!b bra!nz arh zambahz zmazh gaa", "Give brains or zombies smash you"),
+    ("nah g!b bra!nz an zambahz zmazh gaa", "Do not give brains and zombies smash you"),
+    ("mah gang zmash barragahz", "My group smash barricades"),
+    ("mah gang nah ran nahaarh", "My group do not go away"),
+    ("narz g!b zarram", "Nurse give serum"),
+    ("mah zambah maz hab zarram", "I must have serum"),
+    ("bra!nz bra!nz bra!nz", "Brains brains brains"),
+    ("nah nah g!b bra!nz", "Do not do not give brains"),
 ]
 
 

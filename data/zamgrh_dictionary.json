@@ -477,6 +477,20 @@
       "usage": { "tone": ["neutral"]},
       "source": "canon",
       "confidence": 0.9
+  },
+  {
+      "word": "an",
+      "pos": ["conj"],
+      "english": [
+          { "gloss": "and", "weight": 1.0}
+      ],
+      "phonetic": { "approx": "an", "syllables": ["an"] },
+      "examples": [
+          { "zamgrh": "Nah g!b bra!nz an zambahz smash.", "english": "Not give brains and zombies smash."}
+      ],
+      "usage": { "tone": ["neutral"]},
+      "source": "canon",
+      "confidence": 0.9
   }
 
 ]
