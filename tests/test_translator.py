@@ -16,7 +16,7 @@ TEST_CASES = [
     ("mah gang habbah zambahz", "My group is happy zombies"),
     ("bangbangman nah bang bang mah zambah", "Headhunter do not shoot shoot me"),
     ("zambahz zmazh barragahz", "Zombies smash barricades"),
-    ("narz! mah zambah maz haz bra!n zarram!", "Nurse I must have brain serum"),
+    ("narz! mah zambah maz haz bra!n zarram!", "Nurse I must have a brain serum"),
     ("g!b bra!nz", "Give brains"),
     ("g!b mah bra!nz", "Give me brains"),
     ("barg bra!nz", "Eat brains"),
@@ -25,15 +25,15 @@ TEST_CASES = [
     ("hab mah","Help me"),
     ("hab mah zambah","Help me"),
     ("nah ran nahaarh","Do not go away"),
-    ("nah hab harman","Do not help human"),
-    ("mah zambah zmazh harman", "I smash human"),
+    ("nah hab harman","Do not help a human"),
+    ("mah zambah zmazh harman", "I smash a human"),
     ("zambahz zmazh gaa", "Zombies smash you"),
     ("g!b bra!nz arh zambahz zmazh gaa", "Give brains or zombies smash you"),
     ("nah g!b bra!nz an zambahz zmazh gaa", "Do not give brains and zombies smash you"),
     ("mah gang zmazh barragahz", "My group smash barricades"),
     ("mah gang nah ran nahaarh", "My group do not go away"),
-    ("narz g!b zarram", "Nurse give serum"),
-    ("mah zambah maz haz zarram", "I must have serum"),
+    ("narz g!b zarram", "Nurse give a serum"),
+    ("mah zambah maz haz zarram", "I must have a serum"),
     ("bra!nz bra!nz bra!nz", "Brains brains brains"),
     ("nah nah g!b bra!nz", "Do not do not give brains"),
 
@@ -53,9 +53,9 @@ TEST_CASES = [
     ("mah zambah g!b bra!nz", "I give brains"),
 
     # 🔗 Conjunction chains
-    ("g!b bra!nz an g!b zarram", "Give brains and give serum"),
-    ("g!b bra!nz arh g!b zarram", "Give brains or give serum"),
-    ("nah g!b bra!nz an nah g!b zarram", "Do not give brains and do not give serum"),
+    ("g!b bra!nz an g!b zarram", "Give brains and give a serum"),
+    ("g!b bra!nz arh g!b zarram", "Give brains or give a serum"),
+    ("nah g!b bra!nz an nah g!b zarram", "Do not give brains and do not give a serum"),
 
     # ❗ Repetition / emphasis
     ("g!b g!b bra!nz", "Give give brains"),
@@ -70,10 +70,10 @@ TEST_CASES = [
 
     # 🧠 Longer sentences
     ("mah zambah maz barg bra!nz an zmazh harman",
-     "I must eat brains and smash human"),
+     "I must eat brains and smash a human"),
 
     ("nah g!b bra!nz arh zambahz zmazh gaa an harman ran nahaarh",
-     "Do not give brains or zombies smash you and human go away"),
+     "Do not give brains or zombies smash you and a human go away"),
 
     # ⚠️ Grammar collision tests (are-insertion edge cases)
     ("bra!nz an zarram", "Brains and serum"),
@@ -86,10 +86,16 @@ TEST_CASES = [
 
     # 3rd person agreement
     ("zambah bargz bra!nz", "Zombie eats brains"),
+    ("zambah barg bra!n", "zombie eats a brain"),
 
     # is/are agreement
     ("harmanz bah", "Humans are bad"),
     ("harman bah", "Human is bad"),
+
+    # Article insertion
+    ("zambah", "Zombie"),
+    ("harman", "Human"),
+    ("zambahz barg bra!nz", "Zombies eat brains"),
 ]
 
 

@@ -31,6 +31,7 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
         ("fix_pronouns", fix_object_pronouns),
         ("fix_prepositions", fix_prepositions),
         ("insert_copula", insert_copula),
+        ("insert_articles", insert_articles),
         ("fix_verb_agreement", fix_verb_agreement),
     ]
 
@@ -204,6 +205,47 @@ def get_pos(word, lookup, eng_lookup):
             return set(entry.get("pos", []))
 
     return set()
+
+def insert_articles(words, lookup, eng_lookup):
+    result = []
+    seen_verb = False
+    consumed_object = False  # NEW
+
+    for i, w in enumerate(words):
+        pos = get_pos(w, lookup, eng_lookup)
+
+        is_noun = "noun" in pos
+        is_verb = "verb" in pos or "aux" in pos
+
+        if is_verb:
+            seen_verb = True
+            consumed_object = False  # reset for new verb
+
+        if is_noun and not is_verb and seen_verb and not consumed_object:
+            is_plural = w.endswith("s")
+
+            if not is_plural:
+                if i > 0:
+                    prev = result[-1]
+
+                    if prev in {"a", "an", "the", "my", "your", "his", "her", "our", "their"}:
+                        result.append(w)
+                        consumed_object = True
+                        continue
+
+                    if prev in {"to"}:
+                        result.append(w)
+                        consumed_object = True
+                        continue
+
+                article = "an" if w[0] in "aeiou" else "a"
+                result.append(article)
+
+            consumed_object = True  # ✅ only first noun gets article
+
+        result.append(w)
+
+    return result
 
 # --- NEW: normalization helpers ---
 
