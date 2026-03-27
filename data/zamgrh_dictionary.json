@@ -1,0 +1,236 @@
+[
+  {
+    "word": "harman",
+    "pos": ["noun"],
+    "english": [{ "gloss": "human", "weight": 1.0 }],
+    "phonetic": { "approx": "human", "syllables": ["har", "man"] },
+    "examples": [
+      { "zamgrh": "Mah ganna barg harman.", "english": "I will eat a human." }
+    ],
+    "usage": { "tone": ["neutral", "predatory"] },
+    "source": "canon",
+    "confidence": 0.95
+  },
+  {
+    "word": "zambah",
+    "pos": ["noun"],
+    "english": [{ "gloss": "zombie", "weight": 1.0 }],
+    "phonetic": { "approx": "zombie", "syllables": ["zam", "bah"] },
+    "examples": [
+      { "zamgrh": "Mah zambah.", "english": "I am a zombie." }
+    ],
+    "usage": { "tone": ["neutral"] },
+    "source": "canon",
+    "confidence": 1.0
+  },
+  {
+    "word": "bra!n",
+    "pos": ["noun"],
+    "english": [{ "gloss": "brain", "weight": 1.0 }],
+    "phonetic": { "approx": "brain", "syllables": ["bra!n"] },
+    "examples": [
+      { "zamgrh": "Mah ganna nam bra!n.", "english": "I will eat a brain." }
+    ],
+    "usage": { "tone": ["neutral", "hungry"] },
+    "source": "canon",
+    "confidence": 1.0
+  },
+  {
+    "word": "bra!nz",
+    "pos": ["noun"],
+    "english": [{ "gloss": "brains", "weight": 1.0 }],
+    "phonetic": { "approx": "brains", "syllables": ["bra!nz"] },
+    "examples": [
+      { "zamgrh": "Bra!nz!", "english": "Brains!" }
+    ],
+    "usage": { "tone": ["aggressive", "hungry"] },
+    "source": "canon",
+    "confidence": 1.0
+  },
+  {
+    "word": "mah",
+    "pos": ["pron"],
+    "english": [
+      { "gloss": "I", "weight": 1.0 },
+      { "gloss": "me", "weight": 1.0 },
+      { "gloss": "my", "weight": 1.0 }
+    ],
+    "phonetic": { "approx": "my", "syllables": ["mah"] },
+    "examples": [
+      { "zamgrh": "Mah zambah.", "english": "I am a zombie." }
+    ],
+    "usage": { "tone": ["neutral"] },
+    "source": "canon",
+    "confidence": 1.0
+  },
+  {
+    "word": "ma",
+    "pos": ["pron"],
+    "english": [
+      { "gloss": "we", "weight": 1.0 },
+      { "gloss": "us", "weight": 1.0 }
+    ],
+    "phonetic": { "approx": "we", "syllables": ["ma"] },
+    "examples": [
+      { "zamgrh": "Ma ganna barg.", "english": "We will eat." }
+    ],
+    "usage": { "tone": ["neutral"] },
+    "source": "canon",
+    "confidence": 0.95
+  },
+  {
+    "word": "gaa",
+    "pos": ["pron"],
+    "english": [{ "gloss": "you", "weight": 1.0 }],
+    "phonetic": { "approx": "you", "syllables": ["gaa"] },
+    "examples": [
+      { "zamgrh": "Gaa ganna nam.", "english": "You will eat." }
+    ],
+    "usage": { "tone": ["neutral"] },
+    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "nah",
+    "pos": ["adv", "aux", "interj"],
+    "english": [
+      { "gloss": "not", "weight": 1.0 },
+      { "gloss": "no", "weight": 0.9 }
+    ],
+    "phonetic": { "approx": "nah", "syllables": ["nah"] },
+    "examples": [
+      { "zamgrh": "Mah nah ganna barg.", "english": "I will not eat." },
+      { "zamgrh": "Nah!", "english": "No!" }
+    ],
+    "usage": { "tone": ["neutral", "refusal"] },
+    "source": "canon",
+    "confidence": 1.0
+  },
+  {
+    "word": "ganna",
+    "pos": ["aux"],
+    "english": [
+      { "gloss": "going to", "weight": 1.0 },
+      { "gloss": "will", "weight": 0.8 }
+    ],
+    "phonetic": { "approx": "gonna", "syllables": ["gan", "na"] },
+    "examples": [
+      { "zamgrh": "Mah ganna nam.", "english": "I will eat." }
+    ],
+    "usage": { "tone": ["neutral"] },
+    "source": "canon",
+    "confidence": 0.9
+  },
+  {
+    "word": "haz",
+    "pos": ["aux", "verb"],
+    "english": [
+      { "gloss": "have", "weight": 1.0 },
+      { "gloss": "has", "weight": 1.0 }
+    ],
+    "phonetic": { "approx": "has", "syllables": ["haz"] },
+    "examples": [
+      { "zamgrh": "Mah haz bra!n.", "english": "I have a brain." }
+    ],
+    "usage": { "tone": ["neutral"] },
+    "source": "canon",
+    "confidence": 0.9
+  },
+  {
+    "word": "nam",
+    "pos": ["noun", "verb"],
+    "english": [
+      { "gloss": "food", "weight": 1.0 },
+      { "gloss": "eat", "weight": 1.0 }
+    ],
+    "phonetic": { "approx": "nom", "syllables": ["nam"] },
+    "examples": [
+      { "zamgrh": "Mah ganna nam bra!nz.", "english": "I will eat brains." }
+    ],
+    "synonyms": ["barg"],
+    "preferred": true,
+    "usage": { "tone": ["neutral"] },
+    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "barg",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "eat", "weight": 1.0 },
+      { "gloss": "devour", "weight": 0.8 }
+    ],
+    "phonetic": { "approx": "barg", "syllables": ["barg"] },
+    "examples": [
+      { "zamgrh": "Ma ganna barg harmanz!", "english": "We will devour humans!" }
+    ],
+    "synonyms": ["nam"],
+    "preferred": false,
+    "usage": { "tone": ["aggressive"] },
+    "source": "group_standard",
+    "confidence": 0.85
+  },
+  {
+    "word": "raam",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "room", "weight": 1.0 },
+      { "gloss": "place", "weight": 0.8 }
+    ],
+    "phonetic": { "approx": "room", "syllables": ["raam"] },
+    "examples": [
+      { "zamgrh": "Mah azz!z !n raam.", "english": "I am in the room." }
+    ],
+    "usage": { "tone": ["neutral"] },
+    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "narz",
+    "pos": ["noun"],
+    "english": [{ "gloss": "nurse", "weight": 1.0 }],
+    "phonetic": { "approx": "nurse", "syllables": ["narz"] },
+    "examples": [
+      { "zamgrh": "Narz azz!z !n hazb!gar.", "english": "Nurse is in the hospital." }
+    ],
+    "usage": { "tone": ["neutral"] },
+    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "zoggar",
+    "pos": ["noun"],
+    "english": [{ "gloss": "doctor", "weight": 1.0 }],
+    "phonetic": { "approx": "doctor", "syllables": ["zog", "gar"] },
+    "examples": [
+      { "zamgrh": "Zoggar azz!z !n hazb!gar.", "english": "Doctor is in the hospital." }
+    ],
+    "usage": { "tone": ["neutral"] },
+    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "zrazz",
+    "pos": ["verb"],
+    "english": [{ "gloss": "trust", "weight": 1.0 }],
+    "phonetic": { "approx": "trust", "syllables": ["zrazz"] },
+    "examples": [
+      { "zamgrh": "Gaa zrazz mah.", "english": "You trust me." }
+    ],
+    "usage": { "tone": ["deceptive"] },
+    "source": "group_standard",
+    "confidence": 0.85
+  },
+  {
+    "word": "razbarh",
+    "pos": ["verb"],
+    "english": [{ "gloss": "report", "weight": 1.0 }],
+    "phonetic": { "approx": "report", "syllables": ["raz", "barh"] },
+    "examples": [
+      { "zamgrh": "Mah razbarh narz.", "english": "I report the nurse." }
+    ],
+    "usage": { "tone": ["neutral"] },
+    "source": "group_standard",
+    "confidence": 0.8
+  }
+]

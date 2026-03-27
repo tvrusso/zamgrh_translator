@@ -1,0 +1,9 @@
+
+---
+
+# 📄 `requirements.txt`
+
+```txt
+# minimal for now
+pytest>=7.0
+jsonschema>=4.0
