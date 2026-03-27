@@ -16,7 +16,7 @@ TEST_CASES = [
     ("mah gang habbah zambahz", "My group happy zombies"),
     ("bangbangman nah bang bang mah zambah", "Headhunter do not shoot shoot me"),
     ("zambahz zmazh barragahz", "Zombies smash barricades"),
-    ("narz! mah zambah maz hab bra!n zarram!", "Nurse I must have brain serum"),
+    ("narz! mah zambah maz haz bra!n zarram!", "Nurse I must have brain serum"),
     ("g!b bra!nz", "Give brains"),
     ("g!b mah bra!nz", "Give me brains"),
     ("barg bra!nz", "Eat brains"),
@@ -33,7 +33,7 @@ TEST_CASES = [
     ("mah gang zmazh barragahz", "My group smash barricades"),
     ("mah gang nah ran nahaarh", "My group do not go away"),
     ("narz g!b zarram", "Nurse give serum"),
-    ("mah zambah maz hab zarram", "I must have serum"),
+    ("mah zambah maz haz zarram", "I must have serum"),
     ("bra!nz bra!nz bra!nz", "Brains brains brains"),
     ("nah nah g!b bra!nz", "Do not do not give brains"),
 ]

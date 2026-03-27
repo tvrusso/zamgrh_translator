@@ -379,14 +379,25 @@
     "word": "hab",
     "pos": ["verb", "aux"],
     "english": [
-        { "gloss": "have", "weight": 1.0 },
-        { "gloss": "help", "weight": 0.8 }
+        { "gloss": "help", "weight": 1.0 }
     ],
     "phonetic": { "approx": "hab", "syllables": ["hab"] },
     "examples": [
-        { "zamgrh": "Mah maz hab bra!n.", "english": "I must have a brain." },
         { "zamgrh": "Hab mah!", "english": "Help me." }
-
+    ],
+    "usage": { "tone": ["neutral"] },
+    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "haz",
+    "pos": ["verb", "aux"],
+    "english": [
+        { "gloss": "have", "weight": 1.0 }
+    ],
+    "phonetic": { "approx": "haz", "syllables": ["hab"] },
+    "examples": [
+        { "zamgrh": "Mah maz haz bra!n.", "english": "I must have a brain." }
     ],
     "usage": { "tone": ["neutral"] },
     "source": "group_standard",
