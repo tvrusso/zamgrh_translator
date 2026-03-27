@@ -83,6 +83,9 @@ TEST_CASES = [
     ("", ""),
     ("nah", "Do not"),
     ("bra!nz", "Brains"),
+
+    # 3rd person agreement
+    ("zambah bargz bra!nz", "Zombie eats brains"),
 ]
 
 
