@@ -20,6 +20,8 @@ def apply_grammar_pipeline(words, debug=False):
         ("simplify_subject", simplify_subject),
         ("fix_possession", fix_possession),
         ("fix_pronouns", fix_object_pronouns),
+        ("fix_prepositions", fix_prepositions),
+        ("insert_are", insert_are),
     ]
 
     if debug:
@@ -98,6 +100,52 @@ def fix_object_pronouns(words):
 
     return result
 
+def insert_are(words):
+    COMMON_VERBS = {"eat", "eats", "make", "shoot", "have", "give", "smash", "must", "help"}
+    COMMON_NOUNS = {
+        "human", "brains", "brain", "zombie", "group",
+        "barricades", "headhunter"
+    }
+    COMMON_CONJUNCTIONS = {"or", "and"}
+    
+    result = []
+    seen_verb = False
+
+    for i, w in enumerate(words):
+        # track if we've seen a verb already
+        if w in COMMON_VERBS:
+            seen_verb = True
+
+        if i > 0:
+            prev = result[-1]
+
+            should_insert_are = (
+                not seen_verb and
+                prev.endswith("s") and
+                w not in COMMON_VERBS and
+                w not in COMMON_NOUNS and
+                w not in COMMON_CONJUNCTIONS and
+                w != "not" and
+                not w.endswith("s") and
+                not w.startswith("[")
+            )
+
+            if should_insert_are:
+                result.append("are")
+
+        result.append(w)
+
+    return result
+
+def fix_prepositions(words):
+    result = []
+    for i, w in enumerate(words):
+        if w == "I" and i > 0 and words[i - 1] == "to":
+            result.append("me")
+        else:
+            result.append(w)
+    return result
+
 # --- NEW: normalization helpers ---
 
 def clean(word):
@@ -145,14 +193,6 @@ def grammar_postprocess(text, debug=False):
             result.append("not")
             i += 1
             continue
-
-        # Rule: noun + adj → "are" (your existing logic)
-        if i > 0:
-            prev = result[-1] if result else ""
-            if prev.endswith("s") and w not in ("not",):
-                if w not in COMMON_VERBS and w not in COMMON_NOUNS and w not in COMMON_CONJUNCTIONS:
-                    if not w.endswith("s"):
-                        result.append("are")
 
         result.append(w)
         i += 1

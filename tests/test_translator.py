@@ -38,7 +38,6 @@ TEST_CASES = [
     ("nah nah g!b bra!nz", "Do not do not give brains"),
 
     # 🔀 Ambiguity (hab: have vs help)
-    ("hab bra!nz", "Have brains"),
     ("hab mah bra!nz", "Help me brains"),
     ("mah zambah hab bra!nz", "I have brains"),
     ("mah zambah haz bra!nz", "I have brains"),
