@@ -521,7 +521,7 @@
   },
   {
     "word": "mah",
-    "pos": ["pron"],
+    "pos": ["pron", "det"],
     "english": [
       { "gloss": "I", "weight": 1.0 },
       { "gloss": "me", "weight": 1.0 },
