@@ -384,6 +384,44 @@ def grammar_postprocess(text, debug=False):
 # NOTE: POS (including "conj") is currently not used in translation logic,
 # but is preserved for future grammar-layer improvements.
 
+def pick_gloss(entry, desired_pos=None):
+    english = entry.get("english", [])
+    if not english:
+        return None
+
+    if desired_pos is None:
+        return english[0]["gloss"]
+
+    entry_pos = set(entry.get("pos", []))
+
+    if desired_pos in entry_pos:
+        for sense in english:
+            gloss = sense.get("gloss")
+            if gloss:
+                return gloss
+
+    return english[0]["gloss"]
+
+def infer_desired_pos(words, i, translated_out):
+    if i == 0:
+        return None
+
+    prev = translated_out[-1].lower() if translated_out else ""
+
+    if prev in {"i", "you", "we", "they", "he", "she"}:
+        return "verb"
+
+    if prev in {"the", "a", "an", "my", "your", "our", "their", "this", "that"}:
+        return "noun"
+
+    if prev in {"must", "will", "can", "should"}:
+        return "verb"
+
+    if len(translated_out) >= 2 and translated_out[-2:].copy() == ["going", "to"]:
+        return "verb"
+
+    return None
+
 def zamgrh_to_english(text, lookup, eng_lookup, debug=False):
     words = text.split()
     out = []
@@ -403,7 +441,8 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=False):
             entry = lookup.get(base)
 
         if entry:
-            gloss = entry["english"][0]["gloss"]
+            desired_pos = infer_desired_pos(words, len(out), out)
+            gloss = pick_gloss(entry, desired_pos=desired_pos)
 
             # optional: mark plural (simple version)
             if modifier == "plural":
