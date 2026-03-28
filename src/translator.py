@@ -4,11 +4,9 @@ from pathlib import Path
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "zamgrh_dictionary.json"
 
-
 def load_dictionary():
     with open(DATA_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
-
 
 def build_lookup(data):
     return {entry["word"]: entry for entry in data}
@@ -45,6 +43,49 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
             print(f"[{name:<16}] {' '.join(words)}")
 
     return words
+
+def clean(word):
+    word = word.lower()
+
+    # strip leading non-word chars, but keep internal !
+    word = re.sub(r'^[^\w!]+', '', word)
+
+    # strip trailing punctuation, including ? . , ; : !
+    while word and not (word[-1].isalnum() or word[-1] == "!"):
+        word = word[:-1]
+
+    # if the word ends with ! as punctuation rather than internal spelling, drop it
+    if word.endswith("!") and not re.search(r'![a-z0-9]', word):
+        word = word[:-1]
+
+    return word
+
+def question_postprocess(text, structure, original_text):
+    stripped = original_text.strip()
+
+    if not stripped.endswith("?"):
+        return text
+
+    words = text.split()
+    if not words:
+        return text
+
+    # existential question: "is there ..."
+    if len(words) >= 3 and words[0].lower() == "is" and "there" in words:
+        return " ".join(words[:-1]) + ("?" if not text.endswith("?") else "")
+
+    subject = structure.get("subject")
+    verb = structure.get("verb")
+    obj = structure.get("object")
+
+    # simple yes/no question: "Zombie eats brains" -> "Does the zombie eat brains?"
+    if subject and verb:
+        subject_text = f"the {subject}" if not subject.endswith("s") else f"the {subject}"
+        if subject.endswith("s"):
+            return f"Do {subject_text} {verb} {obj}?".replace(" None", "")
+        return f"Does {subject_text} {verb} {obj}?".replace(" None", "")
+
+    return text if text.endswith("?") else text + "?"
 
 def fix_am_progressive(words, lookup, eng_lookup):
     result = []
@@ -423,42 +464,38 @@ def infer_desired_pos(words, i, translated_out):
     return None
 
 def zamgrh_to_english(text, lookup, eng_lookup, debug=False):
+    is_question = text.strip().endswith("?")
+
     words = text.split()
     out = []
 
     for raw in words:
         w = clean(raw)
 
-        # FIRST: try exact match
         entry = lookup.get(w)
-
         if entry:
             base = w
             modifier = None
         else:
-            # THEN try normalization
             base, modifier = normalize(w, lookup)
             entry = lookup.get(base)
 
         if entry:
-            desired_pos = infer_desired_pos(words, len(out), out)
-            gloss = pick_gloss(entry, desired_pos=desired_pos)
-
-            # optional: mark plural (simple version)
+            gloss = entry["english"][0]["gloss"]
             if modifier == "plural":
                 gloss = gloss + "s"
-
             out.append(gloss)
         else:
             out.append(f"[{raw}]")
 
     sentence = " ".join(out)
     words = sentence.split()
-
     words = apply_grammar_pipeline(words, lookup, eng_lookup, debug=debug)
-
     sentence = " ".join(words)
     sentence = grammar_postprocess(sentence, debug=debug)
+
+    if is_question and sentence and not sentence.endswith("?"):
+        sentence += "?"
 
     return sentence
 
