@@ -148,6 +148,20 @@
   "confidence": 0.9
   },
   {
+  "word": "!nn",
+  "pos": ["noun"],
+  "english": [
+    { "gloss": "inn", "weight": 1.0 }
+  ]
+  },
+  {
+  "word": "azza",
+  "pos": ["prep"],
+  "english": [
+    { "gloss": "at the", "weight": 1.0 }
+  ]
+  },
+  {
   "word": "m!z",
   "pos": ["prep"],
   "english": [
@@ -156,6 +170,20 @@
   "phonetic": { "approx": "miz", "syllables": ["m!z"] },
   "examples": [
     { "zamgrh": "Gab m!z ahz.", "english": "Speak with us." }
+  ],
+  "usage": { "tone": ["neutral"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },
+  {
+  "word": "zam",
+  "pos": ["pron"],
+  "english": [
+    { "gloss": "them", "weight": 1.0 }
+  ],
+  "phonetic": { "approx": "zam", "syllables": ["zam"] },
+  "examples": [
+    { "zamgrh": "Zambahz zmazh zam.", "english": "Zombies smash them." }
   ],
   "usage": { "tone": ["neutral"] },
   "source": "group_standard",
