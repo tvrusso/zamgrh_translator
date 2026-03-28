@@ -139,7 +139,16 @@ TEST_GROUPS = {
         ("gab m!z ahz", "Speak with us"),
     ],
 
-    "negation": [
+    "gloss_picker": [
+        ("mah zambah gan barg bra!nz", "I will eat brains"),
+        ("nam nam nam", "Eat eat eat"),
+        ("mah gang", "My group"),
+        ("g!b mah bra!nz", "Give me brains"),
+        ("mah zambah", "I"),
+        ("za harman", "The human"),
+    ],
+
+     "negation": [
         ("nah g!b bra!nz", "Do not give brains"),
         ("nah ran nahaarh", "Do not go away"),
         ("nah nah g!b bra!nz", "Do not do not give brains"),
