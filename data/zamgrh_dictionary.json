@@ -1,520 +1,630 @@
 [
-{
-  "word": "!z",
-  "pos": ["aux", "verb"],
-  "english": [
-    { "gloss": "is", "weight": 1.0 }
-  ],
-  "phonetic": { "approx": "iz", "syllables": ["!z"] },
-  "examples": [
-    { "zamgrh": "Zambah !z n!z.", "english": "Zombie is nice." }
-  ],
-  "usage": { "tone": ["neutral"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
   {
-  "word": "n!z",
-  "pos": ["adj", "interj"],
-  "english": [
-    { "gloss": "nice", "weight": 1.0 }
-  ],
-  "phonetic": { "approx": "nize", "syllables": ["n!z"] },
-  "examples": [
-    { "zamgrh": "Zambah n!z.", "english": "Zombie is nice." },
-    { "zamgrh": "N!z!", "english": "Nice!" }
-  ],
-  "usage": { "tone": ["positive", "informal"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
-  {
-  "word": "zah",
-  "pos": ["det"],
-  "english": [
-    { "gloss": "the", "weight": 1.0 }
-  ],
-  "synonyms": ["za"],
-  "phonetic": { "approx": "zah", "syllables": ["zah"] },
-  "examples": [
-    { "zamgrh": "Zah harman.", "english": "The human." }
-  ],
-  "usage": { "tone": ["neutral"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
-  {
-  "word": "za",
-  "pos": ["det"],
-  "english": [
-    { "gloss": "the", "weight": 1.0 }
-  ],
-  "synonyms": ["zah"],
-  "phonetic": { "approx": "zah", "syllables": ["za"] },
-  "examples": [
-    { "zamgrh": "Za zambah.", "english": "The zombie." }
-  ],
-  "usage": { "tone": ["neutral"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
-  {
-  "word": "gaam",
-  "pos": ["verb"],
-  "english": [
-    { "gloss": "come", "weight": 1.0 }
-  ],
-  "phonetic": { "approx": "gahm", "syllables": ["gaam"] },
-  "examples": [
-    { "zamgrh": "Gaam zaa mah.", "english": "Come to me." }
-  ],
-  "usage": { "tone": ["neutral", "imperative"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
-  {
-  "word": "gan",
-  "pos": ["aux", "noun"],
-  "english": [
-    { "gloss": "will", "weight": 1.0 },
-    { "gloss": "can", "weight": 0.9 },
-    { "gloss": "gun", "weight": 0.8 }
-  ],
-  "phonetic": { "approx": "gan", "syllables": ["gan"] },
-  "examples": [
-    { "zamgrh": "Mah zambah gan barg bra!nz.", "english": "I will eat brains." },
-    { "zamgrh": "Magh!!n gan.", "english": "Machine gun." }
-  ],
-  "usage": { "tone": ["neutral"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
-  {
-  "word": "gonna",
-  "pos": ["aux"],
-  "english": [
-    { "gloss": "going to", "weight": 1.0 }
-  ],
-  "phonetic": { "approx": "gon-nah", "syllables": ["gon", "na"] },
-  "examples": [
-    { "zamgrh": "Mah zambah gonna barg bra!nz.", "english": "I am going to eat brains." }
-  ],
-  "usage": { "tone": ["neutral", "future"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
-  {
-  "word": "gah",
-  "pos": ["pron"],
-  "english": [
-    { "gloss": "you", "weight": 1.0 }
-  ],
-  "phonetic": { "approx": "gah", "syllables": ["gah"] },
-  "examples": [
-    { "zamgrh": "Zambahz zmazh gah.", "english": "Zombies smash you." }
-  ],
-  "usage": { "tone": ["neutral"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
-  {
-  "word": "harrah",
-  "pos": ["interj"],
-  "english": [
-    { "gloss": "hello", "weight": 1.0 }
-  ],
-  "phonetic": { "approx": "har-rah", "syllables": ["har", "rah"] },
-  "examples": [
-    { "zamgrh": "Harrah, harman.", "english": "Hello, human." }
-  ],
-  "usage": { "tone": ["neutral", "greeting"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },  
-  {
-  "word": "gab",
-  "pos": ["verb"],
-  "english": [
-    { "gloss": "speak", "weight": 1.0 },
-    { "gloss": "gab", "weight": 0.6 }
-  ],
-  "phonetic": { "approx": "gab", "syllables": ["gab"] },
-  "examples": [
-    { "zamgrh": "Mah gab.", "english": "I speak." },
-    { "zamgrh": "Gab m!z ahz.", "english": "Speak with us." }
-  ],
-  "usage": { "tone": ["neutral", "informal"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
-  {
-  "word": "!nn",
-  "pos": ["noun"],
-  "english": [
-    { "gloss": "inn", "weight": 1.0 }
-  ]
-  },
-  {
-  "word": "azza",
-  "pos": ["prep"],
-  "english": [
-    { "gloss": "at the", "weight": 1.0 }
-  ]
-  },
-  {
-  "word": "m!z",
-  "pos": ["prep"],
-  "english": [
-    { "gloss": "with", "weight": 1.0 }
-  ],
-  "phonetic": { "approx": "miz", "syllables": ["m!z"] },
-  "examples": [
-    { "zamgrh": "Gab m!z ahz.", "english": "Speak with us." }
-  ],
-  "usage": { "tone": ["neutral"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
-  {
-  "word": "zam",
-  "pos": ["pron"],
-  "english": [
-    { "gloss": "them", "weight": 1.0 }
-  ],
-  "phonetic": { "approx": "zam", "syllables": ["zam"] },
-  "examples": [
-    { "zamgrh": "Zambahz zmazh zam.", "english": "Zombies smash them." }
-  ],
-  "usage": { "tone": ["neutral"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
-  {
-  "word": "ahz",
-  "pos": ["pron"],
-  "english": [
-    { "gloss": "us", "weight": 1.0 }
-  ],
-  "phonetic": { "approx": "ahz", "syllables": ["ahz"] },
-  "examples": [
-    { "zamgrh": "Gab m!z ahz.", "english": "Speak with us." }
-  ],
-  "usage": { "tone": ["neutral"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },  
-  {
-      "word": "an",
-      "pos": ["conj"],
-      "english": [
-          { "gloss": "and", "weight": 1.0}
-      ],
-      "phonetic": { "approx": "an", "syllables": ["an"] },
-      "examples": [
-          { "zamgrh": "Nah g!b bra!nz an zambahz smash.", "english": "Not give brains and zombies smash."}
-      ],
-      "usage": { "tone": ["neutral"]},
-      "source": "canon",
-      "confidence": 0.9
-  },
-  {
-      "word": "arh",
-      "pos": ["conj"],
-      "english": [
-          { "gloss": "or", "weight": 1.0}
-      ],
-      "phonetic": { "approx": "are", "syllables": ["arh"] },
-      "examples": [
-          { "zamgrh": "G!b bra!nz arh zambahz smash.", "english": "Give brains or zombies smash."}
-      ],
-      "usage": { "tone": ["neutral"]},
-      "source": "canon",
-      "confidence": 0.9
-  },
-  {
-    "word": "bah",
-    "pos": ["adj", "interj"],
+    "word": "aah",
+    "pos": ["adv"],
     "english": [
-      { "gloss": "bad", "weight": 1.0 }
+      { "gloss": "out", "weight": 1.0 }
     ],
-    "phonetic": { "approx": "bah", "syllables": ["bah"] },
-    "examples": [
-      { "zamgrh": "Bah harman!", "english": "Bad human!" }
-    ],
-    "usage": { "tone": ["aggressive"] },
-    "source": "group_standard",
     "confidence": 0.9
   },
   {
-    "word": "bang",
-    "pos": ["verb", "noun"],
-    "english": [
-      { "gloss": "shoot", "weight": 1.0 },
-      { "gloss": "gunshot", "weight": 0.8 }
-    ],
-    "phonetic": { "approx": "bang", "syllables": ["bang"] },
-    "examples": [
-      { "zamgrh": "Nah bang bang mah zambah.", "english": "Do not shoot me." }
-    ],
-    "usage": { "tone": ["violent"] },
-    "source": "group_standard",
-    "confidence": 0.9
-  },
-  {
-    "word": "bangbangman",
+    "word": "abbarz",
     "pos": ["noun"],
     "english": [
-      { "gloss": "headhunter", "weight": 1.0 }
+      { "gloss": "apples", "weight": 1.0 }
     ],
-    "phonetic": { "approx": "headhunter", "syllables": ["bang", "bang", "man"] },
-    "examples": [
-      { "zamgrh": "Bangbangman nah bang bang mah zambah.", "english": "Headhunter, do not shoot me." }
-    ],
-    "usage": { "tone": ["hostile"] },
-    "source": "group_standard",
-    "confidence": 0.8
+    "confidence": 0.9
   },
   {
-    "word": "barg",
+    "word": "abban",
     "pos": ["verb"],
     "english": [
-      { "gloss": "eat", "weight": 1.0 },
-      { "gloss": "devour", "weight": 0.8 }
+      { "gloss": "open", "weight": 1.0 }
     ],
-    "phonetic": { "approx": "barg", "syllables": ["barg"] },
-    "examples": [
-      { "zamgrh": "Ma ganna barg harmanz!", "english": "We will devour humans!" }
-    ],
-    "synonyms": ["nam"],
-    "preferred": false,
-    "usage": { "tone": ["aggressive"] },
-    "source": "group_standard",
-    "confidence": 0.85
-  },
-  {
-    "word": "barragah",
-    "pos": ["noun"],
-    "english": [
-      { "gloss": "barricade", "weight": 1.0 }
-    ],
-    "phonetic": { "approx": "barricade", "syllables": ["bar", "ra", "gah"] },
-    "examples": [
-      { "zamgrh": "Zambahz zmazh barragahz.", "english": "Zombies smash barricades." }
-    ],
-    "usage": { "tone": ["neutral"] },
-    "source": "group_standard",
     "confidence": 0.9
   },
   {
-    "word": "bra!n",
-    "pos": ["noun"],
-    "english": [{ "gloss": "brain", "weight": 1.0 }],
-    "phonetic": { "approx": "brain", "syllables": ["bra!n"] },
-    "examples": [
-      { "zamgrh": "Mah ganna nam bra!n.", "english": "I will eat a brain." }
+    "word": "abbrag!haz",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "approach", "weight": 1.0 }
     ],
-    "usage": { "tone": ["neutral", "hungry"] },
-    "source": "canon",
+    "confidence": 0.9
+  },
+  {
+    "word": "ahn",
+    "pos": ["conj"],
+    "english": [
+      { "gloss": "and", "weight": 1.0 }
+    ],
     "confidence": 1.0
   },
   {
-    "word": "bra!nz",
+    "word": "anz",
     "pos": ["noun"],
-    "english": [{ "gloss": "brains", "weight": 1.0 }],
-    "phonetic": { "approx": "brains", "syllables": ["bra!nz"] },
-    "examples": [
-      { "zamgrh": "Bra!nz!", "english": "Brains!" }
+    "english": [
+      { "gloss": "end", "weight": 1.0 }
     ],
-    "usage": { "tone": ["aggressive", "hungry"] },
-    "source": "canon",
+    "confidence": 0.9
+  },
+  {
+    "word": "armz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "arms", "weight": 1.0 }
+    ],
     "confidence": 1.0
   },
   {
-    "word": "gaa",
-    "pos": ["pron"],
-    "english": [{ "gloss": "you", "weight": 1.0 }],
-    "phonetic": { "approx": "you", "syllables": ["gaa"] },
-    "examples": [
-      { "zamgrh": "Gaa ganna nam.", "english": "You will eat." }
-    ],
-    "usage": { "tone": ["neutral"] },
-    "source": "group_standard",
-    "confidence": 0.9
-  },
-  {
-    "word": "ganna",
-    "pos": ["aux"],
+    "word": "arrh",
+    "pos": ["det"],
     "english": [
-      { "gloss": "going to", "weight": 1.0 },
-      { "gloss": "will", "weight": 0.8 }
+      { "gloss": "all", "weight": 1.0 }
     ],
-    "phonetic": { "approx": "gonna", "syllables": ["gan", "na"] },
-    "examples": [
-      { "zamgrh": "Mah ganna nam.", "english": "I will eat." }
-    ],
-    "usage": { "tone": ["neutral"] },
-    "source": "canon",
     "confidence": 0.9
   },
   {
-    "word": "gang",
+    "word": "bag",
     "pos": ["noun"],
     "english": [
-      { "gloss": "group", "weight": 1.0 },
-      { "gloss": "gang", "weight": 0.9 }
+      { "gloss": "bag", "weight": 1.0 }
     ],
-    "phonetic": { "approx": "gang", "syllables": ["gang"] },
-    "examples": [
-      { "zamgrh": "Mah gang zambahz.", "english": "My group are zombies." }
-    ],
-    "usage": { "tone": ["neutral"] },
-    "source": "group_standard",
-    "confidence": 0.9
+    "confidence": 1.0
   },
   {
-      "word": "grahm",
-      "pos": ["verb"],
-      "english": [
-          { "gloss": "come", "weight": 1.0}
-      ],
-      "phonetic": { "approx": "gram", "syllables": ["grahm"] },
-      "examples": [
-          { "zamgrh": "Grahm haarh.", "english": "Come here."}
-      ],
-      "usage": { "tone": ["neutral"]},
-      "source": "canon",
-      "confidence": 0.9
-  },
-  {
-    "word": "g!b",
-    "pos": ["verb"],
-    "english": [
-      { "gloss": "give", "weight": 1.0 }
-    ],
-    "phonetic": { "approx": "give", "syllables": ["g!b"] },
-    "examples": [
-      { "zamgrh": "G!b bra!nz, harman.", "english": "Give brains, human." }
-    ],
-    "usage": { "tone": ["command"] },
-    "source": "group_standard",
-    "confidence": 0.9
-  },
-  {
-      "word": "haarh",
-      "pos": ["adv"],
-      "english": [
-          { "gloss": "here", "weight": 1.0}
-      ],
-      "phonetic": { "approx": "har", "syllables": ["haarh"] },
-      "examples": [
-          { "zamgrh": "Grahm haarh.", "english": "Come here."}
-      ],
-      "usage": { "tone": ["neutral"]},
-      "source": "canon",
-      "confidence": 0.9
-  },
-  {
-    "word": "hab",
-    "pos": ["verb", "aux"],
-    "english": [
-        { "gloss": "help", "weight": 1.0 },
-        { "gloss": "have", "weight": 0.8}
-    ],
-    "phonetic": { "approx": "hab", "syllables": ["hab"] },
-    "examples": [
-        { "zamgrh": "Hab mah!", "english": "Help me." },
-        { "zamgrh": "Maz hab bra!nz", "english": "Must have brains." }
-
-    ],
-    "usage": { "tone": ["neutral"] },
-    "source": "group_standard",
-    "confidence": 0.9
-  },
-  {
-    "word": "habbah",
-    "pos": ["adj"],
-    "english": [
-      { "gloss": "happy", "weight": 1.0 }
-    ],
-    "phonetic": { "approx": "happy", "syllables": ["hab", "bah"] },
-    "examples": [
-      { "zamgrh": "Zambahz habbah.", "english": "Zombies are happy." }
-    ],
-    "usage": { "tone": ["positive"] },
-    "source": "group_standard",
-    "confidence": 0.85
-  },
-  {
-    "word": "haz",
-    "pos": ["aux", "verb"],
-    "english": [
-      { "gloss": "have", "weight": 1.0 },
-      { "gloss": "has", "weight": 1.0 }
-    ],
-    "phonetic": { "approx": "has", "syllables": ["haz"] },
-    "examples": [
-      { "zamgrh": "Mah haz bra!n.", "english": "I have a brain." }
-    ],
-    "usage": { "tone": ["neutral"] },
-    "source": "canon",
-    "confidence": 0.9
-  },
-  {
-    "word": "harman",
+    "word": "bagbarn",
     "pos": ["noun"],
-    "english": [{ "gloss": "human", "weight": 1.0 }],
-    "phonetic": { "approx": "human", "syllables": ["har", "man"] },
-    "examples": [
-      { "zamgrh": "Mah ganna barg harman.", "english": "I will eat a human." }
-    ],
-    "usage": { "tone": ["neutral", "predatory"] },
-    "source": "canon",
-    "confidence": 0.95
-  },
-  {
-    "word": "ma",
-    "pos": ["pron"],
     "english": [
-      { "gloss": "we", "weight": 1.0 },
-      { "gloss": "us", "weight": 1.0 }
+      { "gloss": "hospital", "weight": 1.0 }
     ],
-    "phonetic": { "approx": "we", "syllables": ["ma"] },
-    "examples": [
-      { "zamgrh": "Ma ganna barg.", "english": "We will eat." }
-    ],
-    "usage": { "tone": ["neutral"] },
-    "source": "canon",
-    "confidence": 0.95
+    "confidence": 0.9
   },
   {
-    "word": "mah",
+    "word": "barhah",
+    "pos": ["interj"],
+    "english": [
+      { "gloss": "ha", "weight": 1.0 }
+    ],
+    "usage": { "tone": ["triumphant"] },
+    "confidence": 0.9
+  },
+  {
+    "word": "gaarh",
     "pos": ["pron", "det"],
     "english": [
-      { "gloss": "I", "weight": 1.0 },
-      { "gloss": "me", "weight": 1.0 },
-      { "gloss": "my", "weight": 1.0 }
+      { "gloss": "your", "weight": 1.0 }
     ],
-    "phonetic": { "approx": "my", "syllables": ["mah"] },
-    "examples": [
-      { "zamgrh": "Mah zambah.", "english": "I am a zombie." }
+    "confidence": 0.9
+  },
+  {
+    "word": "gaaz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "coast", "weight": 1.0 }
     ],
-    "usage": { "tone": ["neutral"] },
-    "source": "canon",
+    "confidence": 0.9
+  },
+  {
+    "word": "gannarazarh",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "generator", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "ganzarh",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "cancer", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "gaz",
+    "pos": ["aux"],
+    "english": [
+      { "gloss": "get", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "g!az",
+    "pos": ["adv"],
+    "english": [
+      { "gloss": "just", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "g!gg",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "kick", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "habbahnazz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "happiness", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "hah",
+    "pos": ["adv"],
+    "english": [
+      { "gloss": "how", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "hahaha",
+    "pos": ["noun", "interj"],
+    "english": [
+      { "gloss": "laughs", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "hangrah",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "hungry", "weight": 1.0 }
+    ],
     "confidence": 1.0
   },
   {
-    "word": "ma!g",
+    "word": "harrabarh",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "horrible", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "hazganna",
+    "pos": ["aux"],
+    "english": [
+      { "gloss": "is going to", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "hra!gh",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "ache", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "!hn",
+    "pos": ["prep"],
+    "english": [
+      { "gloss": "in", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "!hz",
     "pos": ["verb"],
     "english": [
-      { "gloss": "make", "weight": 1.0 }
+      { "gloss": "is", "weight": 1.0 }
     ],
-    "phonetic": { "approx": "make", "syllables": ["ma!g"] },
-    "examples": [
-      { "zamgrh": "Nah ma!g barragahz.", "english": "Do not make barricades." }
+    "confidence": 1.0
+  },
+  {
+    "word": "!izza",
+    "pos": ["phrase"],
+    "english": [
+      { "gloss": "is a", "weight": 1.0 }
     ],
-    "usage": { "tone": ["neutral"] },
-    "source": "group_standard",
+    "confidence": 1.0
+  },
+  {
+    "word": "!n",
+    "pos": ["prep"],
+    "english": [
+      { "gloss": "in", "weight": 1.0 }
+    ],
+    "confidence": 1.0
+  },
+  {
+    "word": "magh!!n",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "machine", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "mabb",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "move", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "nabbazz!h",
+    "pos": ["pron"],
+    "english": [
+      { "gloss": "nobody", "weight": 1.0 }
+    ],
+    "confidence": 1.0
+  },
+  {
+    "word": "nabazz!h",
+    "pos": ["pron"],
+    "english": [
+      { "gloss": "nobody", "weight": 1.0 }
+    ],
+    "confidence": 1.0
+  },
+  {
+    "word": "nagg",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "neck", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "n!gh!",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "nigh", "weight": 1.0 }
+    ],
+    "confidence": 1.0
+  },
+  {
+    "word": "nammah",
+    "pos": ["adj", "interj"],
+    "english": [
+      { "gloss": "nummy", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "ragz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "legs", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "rargaam",
+    "pos": ["interj", "verb"],
+    "english": [
+      { "gloss": "welcome", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "rarrz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "world", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "rh!gh",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "like", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "zabra!hz",
+    "pos": ["interj"],
+    "english": [
+      { "gloss": "surprise", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "za!z",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "say", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "zahm",
+    "pos": ["det"],
+    "english": [
+      { "gloss": "some", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "zan",
+    "pos": ["adv"],
+    "english": [
+      { "gloss": "then", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "zazah",
+    "pos": ["interj"],
+    "english": [
+      { "gloss": "tada", "weight": 1.0 }
+    ],
+    "synonyms": ["zahzah"],
+    "usage": { "tone": ["playful"] },
+    "confidence": 0.9
+  },
+  {
+    "word": "z!ngh!h",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "stinky", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "z!z",
+    "pos": ["det"],
+    "english": [
+      { "gloss": "this", "weight": 1.0 }
+    ],
+    "confidence": 1.0
+  },
+  {
+    "word": "zamm!h",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "tummy", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "zgam",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "scum", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "zh!h",
+    "pos": ["pron"],
+    "english": [
+      { "gloss": "she", "weight": 1.0 }
+    ],
+    "confidence": 1.0
+  },
+  {
+    "word": "zz!g",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "stick", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "hrabarh!hz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "favorite", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "ma!h",
+    "pos": ["pron", "det"],
+    "english": [
+      { "gloss": "my", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "gh!!z",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "cheese", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "graan",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "green", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "gh!rrh!h",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "chile", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "brh!!z",
+    "pos": ["interj"],
+    "english": [
+      { "gloss": "please", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "n!z",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "nice", "weight": 1.0 }
+    ],
+    "confidence": 1.0
+  },
+  {
+    "word": "z!!h",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "see", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "aga!n",
+    "pos": ["adv"],
+    "english": [
+      { "gloss": "again", "weight": 1.0 }
+    ],
+    "confidence": 1.0
+  },
+  {
+    "word": "z!rr!h",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "silly", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "haarz",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "heard", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "rh!gh!ng",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "liking", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "an!maarh",
+    "pos": ["adv"],
+    "english": [
+      { "gloss": "anymore", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "azbazharrh!h",
+    "pos": ["adv"],
+    "english": [
+      { "gloss": "especially", "weight": 1.0 }
+    ],
     "confidence": 0.85
+  },
+  {
+    "word": "barbagah",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "barbecue", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "ab",
+    "pos": ["prep", "adv"],
+    "english": [
+      { "gloss": "up", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "naa",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "new", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "h!aar",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "year", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "brh!ng",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "bring", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "arza",
+    "pos": ["adv"],
+    "english": [
+      { "gloss": "also", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "habbanaz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "happiness", "weight": 1.0 }
+    ],
+    "confidence": 0.85
+  },
+  {
+    "word": "zagh",
+    "pos": ["det", "adv"],
+    "english": [
+      { "gloss": "such", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "brh!ghnazz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "brightness", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "marrz",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "melt", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "maaz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "mouth", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "garh",
+    "pos": ["pron", "det"],
+    "english": [
+      { "gloss": "your", "weight": 1.0 }
+    ],
+    "confidence": 0.85
+  },
+  {
+    "word": "agh",
+    "pos": ["interj"],
+    "english": [
+      { "gloss": "ick", "weight": 1.0 }
+    ],
+    "confidence": 0.95
   },
   {
     "word": "maz",
@@ -522,193 +632,583 @@
     "english": [
       { "gloss": "must", "weight": 1.0 }
     ],
-    "phonetic": { "approx": "must", "syllables": ["maz"] },
-    "examples": [
-      { "zamgrh": "Zambahz maz barg bra!nz.", "english": "Zombies must eat brains." }
-    ],
-    "usage": { "tone": ["urgent"] },
-    "source": "group_standard",
-    "confidence": 0.9
+    "confidence": 0.95
   },
   {
-    "word": "nah",
-    "pos": ["adv", "aux", "interj"],
-    "english": [
-      { "gloss": "not", "weight": 1.0 },
-      { "gloss": "no", "weight": 0.9 }
-    ],
-    "phonetic": { "approx": "nah", "syllables": ["nah"] },
-    "examples": [
-      { "zamgrh": "Mah nah ganna barg.", "english": "I will not eat." },
-      { "zamgrh": "Nah!", "english": "No!" }
-    ],
-    "usage": { "tone": ["neutral", "refusal"] },
-    "source": "canon",
-    "confidence": 1.0
-  },
-  {
-      "word": "nahaarh",
-      "pos": ["adj"],
-      "english": [
-          { "gloss": "away", "weight": 1.0},
-          { "gloss": "not here", "weight": 0.5}
-      ],
-      "phonetic": { "approx": "nahhar", "syllables": ["nah","haarh"] },
-      "examples": [
-          { "zamgrh": "Ran nahaarh.", "english": "Go away."}
-      ],
-      "usage": { "tone": ["neutral"]},
-      "source": "canon",
-      "confidence": 0.9
-  },
-  {
-    "word": "nam",
-    "pos": ["noun", "verb"],
-    "english": [
-      { "gloss": "eat", "weight": 1.0 },
-      { "gloss": "food", "weight": 1.0 }
-    ],
-    "phonetic": { "approx": "nom", "syllables": ["nam"] },
-    "examples": [
-      { "zamgrh": "Mah ganna nam bra!nz.", "english": "I will eat brains." }
-    ],
-    "synonyms": ["barg"],
-    "preferred": true,
-    "usage": { "tone": ["neutral"] },
-    "source": "group_standard",
-    "confidence": 0.9
-  },
-  {
-    "word": "narz",
-    "pos": ["noun"],
-    "english": [{ "gloss": "nurse", "weight": 1.0 }],
-    "phonetic": { "approx": "nurse", "syllables": ["narz"] },
-    "examples": [
-      { "zamgrh": "Narz azz!z !n hazb!gar.", "english": "Nurse is in the hospital." }
-    ],
-    "usage": { "tone": ["neutral"] },
-    "source": "group_standard",
-    "confidence": 0.9
-  },
-  {
-    "word": "raam",
-    "pos": ["noun"],
-    "english": [
-      { "gloss": "room", "weight": 1.0 },
-      { "gloss": "place", "weight": 0.8 }
-    ],
-    "phonetic": { "approx": "room", "syllables": ["raam"] },
-    "examples": [
-      { "zamgrh": "Mah azz!z !n raam.", "english": "I am in the room." }
-    ],
-    "usage": { "tone": ["neutral"] },
-    "source": "group_standard",
-    "confidence": 0.9
-  },
-  {
-      "word": "ran",
-      "pos": ["verb"],
-      "english": [
-          { "gloss": "go", "weight": 1.0},
-          { "gloss": "run", "weight": 0.8}
-      ],
-      "phonetic": { "approx": "run", "syllables": ["ran"] },
-      "examples": [
-          { "zamgrh": "Ran nahaarh.", "english": "Go away."}
-      ],
-      "usage": { "tone": ["neutral"]},
-      "source": "canon",
-      "confidence": 0.9
-  },
-  {
-    "word": "razbarh",
+    "word": "b!!n",
     "pos": ["verb"],
-    "english": [{ "gloss": "report", "weight": 1.0 }],
-    "phonetic": { "approx": "report", "syllables": ["raz", "barh"] },
-    "examples": [
-      { "zamgrh": "Mah razbarh narz.", "english": "I report the nurse." }
+    "english": [
+      { "gloss": "been", "weight": 1.0 }
     ],
-    "usage": { "tone": ["neutral"] },
-    "source": "group_standard",
-    "confidence": 0.8
+    "confidence": 0.9
   },
   {
-    "word": "zambah",
-    "pos": ["noun"],
-    "english": [{ "gloss": "zombie", "weight": 1.0 }],
-    "phonetic": { "approx": "zombie", "syllables": ["zam", "bah"] },
-    "examples": [
-      { "zamgrh": "Mah zambah.", "english": "I am a zombie." }
+    "word": "ranz!z",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "rancid", "weight": 1.0 }
     ],
-    "usage": { "tone": ["neutral"] },
-    "source": "canon",
-    "confidence": 1.0
+    "confidence": 0.95
   },
   {
-    "word": "zarram",
+    "word": "zangz",
     "pos": ["noun"],
     "english": [
-      { "gloss": "serum", "weight": 1.0 }
+      { "gloss": "thanks", "weight": 1.0 }
     ],
-    "phonetic": { "approx": "serum", "syllables": ["zar", "ram"] },
-    "examples": [
-      { "zamgrh": "Mah maz hab bra!n zarram!", "english": "I must have brain serum!" }
+    "confidence": 0.95
+  },
+  {
+    "word": "barh",
+    "pos": ["prep"],
+    "english": [
+      { "gloss": "for", "weight": 1.0 }
     ],
-    "usage": { "tone": ["urgent"] },
-    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "banz!barh",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "bountiful", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "hrh!!z",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "feast", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "abah",
+    "pos": ["adv"],
+    "english": [
+      { "gloss": "about to", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "ganzaam",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "consume", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "zang",
+    "pos": ["interj"],
+    "english": [
+      { "gloss": "thank you", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "g!!zaz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "Jesus", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "barrah",
+    "pos": ["adv"],
+    "english": [
+      { "gloss": "very", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "zanzhah",
+    "pos": ["proper_noun"],
+    "english": [
+      { "gloss": "Dante", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "haggarbarrah",
+    "pos": ["noun", "phrase"],
+    "english": [
+      { "gloss": "huckleberry", "weight": 1.0 }
+    ],
     "confidence": 0.85
   },
   {
-    "word": "zmazh",
+    "word": "zamz!ng",
+    "pos": ["pron"],
+    "english": [
+      { "gloss": "something", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "!h",
+    "pos": ["pron"],
+    "english": [
+      { "gloss": "it", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "grb",
     "pos": ["verb"],
     "english": [
-      { "gloss": "smash", "weight": 1.0 }
+      { "gloss": "give", "weight": 1.0 }
     ],
-    "phonetic": { "approx": "smash", "syllables": ["zmazh"] },
-    "examples": [
-      { "zamgrh": "Zambahz zmazh barragahz.", "english": "Zombies smash barricades." }
+    "confidence": 0.85
+  },
+  {
+    "word": "!nz!hz",
+    "pos": ["prep"],
+    "english": [
+      { "gloss": "inside", "weight": 1.0 }
     ],
-    "usage": { "tone": ["aggressive"] },
-    "source": "group_standard",
     "confidence": 0.9
   },
   {
-    "word": "zoggar",
-    "pos": ["noun"],
-    "english": [{ "gloss": "doctor", "weight": 1.0 }],
-    "phonetic": { "approx": "doctor", "syllables": ["zog", "gar"] },
-    "examples": [
-      { "zamgrh": "Zoggar azz!z !n hazb!gar.", "english": "Doctor is in the hospital." }
+    "word": "zaa",
+    "pos": ["adv"],
+    "english": [
+      { "gloss": "too", "weight": 1.0 }
     ],
-    "usage": { "tone": ["neutral"] },
-    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "ahmahgah",
+    "pos": ["interj"],
+    "english": [
+      { "gloss": "oh my god", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "za!rh",
+    "pos": ["adv", "pron"],
+    "english": [
+      { "gloss": "there", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "hr!rh!",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "fire", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "aggzmanz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "firemen", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "hrh!ghz",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "fight", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "za!g",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "take", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "gaah",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "good", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "ga!rh",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "care", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "ahb",
+    "pos": ["prep"],
+    "english": [
+      { "gloss": "of", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "agzbarn",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "firestation", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "zga!rz",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "worry", "weight": 1.0 }
+    ],
     "confidence": 0.9
   },
   {
     "word": "zrazz",
     "pos": ["verb"],
-    "english": [{ "gloss": "trust", "weight": 1.0 }],
-    "phonetic": { "approx": "trust", "syllables": ["zrazz"] },
-    "examples": [
-      { "zamgrh": "Gaa zrazz mah.", "english": "You trust me." }
+    "english": [
+      { "gloss": "trust", "weight": 1.0 }
     ],
-    "usage": { "tone": ["deceptive"] },
-    "source": "group_standard",
+    "confidence": 0.9
+  },
+  {
+    "word": "r!!rh!h",
+    "pos": ["adv"],
+    "english": [
+      { "gloss": "really", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "b!h",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "be", "weight": 1.0 }
+    ],
     "confidence": 0.85
   },
   {
-      "word": "zaa",
-  "pos": ["prep"],
+    "word": "z!g",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "sick", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+  "word": "bra!nbag",
+  "pos": ["noun"],
   "english": [
-    { "gloss": "to", "weight": 1.0 }
+    { "gloss": "hat", "weight": 1.0 }
   ],
-  "phonetic": { "approx": "zah", "syllables": ["zaa"] },
-  "examples": [
-    { "zamgrh": "G!b bra!nz zaa harman.", "english": "Give brains to a human." }
-  ],
-  "usage": { "tone": ["neutral"] },
-  "source": "group_standard",
-  "confidence": 0.9
+  "confidence": 1.0
+  },
+  {
+    "word": "bra!h!ng",
+    "pos": ["adj", "verb"],
+    "english": [
+      { "gloss": "praying", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "ba!h",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "pay", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "aarh",
+    "pos": ["pron", "det"],
+    "english": [
+      { "gloss": "our", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "razbagz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "respects", "weight": 1.0 }
+    ],
+    "confidence": 0.85
+  },
+  {
+    "word": "rabbrh!h",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "lovely", "weight": 1.0 }
+    ],
+    "confidence": 0.85
+  },
+  {
+    "word": "zanza!h",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "Sunday", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "abbarnaan",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "afternoon", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "m!!nz",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "mean", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "gamman!an",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "communion", "weight": 1.0 }
+    ],
+    "confidence": 0.85
+  },
+  {
+    "word": "zhabbarz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "shoppers", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "azzahm",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "assume", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "bazz!zh!an",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "position", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "harra!h",
+    "pos": ["interj"],
+    "english": [
+      { "gloss": "hooray", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "zhabb!ng",
+    "pos": ["verb"],
+    "english": [
+      { "gloss": "shopping", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "hrarh",
+    "pos": ["prep"],
+    "english": [
+      { "gloss": "for", "weight": 0.9 }
+    ],
+    "confidence": 0.85
+  },
+  {
+    "word": "barga!nz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "bargains", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "bragg",
+    "pos": ["adj", "noun"],
+    "english": [
+      { "gloss": "black", "weight": 0.9 }
+    ],
+    "confidence": 0.8
+  },
+  {
+    "word": "hrh!hza!h",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "friday", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "rh!bz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "ribs", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "g!argh!h",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "jerky", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "aggz!hzaz",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "excited", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "marzan",
+    "pos": ["proper_noun"],
+    "english": [
+      { "gloss": "Malton", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "manah",
+    "pos": ["det"],
+    "english": [
+      { "gloss": "many", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "!nnarazz!ng",
+    "pos": ["adj"],
+    "english": [
+      { "gloss": "interesting", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "am!narz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "animals", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "r!anz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "lions", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "marmazaz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "marmosets", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "z!garz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "tigers", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "baarz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "bears", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "arran",
+    "pos": ["adv"],
+    "english": [
+      { "gloss": "alone", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "n!ghma!!r",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "nightmare", "weight": 1.0 }
+    ],
+    "confidence": 0.95
+  },
+  {
+    "word": "an!haah",
+    "pos": ["adv"],
+    "english": [
+      { "gloss": "anyhow", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "gabraz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "goblets", "weight": 1.0 }
+    ],
+    "confidence": 0.85
+  },
+  {
+    "word": "graaz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "claws", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "n!gh",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "night", "weight": 1.0 }
+    ],
+    "confidence": 1.0
+  },
+  {
+    "word": "hrarrz",
+    "pos": ["adv"],
+    "english": [
+      { "gloss": "first", "weight": 1.0 }
+    ],
+    "confidence": 0.85
+  },
+  {
+    "word": "zarz",
+    "pos": ["noun"],
+    "english": [
+      { "gloss": "sauce", "weight": 1.0 }
+    ],
+    "confidence": 0.9
+  },
+  {
+    "word": "zzab!z",
+    "pos": ["adj", "insult"],
+    "english": [
+      { "gloss": "stupid", "weight": 1.0 }
+    ],
+    "usage": { "tone": ["insulting"] },
+    "confidence": 0.9
   }
-
 ]
