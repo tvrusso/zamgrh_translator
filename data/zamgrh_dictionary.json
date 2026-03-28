@@ -118,50 +118,6 @@
   "confidence": 0.9
   },
   {
-  "word": "gab",
-  "pos": ["verb"],
-  "english": [
-    { "gloss": "speak", "weight": 1.0 },
-    { "gloss": "gab", "weight": 0.6 }
-  ],
-  "phonetic": { "approx": "gab", "syllables": ["gab"] },
-  "examples": [
-    { "zamgrh": "Mah gab.", "english": "I speak." },
-    { "zamgrh": "Gab m!z ahz.", "english": "Speak with us." }
-  ],
-  "usage": { "tone": ["neutral", "informal"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
-  {
-  "word": "m!z",
-  "pos": ["prep"],
-  "english": [
-    { "gloss": "with", "weight": 1.0 }
-  ],
-  "phonetic": { "approx": "miz", "syllables": ["m!z"] },
-  "examples": [
-    { "zamgrh": "Gab m!z ahz.", "english": "Speak with us." }
-  ],
-  "usage": { "tone": ["neutral"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
-  {
-  "word": "ahz",
-  "pos": ["pron"],
-  "english": [
-    { "gloss": "us", "weight": 1.0 }
-  ],
-  "phonetic": { "approx": "ahz", "syllables": ["ahz"] },
-  "examples": [
-    { "zamgrh": "Gab m!z ahz.", "english": "Speak with us." }
-  ],
-  "usage": { "tone": ["neutral"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
-  {
   "word": "harrah",
   "pos": ["interj"],
   "english": [
@@ -172,23 +128,6 @@
     { "zamgrh": "Harrah, harman.", "english": "Hello, human." }
   ],
   "usage": { "tone": ["neutral", "greeting"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
-  {
-  "word": "nam",
-  "pos": ["noun", "verb"],
-  "english": [
-    { "gloss": "eat", "weight": 1.0 },
-    { "gloss": "food", "weight": 0.8 }
-  ],
-  "phonetic": { "approx": "nom", "syllables": ["nam"] },
-  "examples": [
-    { "zamgrh": "Mah ganna nam bra!nz.", "english": "I will eat brains." }
-  ],
-  "synonyms": ["barg"],
-  "preferred": true,
-  "usage": { "tone": ["neutral"] },
   "source": "group_standard",
   "confidence": 0.9
   },  
