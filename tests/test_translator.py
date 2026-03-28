@@ -154,6 +154,11 @@ TEST_GROUPS = {
         ("nah nah g!b bra!nz", "Do not do not give brains"),
     ],
 
+    "questions": [
+        ("!z raam azza !nn?", "Is a room at the inn?"),
+        ("zambah barg bra!nz?", "Zombie eat brains?"),
+    ],
+
     "imperatives": [
         ("g!b bra!nz", "Give brains"),
         ("g!b mah bra!nz", "Give me brains"),
