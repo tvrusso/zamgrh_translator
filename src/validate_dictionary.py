@@ -1,0 +1,197 @@
+import json
+import sys
+from pathlib import Path
+from collections import Counter
+
+DATA_PATH = Path(__file__).parent.parent / "data" / "zamgrh_dictionary.json"
+
+ALLOWED_POS = {
+    "noun",
+    "verb",
+    "adj",
+    "adv",
+    "prep",
+    "pron",
+    "det",
+    "aux",
+    "interj",
+    "conj",
+    "phrase",
+    "proper_noun",
+    "insult",
+}
+
+REQUIRED_TOP_LEVEL_FIELDS = {"word", "pos", "english"}
+
+
+def load_dictionary(path: Path):
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print(f"ERROR: Dictionary file not found: {path}")
+        sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(f"ERROR: Invalid JSON in dictionary file: {e}")
+        sys.exit(1)
+
+    if not isinstance(data, list):
+        print("ERROR: Dictionary root must be a JSON list.")
+        sys.exit(1)
+
+    return data
+
+
+def is_nonempty_string(value):
+    return isinstance(value, str) and value.strip() != ""
+
+
+def validate_entry(entry, index, seen_words, errors, warnings):
+    if not isinstance(entry, dict):
+        errors.append(f"Entry #{index}: entry must be a JSON object.")
+        return
+
+    missing_fields = REQUIRED_TOP_LEVEL_FIELDS - set(entry.keys())
+    for field in sorted(missing_fields):
+        errors.append(f"Entry #{index}: missing required field '{field}'.")
+
+    word = entry.get("word")
+    if not is_nonempty_string(word):
+        errors.append(f"Entry #{index}: 'word' must be a non-empty string.")
+        return
+
+    normalized_word = word.strip()
+
+    if normalized_word != word:
+        warnings.append(
+            f"Word '{word}': leading/trailing whitespace detected; consider trimming."
+        )
+
+    seen_words.append(normalized_word)
+
+    pos = entry.get("pos")
+    if not isinstance(pos, list) or not pos:
+        errors.append(f"Word '{normalized_word}': 'pos' must be a non-empty list.")
+    else:
+        for p in pos:
+            if not is_nonempty_string(p):
+                errors.append(
+                    f"Word '{normalized_word}': POS values must be non-empty strings."
+                )
+                continue
+            if p not in ALLOWED_POS:
+                errors.append(
+                    f"Word '{normalized_word}': invalid POS '{p}'. "
+                    f"Allowed: {sorted(ALLOWED_POS)}"
+                )
+
+    english = entry.get("english")
+    if not isinstance(english, list) or not english:
+        errors.append(f"Word '{normalized_word}': 'english' must be a non-empty list.")
+    else:
+        for i, gloss_entry in enumerate(english):
+            if not isinstance(gloss_entry, dict):
+                errors.append(
+                    f"Word '{normalized_word}': english[{i}] must be an object."
+                )
+                continue
+
+            gloss = gloss_entry.get("gloss")
+            if not is_nonempty_string(gloss):
+                errors.append(
+                    f"Word '{normalized_word}': english[{i}] missing non-empty 'gloss'."
+                )
+
+            weight = gloss_entry.get("weight")
+            if weight is not None and not isinstance(weight, (int, float)):
+                errors.append(
+                    f"Word '{normalized_word}': english[{i}] 'weight' must be numeric."
+                )
+
+    synonyms = entry.get("synonyms")
+    if synonyms is not None:
+        if not isinstance(synonyms, list):
+            errors.append(f"Word '{normalized_word}': 'synonyms' must be a list.")
+        else:
+            for i, s in enumerate(synonyms):
+                if not is_nonempty_string(s):
+                    errors.append(
+                        f"Word '{normalized_word}': synonyms[{i}] must be a non-empty string."
+                    )
+
+    examples = entry.get("examples")
+    if examples is not None:
+        if not isinstance(examples, list):
+            errors.append(f"Word '{normalized_word}': 'examples' must be a list.")
+        else:
+            for i, ex in enumerate(examples):
+                if not isinstance(ex, dict):
+                    errors.append(
+                        f"Word '{normalized_word}': examples[{i}] must be an object."
+                    )
+                    continue
+                if "zamgrh" in ex and not is_nonempty_string(ex["zamgrh"]):
+                    errors.append(
+                        f"Word '{normalized_word}': examples[{i}].zamgrh must be a non-empty string."
+                    )
+                if "english" in ex and not is_nonempty_string(ex["english"]):
+                    errors.append(
+                        f"Word '{normalized_word}': examples[{i}].english must be a non-empty string."
+                    )
+
+    if "confidence" in entry and not isinstance(entry["confidence"], (int, float)):
+        errors.append(f"Word '{normalized_word}': 'confidence' must be numeric.")
+
+    if "preferred" in entry and not isinstance(entry["preferred"], bool):
+        errors.append(f"Word '{normalized_word}': 'preferred' must be true or false.")
+
+
+def check_duplicates(words, errors):
+    counts = Counter(words)
+    duplicates = sorted(word for word, count in counts.items() if count > 1)
+    for word in duplicates:
+        errors.append(f"Duplicate word entry: '{word}'.")
+
+
+def check_sort_order(words, warnings):
+    sorted_words = sorted(words, key=str.lower)
+    if words != sorted_words:
+        warnings.append("Dictionary is not alphabetically sorted by 'word'.")
+
+
+def main():
+    data = load_dictionary(DATA_PATH)
+
+    errors = []
+    warnings = []
+    seen_words = []
+
+    for index, entry in enumerate(data, start=1):
+        validate_entry(entry, index, seen_words, errors, warnings)
+
+    check_duplicates(seen_words, errors)
+    check_sort_order(seen_words, warnings)
+
+    if errors:
+        print("VALIDATION FAILED")
+        print("-" * 40)
+        for err in errors:
+            print(f"ERROR: {err}")
+
+    if warnings:
+        if not errors:
+            print("VALIDATION PASSED WITH WARNINGS")
+            print("-" * 40)
+        else:
+            print("-" * 40)
+        for warning in warnings:
+            print(f"WARNING: {warning}")
+
+    if not errors and not warnings:
+        print("VALIDATION PASSED")
+
+    sys.exit(1 if errors else 0)
+
+
+if __name__ == "__main__":
+    main()
