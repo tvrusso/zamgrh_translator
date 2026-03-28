@@ -1,4 +1,241 @@
 [
+{
+  "word": "!z",
+  "pos": ["aux", "verb"],
+  "english": [
+    { "gloss": "is", "weight": 1.0 }
+  ],
+  "phonetic": { "approx": "iz", "syllables": ["!z"] },
+  "examples": [
+    { "zamgrh": "Zambah !z n!z.", "english": "Zombie is nice." }
+  ],
+  "usage": { "tone": ["neutral"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },
+  {
+  "word": "n!z",
+  "pos": ["adj", "interj"],
+  "english": [
+    { "gloss": "nice", "weight": 1.0 }
+  ],
+  "phonetic": { "approx": "nize", "syllables": ["n!z"] },
+  "examples": [
+    { "zamgrh": "Zambah n!z.", "english": "Zombie is nice." },
+    { "zamgrh": "N!z!", "english": "Nice!" }
+  ],
+  "usage": { "tone": ["positive", "informal"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },
+  {
+  "word": "zah",
+  "pos": ["det"],
+  "english": [
+    { "gloss": "the", "weight": 1.0 }
+  ],
+  "synonyms": ["za"],
+  "phonetic": { "approx": "zah", "syllables": ["zah"] },
+  "examples": [
+    { "zamgrh": "Zah harman.", "english": "The human." }
+  ],
+  "usage": { "tone": ["neutral"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },
+  {
+  "word": "za",
+  "pos": ["det"],
+  "english": [
+    { "gloss": "the", "weight": 1.0 }
+  ],
+  "synonyms": ["zah"],
+  "phonetic": { "approx": "zah", "syllables": ["za"] },
+  "examples": [
+    { "zamgrh": "Za zambah.", "english": "The zombie." }
+  ],
+  "usage": { "tone": ["neutral"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },
+  {
+  "word": "gaam",
+  "pos": ["verb"],
+  "english": [
+    { "gloss": "come", "weight": 1.0 }
+  ],
+  "phonetic": { "approx": "gahm", "syllables": ["gaam"] },
+  "examples": [
+    { "zamgrh": "Gaam zaa mah.", "english": "Come to me." }
+  ],
+  "usage": { "tone": ["neutral", "imperative"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },
+  {
+  "word": "gan",
+  "pos": ["aux", "noun"],
+  "english": [
+    { "gloss": "will", "weight": 1.0 },
+    { "gloss": "can", "weight": 0.9 },
+    { "gloss": "gun", "weight": 0.8 }
+  ],
+  "phonetic": { "approx": "gan", "syllables": ["gan"] },
+  "examples": [
+    { "zamgrh": "Mah zambah gan barg bra!nz.", "english": "I will eat brains." },
+    { "zamgrh": "Magh!!n gan.", "english": "Machine gun." }
+  ],
+  "usage": { "tone": ["neutral"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },
+  {
+  "word": "gonna",
+  "pos": ["aux"],
+  "english": [
+    { "gloss": "going to", "weight": 1.0 }
+  ],
+  "phonetic": { "approx": "gon-nah", "syllables": ["gon", "na"] },
+  "examples": [
+    { "zamgrh": "Mah zambah gonna barg bra!nz.", "english": "I am going to eat brains." }
+  ],
+  "usage": { "tone": ["neutral", "future"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },
+  {
+  "word": "gah",
+  "pos": ["pron"],
+  "english": [
+    { "gloss": "you", "weight": 1.0 }
+  ],
+  "phonetic": { "approx": "gah", "syllables": ["gah"] },
+  "examples": [
+    { "zamgrh": "Zambahz zmazh gah.", "english": "Zombies smash you." }
+  ],
+  "usage": { "tone": ["neutral"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },
+  {
+  "word": "gab",
+  "pos": ["verb"],
+  "english": [
+    { "gloss": "speak", "weight": 1.0 },
+    { "gloss": "gab", "weight": 0.6 }
+  ],
+  "phonetic": { "approx": "gab", "syllables": ["gab"] },
+  "examples": [
+    { "zamgrh": "Mah gab.", "english": "I speak." },
+    { "zamgrh": "Gab m!z ahz.", "english": "Speak with us." }
+  ],
+  "usage": { "tone": ["neutral", "informal"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },
+  {
+  "word": "m!z",
+  "pos": ["prep"],
+  "english": [
+    { "gloss": "with", "weight": 1.0 }
+  ],
+  "phonetic": { "approx": "miz", "syllables": ["m!z"] },
+  "examples": [
+    { "zamgrh": "Gab m!z ahz.", "english": "Speak with us." }
+  ],
+  "usage": { "tone": ["neutral"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },
+  {
+  "word": "ahz",
+  "pos": ["pron"],
+  "english": [
+    { "gloss": "us", "weight": 1.0 }
+  ],
+  "phonetic": { "approx": "ahz", "syllables": ["ahz"] },
+  "examples": [
+    { "zamgrh": "Gab m!z ahz.", "english": "Speak with us." }
+  ],
+  "usage": { "tone": ["neutral"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },
+  {
+  "word": "harrah",
+  "pos": ["interj"],
+  "english": [
+    { "gloss": "hello", "weight": 1.0 }
+  ],
+  "phonetic": { "approx": "har-rah", "syllables": ["har", "rah"] },
+  "examples": [
+    { "zamgrh": "Harrah, harman.", "english": "Hello, human." }
+  ],
+  "usage": { "tone": ["neutral", "greeting"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },
+  {
+  "word": "nam",
+  "pos": ["noun", "verb"],
+  "english": [
+    { "gloss": "eat", "weight": 1.0 },
+    { "gloss": "food", "weight": 0.8 }
+  ],
+  "phonetic": { "approx": "nom", "syllables": ["nam"] },
+  "examples": [
+    { "zamgrh": "Mah ganna nam bra!nz.", "english": "I will eat brains." }
+  ],
+  "synonyms": ["barg"],
+  "preferred": true,
+  "usage": { "tone": ["neutral"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },  
+  {
+  "word": "gab",
+  "pos": ["verb"],
+  "english": [
+    { "gloss": "speak", "weight": 1.0 },
+    { "gloss": "gab", "weight": 0.6 }
+  ],
+  "phonetic": { "approx": "gab", "syllables": ["gab"] },
+  "examples": [
+    { "zamgrh": "Mah gab.", "english": "I speak." },
+    { "zamgrh": "Gab m!z ahz.", "english": "Speak with us." }
+  ],
+  "usage": { "tone": ["neutral", "informal"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },
+  {
+  "word": "m!z",
+  "pos": ["prep"],
+  "english": [
+    { "gloss": "with", "weight": 1.0 }
+  ],
+  "phonetic": { "approx": "miz", "syllables": ["m!z"] },
+  "examples": [
+    { "zamgrh": "Gab m!z ahz.", "english": "Speak with us." }
+  ],
+  "usage": { "tone": ["neutral"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },
+  {
+  "word": "ahz",
+  "pos": ["pron"],
+  "english": [
+    { "gloss": "us", "weight": 1.0 }
+  ],
+  "phonetic": { "approx": "ahz", "syllables": ["ahz"] },
+  "examples": [
+    { "zamgrh": "Gab m!z ahz.", "english": "Speak with us." }
+  ],
+  "usage": { "tone": ["neutral"] },
+  "source": "group_standard",
+  "confidence": 0.9
+  },  
   {
       "word": "an",
       "pos": ["conj"],
@@ -361,8 +598,8 @@
     "word": "nam",
     "pos": ["noun", "verb"],
     "english": [
-      { "gloss": "food", "weight": 1.0 },
-      { "gloss": "eat", "weight": 1.0 }
+      { "gloss": "eat", "weight": 1.0 },
+      { "gloss": "food", "weight": 1.0 }
     ],
     "phonetic": { "approx": "nom", "syllables": ["nam"] },
     "examples": [
@@ -494,17 +731,17 @@
   },
   {
       "word": "zaa",
-      "pos": ["prep"],
-      "english": [
-          { "gloss": "to", "weight": 1.0}
-      ],
-      "phonetic": { "approx": "za", "syllables": ["zaa"] },
-      "examples": [
-          { "zamgrh": "G!b bra!nz zaa mah zambah.", "english": "Give brains to me."}
-      ],
-      "usage": { "tone": ["neutral"]},
-      "source": "canon",
-      "confidence": 0.9
+  "pos": ["prep"],
+  "english": [
+    { "gloss": "to", "weight": 1.0 }
+  ],
+  "phonetic": { "approx": "zah", "syllables": ["zaa"] },
+  "examples": [
+    { "zamgrh": "G!b bra!nz zaa harman.", "english": "Give brains to a human." }
+  ],
+  "usage": { "tone": ["neutral"] },
+  "source": "group_standard",
+  "confidence": 0.9
   }
 
 ]
