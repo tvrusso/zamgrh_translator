@@ -12,7 +12,6 @@ from translator import (
     zamgrh_to_structure,
 )
 
-
 # ---------------------------
 # Translator helper
 # ---------------------------
@@ -126,17 +125,24 @@ def fix_am_progressive(words, lookup, eng_lookup):
 # ---------------------------
 
 TEST_GROUPS = {
-
     "core": [
         ("zambahz maz barg bra!nz", "Zombies must eat brains"),
         ("mah zambah bargz bra!nz", "I eat brains"),
         ("zambahz zmazh barragahz", "Zombies smash barricades"),
+        ("habbah zambah", "Happy zombie"),
+        ("g!gg azz", "Kick ass"),
+        ("ragz armz nagg", "Legs arms neck"),
+        ("gh!!z", "Cheese"),
+        ("graan gh!rrh!h", "Green chile"),
     ],
 
     "pronouns": [
         ("g!b gaa bra!nz", "Give you brains"),
         ("gaa g!b mah bra!nz", "You give me brains"),
         ("gab m!z ahz", "Speak with us"),
+        ("!h", "It"),
+        ("aarh", "Our"),
+        ("zamz!ng", "Something"),
     ],
 
     "gloss_picker": [
@@ -144,25 +150,30 @@ TEST_GROUPS = {
         ("nam nam nam", "Eat eat eat"),
         ("mah gang", "My group"),
         ("g!b mah bra!nz", "Give me brains"),
-        ("mah zambah", "I"),
         ("za harman", "The human"),
     ],
 
-     "negation": [
+    "negation": [
         ("nah g!b bra!nz", "Do not give brains"),
         ("nah ran nahaarh", "Do not go away"),
         ("nah nah g!b bra!nz", "Do not do not give brains"),
+        ("nah rh!gh!ng", "Not liking"),
+        ("nah !hn garh graaz", "Not in your claws"),
     ],
 
     "questions": [
         ("!z raam azza !nn?", "Is a room at the inn?"),
         ("zambah barg bra!nz?", "Zombie eat brains?"),
+        ("Nah baarz?", "No bears?"),
+        ("arrh marmazaz nammah?", "Are marmosets nummy?"),
     ],
 
     "imperatives": [
         ("g!b bra!nz", "Give brains"),
         ("g!b mah bra!nz", "Give me brains"),
         ("barg bra!nz", "Eat brains"),
+        ("azzahm zah bazz!zh!an", "Assume the position"),
+        ("b!!h habbah", "Be happy"),
     ],
 
     "articles_and_plural": [
@@ -170,12 +181,16 @@ TEST_GROUPS = {
         ("harman", "Human"),
         ("zambahz barg bra!nz", "Zombies eat brains"),
         ("zambah barg bra!n", "Zombie eat a brain"),
+        ("harmanz", "Humans"),
+        ("zambahz", "Zombies"),
     ],
 
     "agreement": [
         ("zambah bargz bra!nz", "Zombie eats brains"),
         ("harmanz bah", "Humans are bad"),
         ("harman bah", "Human is bad"),
+        ("zambah n!z", "Zombie is nice"),
+        ("zambah !z n!z", "Zombie is nice"),
     ],
 
     "conjunctions": [
@@ -185,48 +200,56 @@ TEST_GROUPS = {
 
     "unknown_words": [
         ("zambahz flargh bra!nz", "Zombies [flargh] brains"),
+        ("gab flargh ahz", "Speak [flargh] us"),
+        ("flargh zambah", "[flargh] zombie"),
+        ("zambah flargh harman", "Zombie [flargh] human"),
     ],
 
     "edge_cases": [
         ("", ""),
         ("nah", "Do not"),
         ("bra!nz", "Brains"),
+        ("   ", ""),
     ],
 
     "duplicate_grammar_triggers": [
-        ("zambah !z bah", "Zombie is bad"),          # no double copula
-        ("zambahz !z bah", "Zombies are bad"),       # explicit copula + plural normalization
-        ("mah zambah gonna barg bra!nz", "I am going to eat brains"),  # no missing "am"
+        ("zambah !z bah", "Zombie is bad"),
+        ("zambahz !z bah", "Zombies are bad"),
+        ("mah zambah ganna barg bra!nz", "I am going to eat brains"),
     ],
 
     "preposition_and_article_collisions": [
         ("g!b bra!nz zaa harman", "Give brains to a human"),
         ("g!b bra!nz zaa zah harman", "Give brains to the human"),
-        ("gaam zaa mah", "Come to me"),              # no "to I"
+        ("gaam zaa mah", "Come to me"),
+        ("!hn z!z bagbarn", "In this hospital"),
+        ("!nz!hz !h", "Inside it"),
+        ("zah bra!n !nz!hz !h", "The brain inside it"),
+        ("!hn haarh", "In here"),
+        ("m!z gh!!z", "With cheese"),
     ],
 
     "auxiliary_collisions": [
         ("mah zambah maz hab bra!nz", "I must have brains"),
         ("mah zambah gan barg bra!nz", "I will eat brains"),
-        ("mah zambah haz barg bra!nz", "I have eat brains"),  # useful as a current-behavior lock if parser is imperfect
+        ("mah zambah haz barg bra!nz", "I have eat brains"),
+        ("maz hab b!!n", "Must have been"),
+        ("maz b!h bra!nz", "Must be brains"),
+        ("ganna b!!h z!g", "Going to be sick"),
+        ("maz barg", "Must eat"),
     ],
 
     "copula_vs_lexical_is": [
-        ("zambah n!z", "Zombie is nice"),
-        ("zambah !z n!z", "Zombie is nice"),
-        ("zambah !z !z", "Zombie is is"),            # ugly, but good to expose weird dictionary interactions
-    ],
-
-    "unknown_word_mixed_with_known": [
-        ("gab flargh ahz", "Speak [flargh] us"),
-        ("flargh zambah", "[flargh] zombie"),
-        ("zambah flargh harman", "Zombie [flargh] human"),
+        ("zambah !z !z", "Zombie is is"),
+        ("!z n!ghma!!r", "Is nightmare"),
     ],
 
     "punctuation_and_case": [
         ("HARRAH!", "Hello"),
         ("G!B BRA!NZ!", "Give brains"),
         ("nah G!B BRA!NZ!", "Do not give brains"),
+        ("HARRA!H.", "Hooray"),
+        ("!Z N!GHMA!!R!", "Is nightmare"),
     ],
 
     "repeated_words": [
@@ -235,29 +258,106 @@ TEST_GROUPS = {
         ("nah nah nah g!b bra!nz", "Do not do not do not give brains"),
     ],
 
-    "plural_normalization_edges": [
-        ("harmanz", "Humans"),
-        ("zambahz", "Zombies"),
-        ("gahz", "Yous"),   # useful if this breaks incorrectly; catches over-eager plural stripping
+    "infinitives_and_time": [
+        ("n!z zah z!!h gah", "Nice to see you"),
+        ("n!z zah barg", "Nice to eat"),
+        ("n!z zah b!!h zambah", "Nice to be zombie"),
+        ("aga!n", "Again"),
+        ("zan mah gang", "Then my group"),
+        ("n!gh", "Night"),
+        ("n!z z!z n!gh", "Nice this night"),
+        ("hrarrz", "First"),
+        ("naa h!aar", "New year"),
+        ("habbah naa h!aar", "Happy new year"),
     ],
 
-    "empty_and_whitespace": [
-        ("", ""),
-        ("   ", ""),
+    "abstracts_and_descriptors": [
+        ("zagh brh!ghnazz", "Such brightness"),
+        ("aggz!hzaz", "Excited"),
+        ("!nnarazz!ng am!narz", "Interesting animals"),
+        ("azbazharrh!h", "Especially"),
+        ("an!maarh", "Anymore"),
+        ("z!rr!h", "Silly"),
+        ("harrabarh", "Horrible"),
+        ("barrah hangrah", "Very hungry"),
+        ("rabbrh!h zanza!h", "Lovely Sunday"),
     ],
 
-    "long_sentences": [
-        (
-            "mah zambah maz barg bra!nz an zmazh harman",
-            "I must eat brains and smash a human"
-        ),
-        (
-            "nah g!b bra!nz arh zambahz zmazh gaa an harman ran nahaarh",
-            "Do not give brains or zombies smash you and a human goes away"
-        ),
+    "body_and_spatial": [
+        ("marrz", "Melt"),
+        ("maaz", "Mouth"),
+        ("graaz", "Claws"),
+        ("!hn gaarh maaz", "In your mouth"),
+        ("zah bra!n !nz!hz !h", "The brain inside it"),
+        ("zaa", "Too"),
+        ("bra!nbag", "Hat"),
+    ],
+
+    "food_and_consumption": [
+        ("barbagah zarz", "Barbecue sauce"),
+        ("banz!barh hrh!!z", "Bountiful feast"),
+        ("abah zah ganzaam", "About to consume"),
+        ("rh!bz", "Ribs"),
+        ("g!argh!h", "Jerky"),
+        ("brh!!z", "Please"),
+    ],
+
+    "sensory_and_emotion": [
+        ("zmarrz", "Smell"),
+        ("zz!ng!h", "Stinky"),
+        ("agh", "Ick"),
+        ("ranz!z", "Rancid"),
+        ("z!g", "Sick"),
+        ("n!ghma!!r", "Nightmare"),
+        ("zangz", "Thanks"),
+        ("zang", "Thank you"),
+    ],
+
+    "location_emergency_and_reassurance": [
+        ("za!rh", "There"),
+        ("hr!rh!", "Fire"),
+        ("hrh!ghz", "Fight"),
+        ("za!g gaah ga!rh", "Take good care"),
+        ("ahb", "Of"),
+        ("zga!rz", "Worry"),
+        ("zrazz ahz", "Trust us"),
+        ("r!!rh!h", "Really"),
+        ("ahmahgah", "Oh my god"),
+    ],
+
+    "shopping_and_commands": [
+        ("zhabbarz", "Shoppers"),
+        ("zhabb!ng", "Shopping"),
+        ("barga!nz", "Bargains"),
+        ("zhabb!ng hrarh barga!nz", "Shopping for bargains"),
+        ("azzahm", "Assume"),
+        ("bazz!zh!an", "Position"),
+        ("azzahm zah bazz!zh!an", "Assume the position"),
+        ("bragg hrh!hza!h", "Black Friday"),
+    ],
+
+    "animals_and_places": [
+        ("manah am!narz", "Many animals"),
+        ("r!anz", "Lions"),
+        ("marmazaz", "Marmosets"),
+        ("z!garz", "Tigers"),
+        ("baarz", "Bears"),
+        ("arran", "Alone"),
+        ("bagbarn", "Hospital"),
+        ("agzbarn", "Firestation"),
+        ("abbarnaan", "Afternoon"),
+        ("zanza!h", "Sunday"),
+    ],
+
+    "possessives_and_social_phrases": [
+        ("gaarh", "Your"),
+        ("aarh", "Our"),
+        ("ba!h aarh razbagz", "Pay our respects"),
+        ("m!!nz", "Mean"),
+        ("gamman!an gabraz", "Communion goblets"),
+        ("zanzhah", "Dante"),
     ],
 }
-
 
 # ---------------------------
 # Test runner
