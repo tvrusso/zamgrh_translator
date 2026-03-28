@@ -32,6 +32,7 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
         ("fix_prepositions", fix_prepositions),
         ("insert_copula", insert_copula),
         ("insert_articles", insert_articles),
+        ("fix_am_progressive", fix_am_progressive),
         ("fix_verb_agreement", fix_verb_agreement),
     ]
 
@@ -40,11 +41,29 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
 
     for name, step in PIPELINE:
         words = step(words, lookup, eng_lookup)
-
         if debug:
-            print(f"[{name:<14}] {' '.join(words)}")
+            print(f"[{name:<16}] {' '.join(words)}")
 
     return words
+
+def fix_am_progressive(words, lookup, eng_lookup):
+    result = []
+    i = 0
+
+    while i < len(words):
+        w = words[i]
+
+        if w == "I" and i + 2 < len(words):
+            if words[i + 1] == "going" and words[i + 2] == "to":
+                result.append("I")
+                result.append("am")
+                i += 1
+                continue
+
+        result.append(w)
+        i += 1
+
+    return result
 
 def resolve_hab_ambiguity(words, lookup, eng_lookup):
     result = []
@@ -155,40 +174,50 @@ def fix_verb_agreement(words, lookup, eng_lookup):
     for i, w in enumerate(words):
         pos = get_pos(w, lookup, eng_lookup)
 
-        if "verb" in pos:
+        if "verb" in pos or "aux" in pos:
             if i > 0:
                 prev = result[-1]
                 prev_pos = get_pos(prev, lookup, eng_lookup)
 
-                # --- NEW: detect imperative (vocative + verb)
                 is_sentence_start = (i == 1)
                 is_prev_noun = "noun" in prev_pos
 
-                if is_sentence_start and is_prev_noun:
-                    # treat as imperative → do NOT change verb
+                # repeated bare verbs: "eat eat eat"
+                if "verb" in prev_pos or "aux" in prev_pos:
+                    result.append(w)
+                    continue
+
+                # vocative + imperative, e.g. "Nurse give serum"
+                if is_sentence_start and is_prev_noun and w not in {"is", "are", "am"}:
                     result.append(w)
                     continue
 
                 is_subject_noun = "noun" in prev_pos
-                is_pronoun = prev in {"I", "you", "we", "they"}
-                is_third_person = is_subject_noun and not prev.endswith("s")
+                is_plural_subject = prev.endswith("s") or prev in {"you", "we", "they"}
+                is_singular_subject = is_subject_noun and not prev.endswith("s")
 
-                # check for auxiliaries
                 if i > 1:
                     prev2 = result[-2]
                     prev2_pos = get_pos(prev2, lookup, eng_lookup)
                 else:
-                    prev2 = None
                     prev2_pos = set()
 
-                has_aux = (
-                    ("aux" in prev2_pos) or
-                    prev in {"must", "will", "can", "should"}
-                )
+                has_aux = ("aux" in prev2_pos) or prev in {"must", "will", "can", "should"}
+
+                # special-case copula
+                if w in {"is", "are", "am"}:
+                    if prev == "I":
+                        w = "am"
+                    elif is_plural_subject:
+                        w = "are"
+                    else:
+                        w = "is"
+
+                    result.append(w)
+                    continue
 
                 if not has_aux:
-                    # --- CASE 1: 3rd person singular → ADD "s"
-                    if is_third_person:
+                    if is_singular_subject:
                         if not w.endswith("s"):
                             if w.endswith("y"):
                                 w = w[:-1] + "ies"
@@ -196,17 +225,17 @@ def fix_verb_agreement(words, lookup, eng_lookup):
                                 w = w + "es"
                             else:
                                 w = w + "s"
-
-                    # --- CASE 2: NOT 3rd person → REMOVE "s"
                     else:
-                        if w.endswith("s"):
-                            # simple rollback rules
-                            if w.endswith("ies"):
-                                w = w[:-3] + "y"
-                            elif w.endswith("es"):
-                                w = w[:-2]
-                            else:
-                                w = w[:-1]
+                        if w.endswith("ies"):
+                            w = w[:-3] + "y"
+                        elif (
+                            w.endswith("es")
+                            and len(w) > 2
+                            and w[:-2].endswith(("s", "sh", "ch", "x", "z", "o"))
+                        ):
+                            w = w[:-2]
+                        elif w.endswith("s") and w not in {"is"}:
+                            w = w[:-1]
 
         result.append(w)
 
@@ -243,7 +272,7 @@ def get_pos(word, lookup, eng_lookup):
 def insert_articles(words, lookup, eng_lookup):
     result = []
     seen_verb = False
-    consumed_object = False  # NEW
+    consumed_object = False
 
     for i, w in enumerate(words):
         pos = get_pos(w, lookup, eng_lookup)
@@ -253,9 +282,17 @@ def insert_articles(words, lookup, eng_lookup):
 
         if is_verb:
             seen_verb = True
-            consumed_object = False  # reset for new verb
+            consumed_object = False
 
-        if is_noun and not is_verb and seen_verb and not consumed_object:
+        should_article_after_to = (
+            is_noun
+            and i > 0
+            and result[-1] == "to"
+            and not is_verb            
+            and not w.endswith("s")
+        )
+
+        if (is_noun and not is_verb and seen_verb and not consumed_object) or should_article_after_to:
             is_plural = w.endswith("s")
 
             if not is_plural:
@@ -267,15 +304,16 @@ def insert_articles(words, lookup, eng_lookup):
                         consumed_object = True
                         continue
 
-                    if prev in {"to"}:
+                    # don't insert article before verbs after "to"
+                    if prev == "to" and not is_noun:
                         result.append(w)
                         consumed_object = True
                         continue
 
-                article = "an" if w[0] in "aeiou" else "a"
+                article = "an" if w[0].lower() in "aeiou" else "a"
                 result.append(article)
 
-            consumed_object = True  # ✅ only first noun gets article
+            consumed_object = True
 
         result.append(w)
 
@@ -469,10 +507,24 @@ def main():
     data = load_dictionary()
     lookup = build_lookup(data)
     eng_lookup = build_english_pos_lookup(data)
+
     while True:
-        text = input("Zamgrh> ")
-        if text == "quit":
+        try:
+            text = input("Zamgrh> ")
+        except EOFError:
+            print("\nExiting translator.")
             break
+        except KeyboardInterrupt:
+            print("\nExiting translator.")
+            break
+
+        if not text.strip():
+            continue
+
+        if text.strip().lower() == "quit":
+            print("Exiting translator.")
+            break
+
         print(zamgrh_to_english(text, lookup, eng_lookup))
         print(zamgrh_to_structure(text, lookup))
 

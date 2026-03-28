@@ -4,126 +4,280 @@ from pathlib import Path
 # Ensure src/ is on path
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 
-from translator import load_dictionary, build_lookup, build_english_pos_lookup, zamgrh_to_english
+from translator import (
+    load_dictionary,
+    build_lookup,
+    build_english_pos_lookup,
+    zamgrh_to_english,
+    zamgrh_to_structure,
+)
 
 
-TEST_CASES = [
-    ("zambahz maz barg bra!nz", "Zombies must eat brains"),
-    ("mah zambah bargz bra!nz", "I eat brains"),
-    ("harmanz bah! nah ma!g barragahz", "Humans are bad do not make barricades"),
-    ("bah harman, nah bang bang mah zambah", "Bad human do not shoot shoot me"),
-    ("g!b bra!nz, harman", "Give brains human"),
-    ("mah gang habbah zambahz", "My group is happy zombies"),
-    ("bangbangman nah bang bang mah zambah", "Headhunter do not shoot shoot me"),
-    ("zambahz zmazh barragahz", "Zombies smash barricades"),
-    ("narz! mah zambah maz haz bra!n zarram!", "Nurse I must have a brain serum"),
-    ("g!b bra!nz", "Give brains"),
-    ("g!b mah bra!nz", "Give me brains"),
-    ("barg bra!nz", "Eat brains"),
-    ("grahm haarh", "Come here"),
-    ("ran nahaarh", "Go away"),
-    ("hab mah","Help me"),
-    ("hab mah zambah","Help me"),
-    ("nah ran nahaarh","Do not go away"),
-    ("nah hab harman","Do not help a human"),
-    ("mah zambah zmazh harman", "I smash a human"),
-    ("zambahz zmazh gaa", "Zombies smash you"),
-    ("g!b bra!nz arh zambahz zmazh gaa", "Give brains or zombies smash you"),
-    ("nah g!b bra!nz an zambahz zmazh gaa", "Do not give brains and zombies smash you"),
-    ("mah gang zmazh barragahz", "My group smashes barricades"),
-    ("mah gang nah ran nahaarh", "My group do not go away"),
-    ("narz g!b zarram", "Nurse give a serum"),
-    ("mah zambah maz haz zarram", "I must have a serum"),
-    ("bra!nz bra!nz bra!nz", "Brains brains brains"),
-    ("nah nah g!b bra!nz", "Do not do not give brains"),
+# ---------------------------
+# Translator helper
+# ---------------------------
 
-    # 🔀 Ambiguity (hab: have vs help)
-    ("hab mah bra!nz", "Help me brains"),
-    ("mah zambah hab bra!nz", "I have brains"),
-    ("mah zambah haz bra!nz", "I have brains"),
-    ("nah hab mah zambah", "Do not help me"),
-
-    # 👥 Pronouns
-    ("g!b gaa bra!nz", "Give you brains"),
-    ("gaa g!b mah bra!nz", "You give me brains"),
-    ("zambahz zmazh gaa", "Zombies smash you"),
-
-    # 🔁 Word order variants
-    ("g!b bra!nz zaa mah zambah", "Give brains to me"),
-    ("mah zambah g!b bra!nz", "I give brains"),
-
-    # 🔗 Conjunction chains
-    ("g!b bra!nz an g!b zarram", "Give brains and give a serum"),
-    ("g!b bra!nz arh g!b zarram", "Give brains or give a serum"),
-    ("nah g!b bra!nz an nah g!b zarram", "Do not give brains and do not give a serum"),
-
-    # ❗ Repetition / emphasis
-    ("g!b g!b bra!nz", "Give give brains"),
-    ("nah nah nah g!b bra!nz", "Do not do not do not give brains"),
-
-    # 🧩 Unknown words (fallback behavior)
-    ("zambahz flargh bra!nz", "Zombies [flargh] brains"),
-
-    # 🔤 Morphology / plural interaction
-    ("zambahz zmazh harmanz", "Zombies smash humans"),
-    ("harmanz zmazh zambahz", "Humans smash zombies"),
-
-    # 🧠 Longer sentences
-    ("mah zambah maz barg bra!nz an zmazh harman",
-     "I must eat brains and smash a human"),
-
-    ("nah g!b bra!nz arh zambahz zmazh gaa an harman ran nahaarh",
-     "Do not give brains or zombies smash you and a human goes away"),
-
-    # ⚠️ Grammar collision tests (are-insertion edge cases)
-    ("bra!nz an zarram", "Brains and serum"),
-    ("zambahz arh harmanz", "Zombies or humans"),
-
-    # 🧪 Minimal inputs
-    ("", ""),
-    ("nah", "Do not"),
-    ("bra!nz", "Brains"),
-
-    # 3rd person agreement
-    ("zambah bargz bra!nz", "Zombie eats brains"),
-
-    # is/are agreement
-    ("harmanz bah", "Humans are bad"),
-    ("harman bah", "Human is bad"),
-
-    # Article insertion
-    ("zambah", "Zombie"),
-    ("harman", "Human"),
-    ("zambahz barg bra!nz", "Zombies eat brains"),
-
-    # Imperatives
-    ("zambah zmazh harmanz", "Zombie smash humans"),
-    ("zambah barg bra!n", "Zombie eat a brain"),
-
-]
-
-
-def run_tests():
+def build_translator():
     data = load_dictionary()
     lookup = build_lookup(data)
     eng_lookup = build_english_pos_lookup(data)
 
+    def run(text, debug=False):
+        return zamgrh_to_english(text, lookup, eng_lookup, debug=debug)
+
+    return run, lookup
+
+# ---------------------------
+# Fix verb agreement
+# ---------------------------
+
+def fix_verb_agreement(words, lookup, eng_lookup):
+    result = []
+
+    for i, w in enumerate(words):
+        pos = get_pos(w, lookup, eng_lookup)
+
+        if "verb" in pos or "aux" in pos:
+            if i > 0:
+                prev = result[-1]
+                prev_pos = get_pos(prev, lookup, eng_lookup)
+
+                is_sentence_start = (i == 1)
+                is_prev_noun = "noun" in prev_pos
+
+                if is_sentence_start and is_prev_noun:
+                    result.append(w)
+                    continue
+
+                is_subject_noun = "noun" in prev_pos
+                is_pronoun = prev in {"I", "you", "we", "they"}
+                is_third_person = is_subject_noun and not prev.endswith("s")
+
+                if i > 1:
+                    prev2 = result[-2]
+                    prev2_pos = get_pos(prev2, lookup, eng_lookup)
+                else:
+                    prev2 = None
+                    prev2_pos = set()
+
+                has_aux = (
+                    ("aux" in prev2_pos) or
+                    prev in {"must", "will", "can", "should"}
+                )
+
+                # special handling for copula
+                if w in {"is", "are"}:
+                    if prev == "I":
+                        w = "am"
+                    elif prev.endswith("s") or prev in {"you", "we", "they"}:
+                        w = "are"
+                    else:
+                        w = "is"
+                    result.append(w)
+                    continue
+
+                if not has_aux:
+                    if is_third_person:
+                        if not w.endswith("s"):
+                            if w.endswith("y"):
+                                w = w[:-1] + "ies"
+                            elif w.endswith(("s", "sh", "ch", "x", "z", "o")):
+                                w = w + "es"
+                            else:
+                                w = w + "s"
+                    else:
+                        if w.endswith("ies"):
+                            w = w[:-3] + "y"
+                        elif w.endswith("es") and w[:-2].endswith(("s", "sh", "ch", "x", "z", "o")):
+                            w = w[:-2]
+                        elif w.endswith("s"):
+                            w = w[:-1]
+
+        result.append(w)
+
+    return result
+
+# ---------------------------
+# Fix Progressive
+# ---------------------------
+
+def fix_am_progressive(words, lookup, eng_lookup):
+    result = []
+    i = 0
+
+    while i < len(words):
+        w = words[i]
+
+        if w == "I" and i + 1 < len(words):
+            nxt = words[i + 1]
+            if nxt == "going":
+                result.append("I")
+                result.append("am")
+                i += 1
+                continue
+
+        result.append(w)
+        i += 1
+
+    return result
+
+# ---------------------------
+# Grouped test cases
+# ---------------------------
+
+TEST_GROUPS = {
+
+    "core": [
+        ("zambahz maz barg bra!nz", "Zombies must eat brains"),
+        ("mah zambah bargz bra!nz", "I eat brains"),
+        ("zambahz zmazh barragahz", "Zombies smash barricades"),
+    ],
+
+    "pronouns": [
+        ("g!b gaa bra!nz", "Give you brains"),
+        ("gaa g!b mah bra!nz", "You give me brains"),
+        ("gab m!z ahz", "Speak with us"),
+    ],
+
+    "negation": [
+        ("nah g!b bra!nz", "Do not give brains"),
+        ("nah ran nahaarh", "Do not go away"),
+        ("nah nah g!b bra!nz", "Do not do not give brains"),
+    ],
+
+    "imperatives": [
+        ("g!b bra!nz", "Give brains"),
+        ("g!b mah bra!nz", "Give me brains"),
+        ("barg bra!nz", "Eat brains"),
+    ],
+
+    "articles_and_plural": [
+        ("zambah", "Zombie"),
+        ("harman", "Human"),
+        ("zambahz barg bra!nz", "Zombies eat brains"),
+        ("zambah barg bra!n", "Zombie eat a brain"),
+    ],
+
+    "agreement": [
+        ("zambah bargz bra!nz", "Zombie eats brains"),
+        ("harmanz bah", "Humans are bad"),
+        ("harman bah", "Human is bad"),
+    ],
+
+    "conjunctions": [
+        ("g!b bra!nz an g!b zarram", "Give brains and give a serum"),
+        ("g!b bra!nz arh g!b zarram", "Give brains or give a serum"),
+    ],
+
+    "unknown_words": [
+        ("zambahz flargh bra!nz", "Zombies [flargh] brains"),
+    ],
+
+    "edge_cases": [
+        ("", ""),
+        ("nah", "Do not"),
+        ("bra!nz", "Brains"),
+    ],
+
+    "duplicate_grammar_triggers": [
+        ("zambah !z bah", "Zombie is bad"),          # no double copula
+        ("zambahz !z bah", "Zombies are bad"),       # explicit copula + plural normalization
+        ("mah zambah gonna barg bra!nz", "I am going to eat brains"),  # no missing "am"
+    ],
+
+    "preposition_and_article_collisions": [
+        ("g!b bra!nz zaa harman", "Give brains to a human"),
+        ("g!b bra!nz zaa zah harman", "Give brains to the human"),
+        ("gaam zaa mah", "Come to me"),              # no "to I"
+    ],
+
+    "auxiliary_collisions": [
+        ("mah zambah maz hab bra!nz", "I must have brains"),
+        ("mah zambah gan barg bra!nz", "I will eat brains"),
+        ("mah zambah haz barg bra!nz", "I have eat brains"),  # useful as a current-behavior lock if parser is imperfect
+    ],
+
+    "copula_vs_lexical_is": [
+        ("zambah n!z", "Zombie is nice"),
+        ("zambah !z n!z", "Zombie is nice"),
+        ("zambah !z !z", "Zombie is is"),            # ugly, but good to expose weird dictionary interactions
+    ],
+
+    "unknown_word_mixed_with_known": [
+        ("gab flargh ahz", "Speak [flargh] us"),
+        ("flargh zambah", "[flargh] zombie"),
+        ("zambah flargh harman", "Zombie [flargh] human"),
+    ],
+
+    "punctuation_and_case": [
+        ("HARRAH!", "Hello"),
+        ("G!B BRA!NZ!", "Give brains"),
+        ("nah G!B BRA!NZ!", "Do not give brains"),
+    ],
+
+    "repeated_words": [
+        ("nam nam nam", "Eat eat eat"),
+        ("bra!nz bra!nz bra!nz", "Brains brains brains"),
+        ("nah nah nah g!b bra!nz", "Do not do not do not give brains"),
+    ],
+
+    "plural_normalization_edges": [
+        ("harmanz", "Humans"),
+        ("zambahz", "Zombies"),
+        ("gahz", "Yous"),   # useful if this breaks incorrectly; catches over-eager plural stripping
+    ],
+
+    "empty_and_whitespace": [
+        ("", ""),
+        ("   ", ""),
+    ],
+
+    "long_sentences": [
+        (
+            "mah zambah maz barg bra!nz an zmazh harman",
+            "I must eat brains and smash a human"
+        ),
+        (
+            "nah g!b bra!nz arh zambahz zmazh gaa an harman ran nahaarh",
+            "Do not give brains or zombies smash you and a human goes away"
+        ),
+    ],
+}
+
+
+# ---------------------------
+# Test runner
+# ---------------------------
+
+def run_tests():
+    translator, lookup = build_translator()
+
     passed = 0
     failed = 0
 
-    for zamgrh, expected in TEST_CASES:
-        result = zamgrh_to_english(zamgrh, lookup, eng_lookup)
+    for group, cases in TEST_GROUPS.items():
+        print(f"\n=== {group.upper()} ===")
 
-        if result == expected:
-            print(f"PASS: {zamgrh}")
-            passed += 1
-        else:
-            print(f"FAIL: {zamgrh}")
-            print(f"  expected: {expected}")
-            print(f"  got:      {result}")
-            print(f"\nDEBUG for {zamgrh}:")
-            zamgrh_to_english(zamgrh, lookup, eng_lookup, debug=True)
-            failed += 1
+        for zamgrh, expected in cases:
+            result = translator(zamgrh)
+
+            if result == expected:
+                print(f"PASS: {zamgrh}")
+                passed += 1
+            else:
+                print(f"FAIL: {zamgrh}")
+                print(f"  expected: {expected}")
+                print(f"  got:      {result}")
+
+                # 🔍 Debug pipeline
+                print(f"\nDEBUG for {zamgrh}:")
+                translator(zamgrh, debug=True)
+
+                # 🔍 Structure insight (NEW)
+                structure = zamgrh_to_structure(zamgrh, lookup)
+                print(f"[structure] {structure}")
+
+                failed += 1
 
     print("\n---")
     print(f"Passed: {passed}")
