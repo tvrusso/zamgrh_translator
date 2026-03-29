@@ -4,12 +4,15 @@ from pathlib import Path
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "zamgrh_dictionary.json"
 
+
 def load_dictionary():
     with open(DATA_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
 
+
 def build_lookup(data):
     return {entry["word"]: entry for entry in data}
+
 
 def build_english_pos_lookup(data):
     eng_lookup = {}
@@ -19,6 +22,20 @@ def build_english_pos_lookup(data):
             gloss = e["gloss"]
             eng_lookup.setdefault(gloss, set()).update(pos)
     return eng_lookup
+
+
+AUX_WORDS = {"must", "will", "can", "should", "have", "has", "had", "am", "is", "are", "do", "does"}
+SUBJECT_PRONOUNS = {"he", "she", "it"}
+NON_THIRD_PERSON_PRONOUNS = {"I", "you", "we", "they"}
+VERB_LIKE_WORDS = {"eat", "give", "go", "smash", "speak", "come", "run", "have", "is", "are", "am"}
+DETERMINERS = {"a", "an", "the", "my", "your", "his", "her", "our", "their"}
+
+COLLAPSIBLE_WORDS = {
+    "must", "will", "can", "should", "have",
+    "is", "are", "am",
+    "the", "a", "an",
+}
+
 
 # translation pipeline
 def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
@@ -43,13 +60,13 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
     for name, step in PIPELINE:
         words = step(words, lookup, eng_lookup)
         if debug:
-            print(f"[{name:<16}] {' '.join(words)}")
+            print(f"[{name:<24}] {' '.join(words)}")
 
     return words
 
+
 def question_postprocess(text, structure, original_text):
     stripped = original_text.strip()
-
     if not stripped.endswith("?"):
         return text
 
@@ -57,7 +74,6 @@ def question_postprocess(text, structure, original_text):
     if not words:
         return text
 
-    # existential question: "is there ..."
     if len(words) >= 3 and words[0].lower() == "is" and "there" in words:
         return " ".join(words[:-1]) + ("?" if not text.endswith("?") else "")
 
@@ -65,7 +81,6 @@ def question_postprocess(text, structure, original_text):
     verb = structure.get("verb")
     obj = structure.get("object")
 
-    # simple yes/no question: "Zombie eats brains" -> "Does the zombie eat brains?"
     if subject and verb:
         subject_text = f"the {subject}" if not subject.endswith("s") else f"the {subject}"
         if subject.endswith("s"):
@@ -74,24 +89,22 @@ def question_postprocess(text, structure, original_text):
 
     return text if text.endswith("?") else text + "?"
 
+
 def fix_am_progressive(words, lookup, eng_lookup):
     result = []
     i = 0
-
     while i < len(words):
         w = words[i]
-
         if w == "I" and i + 2 < len(words):
             if words[i + 1] == "going" and words[i + 2] == "to":
                 result.append("I")
                 result.append("am")
                 i += 1
                 continue
-
         result.append(w)
         i += 1
-
     return result
+
 
 def resolve_hab_ambiguity(words, lookup, eng_lookup):
     result = []
@@ -99,15 +112,11 @@ def resolve_hab_ambiguity(words, lookup, eng_lookup):
     while i < len(words):
         w = words[i]
 
-        # default = help → upgrade to "have" in possession contexts
         if w == "help":
-            # patterns like: "I help brains" → "I have brains"
             if i > 0 and words[i - 1] in {"I", "zombie"}:
                 result.append("have")
                 i += 1
                 continue
-
-            # "must help" → "must have"
             if i > 0 and words[i - 1] == "must":
                 result.append("have")
                 i += 1
@@ -115,48 +124,42 @@ def resolve_hab_ambiguity(words, lookup, eng_lookup):
 
         result.append(w)
         i += 1
-
     return result
+
 
 def simplify_subject(words, lookup, eng_lookup):
     result = []
     i = 0
-
     while i < len(words):
         if i > 0 and words[i] == "zombie" and words[i - 1] == "I":
             i += 1
             continue
-
         result.append(words[i])
         i += 1
-
     return result
+
 
 def fix_possession(words, lookup, eng_lookup):
     result = []
-
     for i, w in enumerate(words):
         if w == "I" and i + 1 < len(words):
             if words[i + 1] in {"group", "gang"}:
                 result.append("my")
                 continue
-
         result.append(w)
-
     return result
 
+
 def fix_object_pronouns(words, lookup, eng_lookup):
-    VERBS = {"give", "help", "shoot", "eat", "smash", "have"}
-
+    verbs = {"give", "help", "shoot", "eat", "smash", "have"}
     result = []
-
     for i, w in enumerate(words):
-        if w == "I" and i > 0 and words[i - 1] in VERBS:
+        if w == "I" and i > 0 and words[i - 1] in verbs:
             result.append("me")
         else:
             result.append(w)
-
     return result
+
 
 def insert_copula(words, lookup, eng_lookup):
     result = []
@@ -164,20 +167,17 @@ def insert_copula(words, lookup, eng_lookup):
 
     for i, w in enumerate(words):
         pos = get_pos(w, lookup, eng_lookup)
-
         if "verb" in pos or "aux" in pos:
             seen_verb = True
 
         if i > 0:
             prev = result[-1]
             prev_pos = get_pos(prev, lookup, eng_lookup)
-
             is_noun = "noun" in prev_pos
             is_adj = "adj" in pos
             is_unknown = w.startswith("[")
 
             if not seen_verb and is_noun and is_adj and not is_unknown:
-                # decide is vs are
                 if prev.endswith("s"):
                     result.append("are")
                 else:
@@ -186,6 +186,7 @@ def insert_copula(words, lookup, eng_lookup):
         result.append(w)
 
     return result
+
 
 def fix_prepositions(words, lookup, eng_lookup):
     result = []
@@ -196,10 +197,6 @@ def fix_prepositions(words, lookup, eng_lookup):
             result.append(w)
     return result
 
-AUX_WORDS = {"must", "will", "can", "should", "have", "has", "had"}
-
-SUBJECT_PRONOUNS = {"he", "she", "it"}
-NON_THIRD_PERSON_PRONOUNS = {"I", "you", "we", "they"}
 
 def fix_verb_agreement(words, lookup, eng_lookup):
     result = []
@@ -281,26 +278,44 @@ def fix_verb_agreement(words, lookup, eng_lookup):
 
     return result
 
-COLLAPSIBLE_WORDS = {
-    "must", "will", "can", "should", "have",
-    "is", "are", "am",
-    "the", "a", "an",
-}
 
 def dedupe_function_words(words, lookup, eng_lookup):
     result = []
     prev = None
-
     for w in words:
         if w == prev and w in COLLAPSIBLE_WORDS:
             continue
         result.append(w)
         prev = w
-
     return result
+
+
+def normalize_morphology(word, lookup):
+    if word in lookup:
+        return word, {}
+
+    if word.endswith("z") and len(word) > 1:
+        base = word[:-1]
+        entry = lookup.get(base)
+
+        if entry:
+            pos = set(entry.get("pos", []))
+
+            if "noun" in pos:
+                return base, {"number": "plural", "pos_family": "noun"}
+
+            if "pron" in pos:
+                return base, {"number": "plural", "pos_family": "pron"}
+
+            return base, {}
+
+    return word, {}
 
 # Helpers for dictionary-driven POS logic
 def get_pos(word, lookup, eng_lookup):
+    if not word:
+        return set()
+
     word = word.lower()
 
     # 1. direct zamgrh lookup
@@ -312,25 +327,21 @@ def get_pos(word, lookup, eng_lookup):
     if word in eng_lookup:
         return eng_lookup[word]
 
-    # 3. plural fallback
+    # 3. english plural fallback
     if word.endswith("s"):
         base = word[:-1]
-
-        # try english lookup
         if base in eng_lookup:
             return eng_lookup[base]
 
-        # ALSO try zamgrh reverse mapping
+    # 4. morphology fallback for zamgrh
+    base, _features = normalize_morphology(word, lookup)
+    if base != word:
         entry = lookup.get(base)
         if entry:
             return set(entry.get("pos", []))
 
     return set()
 
-AUX_WORDS = {"must", "will", "can", "should", "have", "has", "had", "am", "is", "are", "do", "does"}
-VERB_LIKE_WORDS = {"eat", "give", "go", "smash", "speak", "come", "run", "have", "is", "are", "am"}
-
-DETERMINERS = {"a", "an", "the", "my", "your", "his", "her", "our", "their"}
 
 def insert_articles(words, lookup, eng_lookup):
     result = []
@@ -339,7 +350,6 @@ def insert_articles(words, lookup, eng_lookup):
 
     for i, w in enumerate(words):
         pos = get_pos(w, lookup, eng_lookup)
-
         is_noun = "noun" in pos
         is_verb = "verb" in pos or "aux" in pos
         is_pure_noun = is_noun and not is_verb and w not in AUX_WORDS and w not in VERB_LIKE_WORDS
@@ -383,15 +393,12 @@ def insert_articles(words, lookup, eng_lookup):
 
     return result
 
-AUX_WORDS = {"must", "will", "can", "should", "have", "has", "had", "am", "is", "are", "do", "does"}
-VERB_LIKE_WORDS = {"eat", "give", "go", "smash", "speak", "come", "have", "run", "is", "are", "am"}
 
 def fix_determiners(words, lookup, eng_lookup):
     result = []
 
     for i, w in enumerate(words):
         if w == "I":
-            prev = words[i - 1] if i > 0 else None
             nxt = words[i + 1] if i + 1 < len(words) else None
             nxt2 = words[i + 2] if i + 2 < len(words) else None
 
@@ -429,6 +436,8 @@ def fix_determiners(words, lookup, eng_lookup):
         result.append(w)
 
     return result
+
+
 def collapse_repeated_pronouns(words, lookup, eng_lookup):
     result = []
     prev = None
@@ -439,48 +448,26 @@ def collapse_repeated_pronouns(words, lookup, eng_lookup):
         prev = w
     return result
 
-# --- NEW: normalization helpers ---
 
+# --- normalization helpers ---
 def clean(word):
     word = word.lower()
-
     # remove leading punctuation (keep ! if internal)
-    word = re.sub(r'^[^\w!]+', '', word)
-
+    word = re.sub(r"^[^\w!]+", "", word)
     # remove trailing punctuation INCLUDING !
-    word = re.sub(r'[^\w]+$', '', word)
-
+    word = re.sub(r"[^\w]+$", "", word)
     return word
 
-def normalize(word, lookup):
-    """
-    Normalize simple morphology:
-    - Only strip plural 'z' if the base word exists in dictionary
-    """
-    if word.endswith("z") and len(word) > 1:
-        base = word[:-1]
-        if base in lookup:
-            return base, "plural"
-
-    return word, None
 
 def grammar_postprocess(text, debug=False):
-    COMMON_VERBS = {"eat", "eats", "make", "shoot", "have", "give", "smash", "must"}
-    COMMON_NOUNS = {
-        "human", "brains", "brain", "zombie", "group",
-        "barricades", "headhunter"
-    }
-    COMMON_CONJUNCTIONS = {"or", "and"}
-
     words = text.split()
-
     result = []
     i = 0
 
     while i < len(words):
         w = words[i]
 
-        # Rule: "not" → "do not"
+        # Rule: "not" -> "do not"
         if w == "not":
             result.append("do")
             result.append("not")
@@ -500,10 +487,9 @@ def grammar_postprocess(text, debug=False):
 
     return output
 
-# --- updated translator ---
+
 # NOTE: POS (including "conj") is currently not used in translation logic,
 # but is preserved for future grammar-layer improvements.
-
 def pick_gloss(entry, desired_pos=None):
     english = entry.get("english", [])
     if not english:
@@ -513,7 +499,6 @@ def pick_gloss(entry, desired_pos=None):
         return english[0]["gloss"]
 
     entry_pos = set(entry.get("pos", []))
-
     if desired_pos in entry_pos:
         for sense in english:
             gloss = sense.get("gloss")
@@ -521,6 +506,7 @@ def pick_gloss(entry, desired_pos=None):
                 return gloss
 
     return english[0]["gloss"]
+
 
 def infer_desired_pos(words, i, translated_out):
     if i == 0:
@@ -530,39 +516,36 @@ def infer_desired_pos(words, i, translated_out):
 
     if prev in {"i", "you", "we", "they", "he", "she"}:
         return "verb"
-
     if prev in {"the", "a", "an", "my", "your", "our", "their", "this", "that"}:
         return "noun"
-
     if prev in {"must", "will", "can", "should"}:
         return "verb"
-
     if len(translated_out) >= 2 and translated_out[-2:].copy() == ["going", "to"]:
         return "verb"
 
     return None
 
+def render_gloss_with_features(gloss, features, pos):
+    if features.get("number") == "plural":
+        if gloss == "you" and "pron" in pos:
+            return "yous"
+        return gloss + "s"
+    return gloss
+
 def zamgrh_to_english(text, lookup, eng_lookup, debug=False):
     is_question = text.strip().endswith("?")
-
     words = text.split()
     out = []
 
     for raw in words:
         w = clean(raw)
-
-        entry = lookup.get(w)
-        if entry:
-            base = w
-            modifier = None
-        else:
-            base, modifier = normalize(w, lookup)
-            entry = lookup.get(base)
+        base, features = normalize_morphology(w, lookup)
+        entry = lookup.get(base)
 
         if entry:
             gloss = entry["english"][0]["gloss"]
-            if modifier == "plural":
-                gloss = gloss + "s"
+            pos = set(entry.get("pos", []))
+            gloss = render_gloss_with_features(gloss, features, pos)
             out.append(gloss)
         else:
             out.append(f"[{raw}]")
@@ -582,7 +565,6 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=False):
 # does nothing with the structure yet
 def zamgrh_to_structure(text, lookup):
     words = text.split()
-
     structure = {
         "subject": None,
         "verb": None,
@@ -594,17 +576,10 @@ def zamgrh_to_structure(text, lookup):
 
     tokens = []
 
-    # --- normalize + map to base + POS ---
     for raw in words:
         w = clean(raw)
-
-        entry = lookup.get(w)
-        if entry:
-            base = w
-            modifier = None
-        else:
-            base, modifier = normalize(w, lookup)
-            entry = lookup.get(base)
+        base, features = normalize_morphology(w, lookup)
+        entry = lookup.get(base)
 
         if entry:
             gloss = entry["english"][0]["gloss"]
@@ -618,35 +593,30 @@ def zamgrh_to_structure(text, lookup):
             "word": gloss,
             "base": base,
             "pos": pos,
-            "modifier": modifier
+            "features": features,
         })
 
-    # --- detect negation ---
     for t in tokens:
         if t["base"] == "nah":
             structure["negated"] = True
 
-    # --- find verb (first verb) ---
     for t in tokens:
         if "verb" in t["pos"]:
             structure["verb"] = t["word"]
             break
 
-    # --- find subject (first noun before verb) ---
     for t in tokens:
         if t["word"] == structure["verb"]:
             break
         if "noun" in t["pos"]:
             structure["subject"] = t["word"]
-            if t["modifier"] == "plural" or t["word"].endswith("s"):
+            if t["features"].get("number") == "plural" or t["word"].endswith("s"):
                 structure["plural"] = True
             break
 
-    # --- detect imperative (no subject before verb) ---
     if structure["verb"] and not structure["subject"]:
         structure["imperative"] = True
 
-    # --- find object (first noun after verb) ---
     seen_verb = False
     for t in tokens:
         if t["word"] == structure["verb"]:
@@ -657,6 +627,7 @@ def zamgrh_to_structure(text, lookup):
             break
 
     return structure
+
 
 def main():
     data = load_dictionary()
@@ -682,6 +653,7 @@ def main():
 
         print(zamgrh_to_english(text, lookup, eng_lookup))
         print(zamgrh_to_structure(text, lookup))
+
 
 if __name__ == "__main__":
     main()

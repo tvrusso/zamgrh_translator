@@ -53,12 +53,51 @@ TEST_GROUPS = {
         ("harmanz", "Humans"),
         ("bra!n", "Brain"),
         ("bra!nz", "Brains"),
-        ("gahz", "Yous"),
         ("maz", "Must"),
         ("haz", "Have"),
+        ("gahz", "Yous"),
     ],
 
-"gloss_picker": [
+    "MORPHOLOGY_SENTENCES": [
+        ("zambahz barg bra!nz", "Zombies eat brains"),
+        ("harmanz barg bra!nz", "Humans eat brains"),
+        ("zambah barg bra!n", "Zombie eats a brain"),
+        ("harman barg bra!nz", "Human eats brains"),
+    ],
+
+    "MORPHOLOGY_GUARDRAILS": [
+        ("maz", "Must"),
+        ("haz", "Have"),
+        ("flarghz", "[flarghz]"),
+        ("zambahzz", "[zambahzz]"),
+        ("mazzz", "[mazzz]"),
+        ("hazzz", "[hazzz]"),
+        ("flarghz", "[flarghz]"),
+        ("zambahzz", "[zambahzz]"),
+    ],
+
+    "MORPHOLOGY_INTERACTIONS": [
+        ("zambahz maz barg bra!nz", "Zombies must eat brains"),
+        ("harmanz gan ran nahaarh", "Humans will go away"),
+        ("zambahz zmazh harmanz", "Zombies smash humans"),
+        ("gahz g!b mah bra!nz", "Yous give me brains"),
+        ("zambahz barg bra!nz", "Zombies eat brains"),
+        ("harmanz zmazh zambahz", "Humans smash zombies"),
+        ("gahz g!b mah bra!nz", "Yous give me brains"),
+        ("zambahz gan ran nahaarh", "Zombies will go away"),
+        ("mah zambah maz barg bra!nz", "I must eat brains"),
+        ("nah gahz g!b mah bra!nz", "Do not yous give me brains"),
+        ("zambahz !z bah", "Zombies are bad"),
+        ("gahz gan barg bra!nz", "Yous will eat brains"),
+    ],
+
+    "MORPHOLOGY_REPETITION": [
+        ("zambahz zambahz barg bra!nz", "Zombies zombies eat brains"),
+        ("gahz gahz g!b bra!nz", "Yous yous give brains"),
+        ("bra!nz bra!nz bra!nz", "Brains brains brains"),
+    ],
+
+    "gloss_picker": [
         ("mah zambah gan barg bra!nz", "I will eat brains"),
         ("mah gang", "My group"),
         ("g!b mah bra!nz", "Give me brains"),
