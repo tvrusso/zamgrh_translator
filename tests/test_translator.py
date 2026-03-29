@@ -163,8 +163,109 @@ TEST_GROUPS = {
             "Do not give brains or zombies smash you and a human goes away"
         ),
     ],
+
+   "normalization": [
+       ("bra!nz.", "Brains"),
+       ("BRA!NZ!", "Brains"),
+       ("zambah,", "Zombie"),
+       ("nah?", "Do not?"),
+   ],
+
+   "dictionary_integrity": [
+    ("zambah", "Zombie"),
+    ("barg", "Eat"),
+    ("bra!nz", "Brains"),
+   ],
+
+   "plural_and_lookup": [
+    ("zambahz", "Zombies"),
+    ("harmanz", "Humans"),
+   ],
+
+   "pos_disambiguation": [
+    ("barg", "Eat"),
+    # later: ambiguous words
+   ],
+
+   "stress_tests":  [
+    ("zambah maz maz barg bra!nz", "Zombie must eat brains"),
+    ("nah maz barg bra!nz", "Do not must eat brains"),
+    ("bra!nz maz barg", "Brains must eat"),  # weird structure
+   ],
+
+   "stress_pipeline_interactions": [
+       # AUX stacking chaos
+       ("mah zambah maz gan barg bra!nz", "I must will eat brains"),
+       ("mah zambah gan maz barg bra!nz", "I will must eat brains"),
+
+       # NEGATION + AUX conflicts
+       ("nah maz barg bra!nz", "Do not must eat brains"),
+       ("maz nah barg bra!nz", "Must do not eat brains"),
+
+       # PRONOUN + PREPOSITION collision
+       ("g!b gaa zaa mah", "Give you to me"),
+       ("gaa zaa gaa", "You to you"),
+
+       # ARTICLE stacking
+       ("za zah harman", "The human"),
+       ("zah za harman", "The human"),
+
+       # COPULA conflicts
+       ("zambah !z maz", "Zombie is must"),
+       ("zambah maz !z", "Zombie must is"),
+
+       # WORD ORDER chaos
+       ("bra!nz mah g!b", "Brains I give"),
+       ("maz bra!nz barg", "Must brains eat"),
+
+       # UNKNOWN + STRUCTURE interaction
+       ("mah flargh maz barg bra!nz", "I [flargh] must eat brains"),
+       ("flargh maz nah barg", "[flargh] must do not eat"),
+
+       # MULTI-PHRASE chaining
+       ("mah zambah maz barg bra!nz an nah g!b gaa",
+        "I must eat brains and do not give you"),
+
+       # REPETITION with structure
+       ("maz maz maz barg bra!nz", "Must eat brains"),
+       ("nah nah maz barg bra!nz", "Do not do not must eat brains"),
+   ],
+
+   "decision_tests": [
+       # AUX ordering should matter
+       ("mah zambah gan barg bra!nz", "I will eat brains"),
+       ("mah zambah maz barg bra!nz", "I must eat brains"),
+
+       # Now ambiguous stacking — should NOT behave identically
+       ("mah zambah maz gan barg bra!nz", "I must will eat brains"),
+
+       # Pronoun ambiguity
+       ("gaa g!b gaa bra!nz", "You give you brains"),
+
+       # Article choice must be consistent
+       ("za harman", "The human"),
+       ("zah harman", "The human"),  # if both map to "the", fine — but must be consistent
+
+       # Singular vs plural must diverge
+       ("zambah barg bra!nz", "Zombie eat brains"),
+       ("zambahz barg bra!nz", "Zombies eat brains"),
+
+       # Negation scope ambiguity
+       ("nah maz barg bra!nz", "Do not must eat brains"),
+       ("maz nah barg bra!nz", "Must do not eat brains"),
+   ],
 }
 
+# Invariant tests
+def check_invariants(result):
+    errors = []
+    if "Do not not" in result:
+        errors.append("double negation")
+    if "the the" in result.lower():
+        errors.append("duplicate article")
+    if result.count("must") > 1:
+        errors.append("repeated 'must'")
+    return errors
 
 # ---------------------------
 # Test runner
@@ -181,6 +282,14 @@ def run_tests():
 
         for zamgrh, expected in cases:
             result = translator(zamgrh)
+
+            inv_errors = check_invariants(result)
+            if inv_errors:
+                print(f"FAIL (invariant): {zamgrh}")
+                print(f"  result: {result}")
+                print(f"  issues: {inv_errors}")
+                failed += 1
+                continue
 
             if result == expected:
                 print(f"PASS: {zamgrh}")
