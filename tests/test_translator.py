@@ -232,6 +232,10 @@ TEST_GROUPS = {
 
        # Determiner repetition
        ("mah mah bra!nz", "My brains"),
+
+       # regression test determiner repetition fixes
+       ("mah zambah barg bra!nz", "I eat brains"),
+       ("g!b mah bra!nz", "Give me brains"),
    ],
 
    "decision_tests": [
@@ -293,6 +297,15 @@ def check_invariants(sentence: str) -> list[str]:
     # capitalization
     if sentence and sentence[0].islower():
         issues.append("sentence not capitalized")
+
+    # No "I noun" unless it's intended (rare)
+    if "I" in words:
+        for i, w in enumerate(words[:-1]):
+            if w == "I":
+                nxt_pos = get_pos(words[i+1], lookup, eng_lookup)
+                if "noun" in nxt_pos:
+                    # Only flag if it survives to final output form
+                    issues.append("'I' before noun (likely missing determiner conversion)")
 
     return issues
 
