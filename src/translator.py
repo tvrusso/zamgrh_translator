@@ -490,6 +490,7 @@ def grammar_postprocess(text, debug=False):
 
 # NOTE: POS (including "conj") is currently not used in translation logic,
 # but is preserved for future grammar-layer improvements.
+
 def pick_gloss(entry, desired_pos=None):
     english = entry.get("english", [])
     if not english:
@@ -507,6 +508,32 @@ def pick_gloss(entry, desired_pos=None):
 
     return english[0]["gloss"]
 
+
+def run_structure_tests():
+    data = load_dictionary()
+    lookup = build_lookup(data)
+
+    passed = 0
+    failed = 0
+
+    for group, cases in STRUCTURE_TESTS.items():
+        print(f"\n=== STRUCTURE: {group.upper()} ===")
+        for zamgrh, expected in cases:
+            result = zamgrh_to_structure(zamgrh, lookup)
+
+            if result == expected:
+                print(f"PASS: {zamgrh}")
+                passed += 1
+            else:
+                print(f"FAIL: {zamgrh}")
+                print(f"  expected: {expected}")
+                print(f"  got:      {result}")
+                failed += 1
+
+    print("\n---")
+    print(f"Structure Passed: {passed}")
+    print(f"Structure Failed: {failed}")
+    return failed == 0
 
 def infer_desired_pos(words, i, translated_out):
     if i == 0:
@@ -561,8 +588,7 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=False):
 
     return sentence
 
-# Early attempt to parse out Zamgrh sentences into a structure
-# does nothing with the structure yet
+
 def zamgrh_to_structure(text, lookup):
     words = text.split()
     structure = {
@@ -575,6 +601,7 @@ def zamgrh_to_structure(text, lookup):
     }
 
     tokens = []
+    prev_gloss = None
 
     for raw in words:
         w = clean(raw)
@@ -588,6 +615,11 @@ def zamgrh_to_structure(text, lookup):
             gloss = w
             pos = set()
 
+        # mirror simplify_subject behavior:
+        # "I zombie" -> treat as just "I"
+        if gloss == "zombie" and prev_gloss == "I":
+            continue
+
         tokens.append({
             "raw": raw,
             "word": gloss,
@@ -595,6 +627,8 @@ def zamgrh_to_structure(text, lookup):
             "pos": pos,
             "features": features,
         })
+
+        prev_gloss = gloss
 
     for t in tokens:
         if t["base"] == "nah":
@@ -605,16 +639,25 @@ def zamgrh_to_structure(text, lookup):
             structure["verb"] = t["word"]
             break
 
+    has_explicit_subject = False
+    SUBJECT_PRONOUNS = {"I", "you", "he", "she", "it", "we", "they"}
+
     for t in tokens:
         if t["word"] == structure["verb"]:
             break
+
+        if t["word"] in SUBJECT_PRONOUNS:
+            has_explicit_subject = True
+            continue
+
         if "noun" in t["pos"]:
             structure["subject"] = t["word"]
+            has_explicit_subject = True
             if t["features"].get("number") == "plural" or t["word"].endswith("s"):
                 structure["plural"] = True
             break
 
-    if structure["verb"] and not structure["subject"]:
+    if structure["verb"] and not has_explicit_subject:
         structure["imperative"] = True
 
     seen_verb = False
@@ -627,7 +670,6 @@ def zamgrh_to_structure(text, lookup):
             break
 
     return structure
-
 
 def main():
     data = load_dictionary()
@@ -656,4 +698,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    success_translation = run_tests()
+    success_structure = run_structure_tests()
+    sys.exit(0 if (success_translation and success_structure) else 1)
