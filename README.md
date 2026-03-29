@@ -22,8 +22,8 @@ As a result, some zombie players created a "language" we call "zamgrh"
 that involves only those characters.   A surprising range of
 communication becomes possible.
 
-The basic concept of Zamgrh is described [on this page of the archived
-Urban Dead wiki](wiki.urbandead.com/index.php/Zamgrh).
+The basic concept of Zamgrh is described
+[on this page of the archived Urban Dead wiki](wiki.urbandead.com/index.php/Zamgrh).
 
 ## Why make a translator?
 
