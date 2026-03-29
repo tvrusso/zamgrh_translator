@@ -196,74 +196,86 @@ def fix_prepositions(words, lookup, eng_lookup):
             result.append(w)
     return result
 
+AUX_WORDS = {"must", "will", "can", "should", "have", "has", "had"}
+
+SUBJECT_PRONOUNS = {"he", "she", "it"}
+NON_THIRD_PERSON_PRONOUNS = {"I", "you", "we", "they"}
+
 def fix_verb_agreement(words, lookup, eng_lookup):
     result = []
 
     for i, w in enumerate(words):
         pos = get_pos(w, lookup, eng_lookup)
+        prev = result[-1] if result else None
+        prev_pos = get_pos(prev, lookup, eng_lookup) if prev else set()
 
-        if "verb" in pos or "aux" in pos:
-            if i > 0:
-                prev = result[-1]
-                prev_pos = get_pos(prev, lookup, eng_lookup)
+        # handle copula first
+        if w in {"is", "are", "am"}:
+            if prev == "I":
+                w = "am"
+            elif prev and (prev.endswith("s") or prev in {"you", "we", "they"}):
+                w = "are"
+            else:
+                w = "is"
+            result.append(w)
+            continue
 
-                is_sentence_start = (i == 1)
-                is_prev_noun = "noun" in prev_pos
+        # auxiliaries never inflect
+        if w in AUX_WORDS or "aux" in pos:
+            result.append(w)
+            continue
 
-                # repeated bare verbs: "eat eat eat"
-                if "verb" in prev_pos or "aux" in prev_pos:
-                    result.append(w)
-                    continue
+        if "verb" in pos:
+            has_subject = False
+            is_third_person = False
 
-                # vocative + imperative, e.g. "Nurse give serum"
-                if is_sentence_start and is_prev_noun and w not in {"is", "are", "am"}:
-                    result.append(w)
-                    continue
+            if prev:
+                prev_is_verb_like = (
+                    ("verb" in prev_pos) or
+                    ("aux" in prev_pos) or
+                    (prev in AUX_WORDS)
+                )
 
-                is_subject_noun = "noun" in prev_pos
-                is_plural_subject = prev.endswith("s") or prev in {"you", "we", "they"}
-                is_singular_subject = is_subject_noun and not prev.endswith("s")
+                # only allow subject detection if previous word is not verb-like
+                if not prev_is_verb_like:
+                    if "noun" in prev_pos:
+                        has_subject = True
+                        is_third_person = not prev.endswith("s")
+                    elif prev in SUBJECT_PRONOUNS:
+                        has_subject = True
+                        is_third_person = True
+                    elif prev in NON_THIRD_PERSON_PRONOUNS:
+                        has_subject = True
+                        is_third_person = False
 
-                if i > 1:
-                    prev2 = result[-2]
-                    prev2_pos = get_pos(prev2, lookup, eng_lookup)
+            if i > 1:
+                prev2 = result[-2]
+                prev2_pos = get_pos(prev2, lookup, eng_lookup)
+            else:
+                prev2 = None
+                prev2_pos = set()
+
+            has_aux = (
+                ("aux" in prev2_pos) or
+                (prev in AUX_WORDS if prev else False)
+            )
+
+            if has_subject and not has_aux:
+                if is_third_person:
+                    if not w.endswith("s"):
+                        if w.endswith("y"):
+                            w = w[:-1] + "ies"
+                        elif w.endswith(("s", "sh", "ch", "x", "z", "o")):
+                            w = w + "es"
+                        else:
+                            w = w + "s"
                 else:
-                    prev2_pos = set()
-
-                has_aux = ("aux" in prev2_pos) or prev in {"must", "will", "can", "should"}
-
-                # special-case copula
-                if w in {"is", "are", "am"}:
-                    if prev == "I":
-                        w = "am"
-                    elif is_plural_subject:
-                        w = "are"
-                    else:
-                        w = "is"
-
-                    result.append(w)
-                    continue
-
-                if not has_aux:
-                    if is_singular_subject:
-                        if not w.endswith("s"):
-                            if w.endswith("y"):
-                                w = w[:-1] + "ies"
-                            elif w.endswith(("s", "sh", "ch", "x", "z", "o")):
-                                w = w + "es"
-                            else:
-                                w = w + "s"
-                    else:
-                        if w.endswith("ies"):
-                            w = w[:-3] + "y"
-                        elif (
-                            w.endswith("es")
-                            and len(w) > 2
-                            and w[:-2].endswith(("s", "sh", "ch", "x", "z", "o"))
-                        ):
-                            w = w[:-2]
-                        elif w.endswith("s") and w not in {"is"}:
-                            w = w[:-1]
+                    if w.endswith("ies"):
+                        w = w[:-3] + "y"
+                    elif w.endswith("es") and w[:-2].endswith(("s", "sh", "ch", "x", "z", "o")):
+                        w = w[:-2]
+                    elif w.endswith("s"):
+                        w = w[:-1]
 
         result.append(w)
 
@@ -315,6 +327,11 @@ def get_pos(word, lookup, eng_lookup):
 
     return set()
 
+AUX_WORDS = {"must", "will", "can", "should", "have", "has", "had", "am", "is", "are", "do", "does"}
+VERB_LIKE_WORDS = {"eat", "give", "go", "smash", "speak", "come", "run", "have", "is", "are", "am"}
+
+DETERMINERS = {"a", "an", "the", "my", "your", "his", "her", "our", "their"}
+
 def insert_articles(words, lookup, eng_lookup):
     result = []
     seen_verb = False
@@ -325,37 +342,38 @@ def insert_articles(words, lookup, eng_lookup):
 
         is_noun = "noun" in pos
         is_verb = "verb" in pos or "aux" in pos
+        is_pure_noun = is_noun and not is_verb and w not in AUX_WORDS and w not in VERB_LIKE_WORDS
 
-        if is_verb:
+        nxt = words[i + 1] if i + 1 < len(words) else None
+        nxt_pos = get_pos(nxt, lookup, eng_lookup) if nxt else set()
+        next_is_noun = nxt is not None and "noun" in nxt_pos and "verb" not in nxt_pos and "aux" not in nxt_pos
+
+        if is_verb or w in AUX_WORDS or w in VERB_LIKE_WORDS:
             seen_verb = True
             consumed_object = False
+            result.append(w)
+            continue
 
         should_article_after_to = (
-            is_noun
+            is_pure_noun
             and i > 0
             and result[-1] == "to"
-            and not is_verb            
             and not w.endswith("s")
+            and not next_is_noun
         )
 
-        if (is_noun and not is_verb and seen_verb and not consumed_object) or should_article_after_to:
+        should_article_as_object = (
+            is_pure_noun
+            and seen_verb
+            and not consumed_object
+            and not next_is_noun
+        )
+
+        if should_article_as_object or should_article_after_to:
             is_plural = w.endswith("s")
+            prev = result[-1] if result else None
 
-            if not is_plural:
-                if i > 0:
-                    prev = result[-1]
-
-                    if prev in {"a", "an", "the", "my", "your", "his", "her", "our", "their"}:
-                        result.append(w)
-                        consumed_object = True
-                        continue
-
-                    # don't insert article before verbs after "to"
-                    if prev == "to" and not is_noun:
-                        result.append(w)
-                        consumed_object = True
-                        continue
-
+            if not is_plural and prev not in DETERMINERS:
                 article = "an" if w[0].lower() in "aeiou" else "a"
                 result.append(article)
 
@@ -365,42 +383,52 @@ def insert_articles(words, lookup, eng_lookup):
 
     return result
 
+AUX_WORDS = {"must", "will", "can", "should", "have", "has", "had", "am", "is", "are", "do", "does"}
+VERB_LIKE_WORDS = {"eat", "give", "go", "smash", "speak", "come", "have", "run", "is", "are", "am"}
+
 def fix_determiners(words, lookup, eng_lookup):
     result = []
 
     for i, w in enumerate(words):
         if w == "I":
-            # 🚫 DO NOT convert if this is sentence subject
-            if i == 0:
-                # Only keep as subject if followed by verb/aux
-                if i + 1 < len(words):
-                    nxt = words[i + 1]
-                    nxt_pos = get_pos(nxt, lookup, eng_lookup)
+            prev = words[i - 1] if i > 0 else None
+            nxt = words[i + 1] if i + 1 < len(words) else None
+            nxt2 = words[i + 2] if i + 2 < len(words) else None
 
-                    if "verb" in nxt_pos or "aux" in nxt_pos:
-                        result.append(w)
-                        continue
+            nxt_pos = get_pos(nxt, lookup, eng_lookup) if nxt else set()
+            nxt2_pos = get_pos(nxt2, lookup, eng_lookup) if nxt2 else set()
 
-            if i + 1 < len(words):
-                nxt = words[i + 1]
-                nxt_pos = get_pos(nxt, lookup, eng_lookup)
+            # Keep "I" when it is acting like a subject:
+            #   I eat brains
+            #   not I eat brains
+            if nxt and (
+                "verb" in nxt_pos
+                or "aux" in nxt_pos
+                or nxt in AUX_WORDS
+                or nxt in VERB_LIKE_WORDS
+            ):
+                result.append(w)
+                continue
 
-                if "noun" in nxt_pos:
-                    # Optional extra safety: avoid verb context
-                    if i + 2 < len(words):
-                        nxt2 = words[i + 2]
-                        nxt2_pos = get_pos(nxt2, lookup, eng_lookup)
-                        if "verb" in nxt2_pos or "aux" in nxt2_pos:
-                            result.append(w)
-                            continue
-
-                    result.append("my")
+            # Convert to "my" only in clearly possessive environments:
+            #   I brains -> my brains
+            # but not when that noun is really part of a subject phrase
+            if nxt and "noun" in nxt_pos:
+                if nxt2 and (
+                    "verb" in nxt2_pos
+                    or "aux" in nxt2_pos
+                    or nxt2 in AUX_WORDS
+                    or nxt2 in VERB_LIKE_WORDS
+                ):
+                    result.append(w)
                     continue
+
+                result.append("my")
+                continue
 
         result.append(w)
 
     return result
-
 def collapse_repeated_pronouns(words, lookup, eng_lookup):
     result = []
     prev = None

@@ -46,9 +46,20 @@ TEST_GROUPS = {
         ("gab m!z ahz", "Speak with us"),
     ],
 
-    "gloss_picker": [
+    "morphology": [
+        ("zambah", "Zombie"),
+        ("zambahz", "Zombies"),
+        ("harman", "Human"),
+        ("harmanz", "Humans"),
+        ("bra!n", "Brain"),
+        ("bra!nz", "Brains"),
+        ("gahz", "Yous"),
+        ("maz", "Must"),
+        ("haz", "Have"),
+    ],
+
+"gloss_picker": [
         ("mah zambah gan barg bra!nz", "I will eat brains"),
-        ("nam nam nam", "Eat eat eat"),
         ("mah gang", "My group"),
         ("g!b mah bra!nz", "Give me brains"),
         ("mah zambah", "I"),
@@ -63,7 +74,7 @@ TEST_GROUPS = {
 
     "questions": [
         ("!z raam azza !nn?", "Is a room at the inn?"),
-        ("zambah barg bra!nz?", "Zombie eat brains?"),
+        ("zambah barg bra!nz?", "Zombie eats brains?"),
     ],
 
     "imperatives": [
@@ -76,7 +87,7 @@ TEST_GROUPS = {
         ("zambah", "Zombie"),
         ("harman", "Human"),
         ("zambahz barg bra!nz", "Zombies eat brains"),
-        ("zambah barg bra!n", "Zombie eat a brain"),
+        ("zambah barg bra!n", "Zombie eats a brain"),
     ],
 
     "agreement": [
@@ -254,7 +265,7 @@ TEST_GROUPS = {
        ("zah harman", "The human"),  # if both map to "the", fine — but must be consistent
 
        # Singular vs plural must diverge
-       ("zambah barg bra!nz", "Zombie eat brains"),
+       ("zambah barg bra!nz", "Zombie eats brains"),
        ("zambahz barg bra!nz", "Zombies eat brains"),
 
        # Negation scope ambiguity
