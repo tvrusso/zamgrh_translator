@@ -36,79 +36,205 @@ STRUCTURE_TESTS = {
     "basic_structure": [
         (
             "zambah barg bra!nz",
-            {"subject": "zombie", "verb": "eat", "object": "brains", "plural": False, "negated": False, "imperative": False},
+            {
+                "subject": "zombie",
+                "verb": "eat",
+                "object": "brains",
+                "plural": False,
+                "negated": False,
+                "imperative": False,
+            },
         ),
         (
             "zambahz barg bra!nz",
-            {"subject": "zombie", "verb": "eat", "object": "brains", "plural": True, "negated": False, "imperative": False},
+            {
+                "subject": "zombie",
+                "verb": "eat",
+                "object": "brains",
+                "plural": True,
+                "negated": False,
+                "imperative": False,
+            },
         ),
         (
             "nah g!b bra!nz",
-            {"subject": None, "verb": "give", "object": "brains", "plural": False, "negated": True, "imperative": True},
+            {
+                "subject": None,
+                "verb": "give",
+                "object": "brains",
+                "plural": False,
+                "negated": True,
+                "imperative": True,
+            },
         ),
         (
             "harmanz bah",
-            {"subject": "human", "verb": None, "object": None, "plural": True, "negated": False, "imperative": False},
+            {
+                "subject": "human",
+                "verb": None,
+                "object": None,
+                "plural": True,
+                "negated": False,
+                "imperative": False,
+            },
         ),
         (
             "gahz g!b mah bra!nz",
-    {
-        "subject": None,
-        "verb": "give",
-        "object": "brains",
-        "plural": False,
-        "negated": False,
-        "imperative": False,
-    },
+            {
+                "subject": "you",
+                "verb": "give",
+                "object": "brains",
+                "plural": True,
+                "negated": False,
+                "imperative": False,
+            },
         ),
         (
-    "mah zambah barg bra!nz",
-    {"subject": None, "verb": "eat", "object": "brains", "plural": False, "negated": False, "imperative": False},
-),
-(
-    "nah ran nahaarh",
-    {"subject": None, "verb": "go", "object": None, "plural": False, "negated": True, "imperative": True},
-),
-(
-    "g!b mah bra!nz",
-    {"subject": None, "verb": "give", "object": "brains", "plural": False, "negated": False, "imperative": True},
-),
-(
-    "harmanz barg bra!nz",
-    {"subject": "human", "verb": "eat", "object": "brains", "plural": True, "negated": False, "imperative": False},
-),
+            "mah zambah barg bra!nz",
+            {
+                "subject": "I",
+                "verb": "eat",
+                "object": "brains",
+                "plural": False,
+                "negated": False,
+                "imperative": False,
+            },
+        ),
+        (
+            "nah ran nahaarh",
+            {
+                "subject": None,
+                "verb": "go",
+                "object": None,
+                "plural": False,
+                "negated": True,
+                "imperative": True,
+            },
+        ),
+        (
+            "g!b mah bra!nz",
+            {
+                "subject": None,
+                "verb": "give",
+                "object": "brains",
+                "plural": False,
+                "negated": False,
+                "imperative": True,
+            },
+        ),
+        (
+            "harmanz barg bra!nz",
+            {
+                "subject": "human",
+                "verb": "eat",
+                "object": "brains",
+                "plural": True,
+                "negated": False,
+                "imperative": False,
+            },
+        ),
         (
             "zambahz !z bah",
             {
-        "subject": "zombie",
-        "verb": "is",
-        "object": None,
-        "plural": True,
-        "negated": False,
-        "imperative": False,
-    },
+                "subject": "zombie",
+                "verb": "is",
+                "object": None,
+                "plural": True,
+                "negated": False,
+                "imperative": False,
+            },
         ),
         (
-    "mah zambah maz barg bra!nz",
-    {"subject": None, "verb": "eat", "object": "brains", "plural": False, "negated": False, "imperative": False},
-),
-(
-    "nah maz barg bra!nz",
-    {"subject": None, "verb": "eat", "object": "brains", "plural": False, "negated": True, "imperative": True},
-),
-(
-    "maz nah barg bra!nz",
-    {"subject": None, "verb": "eat", "object": "brains", "plural": False, "negated": True, "imperative": True},
-),
-(
-    "bra!nz maz barg",
-    {"subject": "brains", "verb": "eat", "object": None, "plural": True, "negated": False, "imperative": False},
-),
-(
-    "g!b bra!nz",
-    {"subject": None, "verb": "give", "object": "brains", "plural": False, "negated": False, "imperative": True},
-),
+            "mah zambah maz barg bra!nz",
+            {
+                "subject": "I",
+                "verb": "eat",
+                "object": "brains",
+                "plural": False,
+                "negated": False,
+                "imperative": False,
+            },
+        ),
+        (
+            "nah maz barg bra!nz",
+            {
+                "subject": None,
+                "verb": "eat",
+                "object": "brains",
+                "plural": False,
+                "negated": True,
+                "imperative": True,
+            },
+        ),
+        (
+            "maz nah barg bra!nz",
+            {
+                "subject": None,
+                "verb": "eat",
+                "object": "brains",
+                "plural": False,
+                "negated": True,
+                "imperative": True,
+            },
+        ),
+        (
+            "bra!nz maz barg",
+            {
+                "subject": "brains",
+                "verb": "eat",
+                "object": None,
+                "plural": True,
+                "negated": False,
+                "imperative": False,
+            },
+        ),
+        (
+            "g!b bra!nz",
+            {
+                "subject": None,
+                "verb": "give",
+                "object": "brains",
+                "plural": False,
+                "negated": False,
+                "imperative": True,
+            },
+        ),
     ],
+    "subject_pronouns": [
+        (
+            "mah zambah barg bra!nz",
+            {
+                "subject": "I",
+                "verb": "eat",
+                "object": "brains",
+                "plural": False,
+                "negated": False,
+                "imperative": False,
+            },
+        ),
+        (
+            "mah zambah maz barg bra!nz",
+            {
+                "subject": "I",
+                "verb": "eat",
+                "object": "brains",
+                "plural": False,
+                "negated": False,
+                "imperative": False,
+            },
+        ),
+        (
+            "gahz g!b mah bra!nz",
+            {
+                "subject": "you",
+                "verb": "give",
+                "object": "brains",
+                "plural": True,
+                "negated": False,
+                "imperative": False,
+            },
+        ),
+]
 }
 
 TEST_GROUPS = {
