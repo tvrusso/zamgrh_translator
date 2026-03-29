@@ -9,7 +9,11 @@ def load_dictionary():
         return json.load(f)
 
 def build_lookup(data):
-    return {entry["word"]: entry for entry in data}
+    lookup = {}
+    for entry in data:
+        key = normalize_token(clean(entry["word"]))
+        lookup[key] = entry
+    return lookup
 
 def build_english_pos_lookup(data):
     eng_lookup = {}
@@ -43,22 +47,6 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
             print(f"[{name:<16}] {' '.join(words)}")
 
     return words
-
-def clean(word):
-    word = word.lower()
-
-    # strip leading non-word chars, but keep internal !
-    word = re.sub(r'^[^\w!]+', '', word)
-
-    # strip trailing punctuation, including ? . , ; : !
-    while word and not (word[-1].isalnum() or word[-1] == "!"):
-        word = word[:-1]
-
-    # if the word ends with ! as punctuation rather than internal spelling, drop it
-    if word.endswith("!") and not re.search(r'![a-z0-9]', word):
-        word = word[:-1]
-
-    return word
 
 def question_postprocess(text, structure, original_text):
     stripped = original_text.strip()
@@ -360,16 +348,21 @@ def insert_articles(words, lookup, eng_lookup):
 
     return result
 
-# --- NEW: normalization helpers ---
+# --- normalization helpers ---
 
 def clean(word):
     word = word.lower()
 
-    # remove leading punctuation (keep ! if internal)
+    # strip leading non-word chars, but keep internal !
     word = re.sub(r'^[^\w!]+', '', word)
 
-    # remove trailing punctuation INCLUDING !
-    word = re.sub(r'[^\w]+$', '', word)
+    # strip trailing punctuation, including ? . , ; : !
+    while word and not (word[-1].isalnum() or word[-1] == "!"):
+        word = word[:-1]
+
+    # if the word ends with ! as punctuation rather than internal spelling, drop it
+    if word.endswith("!") and not re.search(r'![a-z0-9]', word):
+        word = word[:-1]
 
     return word
 
@@ -384,6 +377,13 @@ def normalize(word, lookup):
             return base, "plural"
 
     return word, None
+
+TRAILING_PUNCT = ".,?!:;"
+
+def normalize_token(token: str) -> str:
+    token = token.lower().strip()
+    token = token.strip(TRAILING_PUNCT)
+    return token
 
 def grammar_postprocess(text, debug=False):
     COMMON_VERBS = {"eat", "eats", "make", "shoot", "have", "give", "smash", "must"}
@@ -470,7 +470,7 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=False):
     out = []
 
     for raw in words:
-        w = clean(raw)
+        w = normalize_token(clean(raw))
 
         entry = lookup.get(w)
         if entry:
@@ -486,7 +486,7 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=False):
                 gloss = gloss + "s"
             out.append(gloss)
         else:
-            out.append(f"[{raw}]")
+            out.append(f"[{w}]")
 
     sentence = " ".join(out)
     words = sentence.split()
