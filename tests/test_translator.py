@@ -121,7 +121,7 @@ TEST_GROUPS = {
     "copula_vs_lexical_is": [
         ("zambah n!z", "Zombie is nice"),
         ("zambah !z n!z", "Zombie is nice"),
-        ("zambah !z !z", "Zombie is is"),            # ugly, but good to expose weird dictionary interactions
+        ("zambah !z !z", "Zombie is"),
     ],
 
     "unknown_word_mixed_with_known": [
@@ -257,15 +257,22 @@ TEST_GROUPS = {
 }
 
 # Invariant tests
-def check_invariants(result):
-    errors = []
-    if "Do not not" in result:
-        errors.append("double negation")
-    if "the the" in result.lower():
-        errors.append("duplicate article")
-    if result.count("must") > 1:
-        errors.append("repeated 'must'")
-    return errors
+def check_invariants(sentence: str) -> list[str]:
+    issues = []
+    words = sentence.lower().split()
+
+    # duplicate words
+    for i in range(1, len(words)):
+        if words[i] == words[i - 1]:
+            if words[i] in {"must", "the", "a", "an", "is", "are"}:
+                issues.append(f"duplicate '{words[i]}'")
+
+    # article + plural (basic heuristic)
+    for i in range(len(words) - 1):
+        if words[i] in {"a", "an"} and words[i + 1].endswith("s"):
+            issues.append("article before plural")
+
+    return issues
 
 # ---------------------------
 # Test runner

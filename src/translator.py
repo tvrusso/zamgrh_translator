@@ -30,9 +30,8 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
         ("fix_prepositions", fix_prepositions),
         ("insert_copula", insert_copula),
         ("insert_articles", insert_articles),
-        ("dedupe_articles", dedupe_articles),
+        ("dedupe_function_words", dedupe_function_words),
         ("fix_am_progressive", fix_am_progressive),
-        ("dedupe_auxiliaries",dedupe_auxiliaries),
         ("fix_verb_agreement", fix_verb_agreement),
     ]
 
@@ -268,28 +267,19 @@ def fix_verb_agreement(words, lookup, eng_lookup):
 
     return result
 
-COLLAPSIBLE_AUX = {"must", "will", "can", "should", "have"}
+COLLAPSIBLE_WORDS = {
+    "must", "will", "can", "should", "have",
+    "is", "are", "am",
+    "the", "a", "an",
+}
 
-def dedupe_auxiliaries(words, lookup, eng_lookup):
+def dedupe_function_words(words, lookup, eng_lookup):
     result = []
     prev = None
 
     for w in words:
-        if w == prev and w in COLLAPSIBLE_AUX:
+        if w == prev and w in COLLAPSIBLE_WORDS:
             continue
-        result.append(w)
-        prev = w
-
-    return result
-
-def dedupe_articles(words, lookup, eng_lookup):
-    result = []
-    prev = None
-
-    for w in words:
-        if w.lower() in {"the", "a", "an"} and prev and prev.lower() == w.lower():
-            continue
-
         result.append(w)
         prev = w
 
