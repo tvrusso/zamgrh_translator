@@ -27,6 +27,8 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
         ("simplify_subject", simplify_subject),
         ("fix_possession", fix_possession),
         ("fix_pronouns", fix_object_pronouns),
+        ("collapse_repeated_pronouns", collapse_repeated_pronouns),
+        ("fix_determiners", fix_determiners),
         ("fix_prepositions", fix_prepositions),
         ("insert_copula", insert_copula),
         ("insert_articles", insert_articles),
@@ -361,6 +363,52 @@ def insert_articles(words, lookup, eng_lookup):
 
         result.append(w)
 
+    return result
+
+def fix_determiners(words, lookup, eng_lookup):
+    result = []
+
+    for i, w in enumerate(words):
+        if w == "I":
+            # 🚫 DO NOT convert if this is sentence subject
+            if i == 0:
+                # Only keep as subject if followed by verb/aux
+                if i + 1 < len(words):
+                    nxt = words[i + 1]
+                    nxt_pos = get_pos(nxt, lookup, eng_lookup)
+
+                    if "verb" in nxt_pos or "aux" in nxt_pos:
+                        result.append(w)
+                        continue
+
+            if i + 1 < len(words):
+                nxt = words[i + 1]
+                nxt_pos = get_pos(nxt, lookup, eng_lookup)
+
+                if "noun" in nxt_pos:
+                    # Optional extra safety: avoid verb context
+                    if i + 2 < len(words):
+                        nxt2 = words[i + 2]
+                        nxt2_pos = get_pos(nxt2, lookup, eng_lookup)
+                        if "verb" in nxt2_pos or "aux" in nxt2_pos:
+                            result.append(w)
+                            continue
+
+                    result.append("my")
+                    continue
+
+        result.append(w)
+
+    return result
+
+def collapse_repeated_pronouns(words, lookup, eng_lookup):
+    result = []
+    prev = None
+    for w in words:
+        if w == prev and w in {"I", "me"}:
+            continue
+        result.append(w)
+        prev = w
     return result
 
 # --- NEW: normalization helpers ---

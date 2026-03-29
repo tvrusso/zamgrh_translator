@@ -229,6 +229,9 @@ TEST_GROUPS = {
        # REPETITION with structure
        ("maz maz maz barg bra!nz", "Must eat brains"),
        ("nah nah maz barg bra!nz", "Do not do not must eat brains"),
+
+       # Determiner repetition
+       ("mah mah bra!nz", "My brains"),
    ],
 
    "decision_tests": [
@@ -261,16 +264,35 @@ def check_invariants(sentence: str) -> list[str]:
     issues = []
     words = sentence.lower().split()
 
-    # duplicate words
-    for i in range(1, len(words)):
-        if words[i] == words[i - 1]:
-            if words[i] in {"must", "the", "a", "an", "is", "are"}:
-                issues.append(f"duplicate '{words[i]}'")
+    COLLAPSIBLE = {"must", "will", "can", "should", "have", "is", "are", "am", "the", "a", "an"}
+    ARTICLES = {"a", "an", "the"}
+    VOWELS = set("aeiou")
 
-    # article + plural (basic heuristic)
+    # duplicate function words
+    for i in range(1, len(words)):
+        if words[i] == words[i - 1] and words[i] in COLLAPSIBLE:
+            issues.append(f"duplicate '{words[i]}'")
+
+    # article before plural
     for i in range(len(words) - 1):
         if words[i] in {"a", "an"} and words[i + 1].endswith("s"):
             issues.append("article before plural")
+
+    # a/an correctness
+    for i in range(len(words) - 1):
+        if words[i] == "a" and words[i + 1][0] in VOWELS:
+            issues.append("use 'an' before vowel")
+        if words[i] == "an" and words[i + 1][0] not in VOWELS:
+            issues.append("use 'a' before consonant")
+
+    # stacked determiners
+    for i in range(len(words) - 1):
+        if words[i] in ARTICLES and words[i + 1] in ARTICLES:
+            issues.append("stacked determiners")
+
+    # capitalization
+    if sentence and sentence[0].islower():
+        issues.append("sentence not capitalized")
 
     return issues
 
