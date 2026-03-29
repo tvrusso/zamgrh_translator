@@ -44,22 +44,6 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
 
     return words
 
-def clean(word):
-    word = word.lower()
-
-    # strip leading non-word chars, but keep internal !
-    word = re.sub(r'^[^\w!]+', '', word)
-
-    # strip trailing punctuation, including ? . , ; : !
-    while word and not (word[-1].isalnum() or word[-1] == "!"):
-        word = word[:-1]
-
-    # if the word ends with ! as punctuation rather than internal spelling, drop it
-    if word.endswith("!") and not re.search(r'![a-z0-9]', word):
-        word = word[:-1]
-
-    return word
-
 def question_postprocess(text, structure, original_text):
     stripped = original_text.strip()
 
