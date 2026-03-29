@@ -238,10 +238,10 @@ def fix_verb_agreement(words, lookup, eng_lookup):
                     if "noun" in prev_pos:
                         has_subject = True
                         is_third_person = not prev.endswith("s")
-                    elif prev in SUBJECT_PRONOUNS:
+                    elif prev in {"he", "she", "it"}:
                         has_subject = True
                         is_third_person = True
-                    elif prev in NON_THIRD_PERSON_PRONOUNS:
+                    elif prev in {"I", "you", "we", "they"}:
                         has_subject = True
                         is_third_person = False
 
@@ -588,6 +588,12 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=False):
 
     return sentence
 
+def is_plural_subject_token(word, features):
+    if features.get("number") == "plural":
+        return True
+    return word in {"we", "they"}
+
+SUBJECT_PRONOUNS = {"I", "you", "he", "she", "it", "we", "they"}
 
 def zamgrh_to_structure(text, lookup):
     words = text.split()
@@ -640,21 +646,29 @@ def zamgrh_to_structure(text, lookup):
             break
 
     has_explicit_subject = False
-    SUBJECT_PRONOUNS = {"I", "you", "he", "she", "it", "we", "they"}
-
+    
     for t in tokens:
         if t["word"] == structure["verb"]:
             break
 
         if t["word"] in SUBJECT_PRONOUNS:
+            structure["subject"] = t["word"]
             has_explicit_subject = True
-            continue
+
+            if t["word"] in {"we", "they"}:
+                structure["plural"] = True
+            elif t["word"] == "you" and t["features"].get("number") == "plural":
+                structure["plural"] = True
+
+            break
 
         if "noun" in t["pos"]:
             structure["subject"] = t["word"]
             has_explicit_subject = True
+
             if t["features"].get("number") == "plural" or t["word"].endswith("s"):
                 structure["plural"] = True
+
             break
 
     if structure["verb"] and not has_explicit_subject:
