@@ -10,6 +10,7 @@ from translator import (
     build_english_pos_lookup,
     zamgrh_to_english,
     zamgrh_to_structure,
+    get_pos,
 )
 
 
@@ -25,12 +26,90 @@ def build_translator():
     def run(text, debug=False):
         return zamgrh_to_english(text, lookup, eng_lookup, debug=debug)
 
-    return run, lookup
-
+    return run, lookup, eng_lookup
 
 # ---------------------------
 # Grouped test cases
 # ---------------------------
+
+STRUCTURE_TESTS = {
+    "basic_structure": [
+        (
+            "zambah barg bra!nz",
+            {"subject": "zombie", "verb": "eat", "object": "brains", "plural": False, "negated": False, "imperative": False},
+        ),
+        (
+            "zambahz barg bra!nz",
+            {"subject": "zombie", "verb": "eat", "object": "brains", "plural": True, "negated": False, "imperative": False},
+        ),
+        (
+            "nah g!b bra!nz",
+            {"subject": None, "verb": "give", "object": "brains", "plural": False, "negated": True, "imperative": True},
+        ),
+        (
+            "harmanz bah",
+            {"subject": "human", "verb": None, "object": None, "plural": True, "negated": False, "imperative": False},
+        ),
+        (
+            "gahz g!b mah bra!nz",
+    {
+        "subject": None,
+        "verb": "give",
+        "object": "brains",
+        "plural": False,
+        "negated": False,
+        "imperative": False,
+    },
+        ),
+        (
+    "mah zambah barg bra!nz",
+    {"subject": None, "verb": "eat", "object": "brains", "plural": False, "negated": False, "imperative": False},
+),
+(
+    "nah ran nahaarh",
+    {"subject": None, "verb": "go", "object": None, "plural": False, "negated": True, "imperative": True},
+),
+(
+    "g!b mah bra!nz",
+    {"subject": None, "verb": "give", "object": "brains", "plural": False, "negated": False, "imperative": True},
+),
+(
+    "harmanz barg bra!nz",
+    {"subject": "human", "verb": "eat", "object": "brains", "plural": True, "negated": False, "imperative": False},
+),
+        (
+            "zambahz !z bah",
+            {
+        "subject": "zombie",
+        "verb": "is",
+        "object": None,
+        "plural": True,
+        "negated": False,
+        "imperative": False,
+    },
+        ),
+        (
+    "mah zambah maz barg bra!nz",
+    {"subject": None, "verb": "eat", "object": "brains", "plural": False, "negated": False, "imperative": False},
+),
+(
+    "nah maz barg bra!nz",
+    {"subject": None, "verb": "eat", "object": "brains", "plural": False, "negated": True, "imperative": True},
+),
+(
+    "maz nah barg bra!nz",
+    {"subject": None, "verb": "eat", "object": "brains", "plural": False, "negated": True, "imperative": True},
+),
+(
+    "bra!nz maz barg",
+    {"subject": "brains", "verb": "eat", "object": None, "plural": True, "negated": False, "imperative": False},
+),
+(
+    "g!b bra!nz",
+    {"subject": None, "verb": "give", "object": "brains", "plural": False, "negated": False, "imperative": True},
+),
+    ],
+}
 
 TEST_GROUPS = {
 
@@ -314,7 +393,7 @@ TEST_GROUPS = {
 }
 
 # Invariant tests
-def check_invariants(sentence: str) -> list[str]:
+def check_invariants(sentence: str, lookup, eng_lookup) -> list[str]:
     issues = []
     words = sentence.lower().split()
 
@@ -322,39 +401,43 @@ def check_invariants(sentence: str) -> list[str]:
     ARTICLES = {"a", "an", "the"}
     VOWELS = set("aeiou")
 
-    # duplicate function words
     for i in range(1, len(words)):
         if words[i] == words[i - 1] and words[i] in COLLAPSIBLE:
             issues.append(f"duplicate '{words[i]}'")
 
-    # article before plural
     for i in range(len(words) - 1):
         if words[i] in {"a", "an"} and words[i + 1].endswith("s"):
             issues.append("article before plural")
 
-    # a/an correctness
     for i in range(len(words) - 1):
         if words[i] == "a" and words[i + 1][0] in VOWELS:
             issues.append("use 'an' before vowel")
         if words[i] == "an" and words[i + 1][0] not in VOWELS:
             issues.append("use 'a' before consonant")
 
-    # stacked determiners
     for i in range(len(words) - 1):
         if words[i] in ARTICLES and words[i + 1] in ARTICLES:
             issues.append("stacked determiners")
 
-    # capitalization
     if sentence and sentence[0].islower():
         issues.append("sentence not capitalized")
 
-    # No "I noun" unless it's intended (rare)
-    if "I" in words:
-        for i, w in enumerate(words[:-1]):
-            if w == "I":
-                nxt_pos = get_pos(words[i+1], lookup, eng_lookup)
-                if "noun" in nxt_pos:
-                    # Only flag if it survives to final output form
+    VERB_LIKE = {"eat", "give", "go", "smash", "speak", "come", "run", "have", "is", "are", "am", "must", "will", "can", "should", "do", "does"}
+
+    if "i" in words:
+        for idx, w in enumerate(words[:-1]):
+            if w == "i":
+                nxt = words[idx + 1]
+                nxt_pos = get_pos(nxt, lookup, eng_lookup)
+
+                next_is_noun = "noun" in nxt_pos
+                next_is_verb_like = (
+                    "verb" in nxt_pos
+                    or "aux" in nxt_pos
+                    or nxt in VERB_LIKE
+                )
+
+                if next_is_noun and not next_is_verb_like:
                     issues.append("'I' before noun (likely missing determiner conversion)")
 
     return issues
@@ -364,8 +447,7 @@ def check_invariants(sentence: str) -> list[str]:
 # ---------------------------
 
 def run_tests():
-    translator, lookup = build_translator()
-
+    translator, lookup, eng_lookup = build_translator()
     passed = 0
     failed = 0
 
@@ -375,7 +457,7 @@ def run_tests():
         for zamgrh, expected in cases:
             result = translator(zamgrh)
 
-            inv_errors = check_invariants(result)
+            inv_errors = check_invariants(result, lookup, eng_lookup)
             if inv_errors:
                 print(f"FAIL (invariant): {zamgrh}")
                 print(f"  result: {result}")
@@ -407,7 +489,33 @@ def run_tests():
 
     return failed == 0
 
+def run_structure_tests():
+    data = load_dictionary()
+    lookup = build_lookup(data)
+
+    passed = 0
+    failed = 0
+
+    for group, cases in STRUCTURE_TESTS.items():
+        print(f"\n=== STRUCTURE: {group.upper()} ===")
+        for zamgrh, expected in cases:
+            result = zamgrh_to_structure(zamgrh, lookup)
+
+            if result == expected:
+                print(f"PASS: {zamgrh}")
+                passed += 1
+            else:
+                print(f"FAIL: {zamgrh}")
+                print(f"  expected: {expected}")
+                print(f"  got:      {result}")
+                failed += 1
+
+    print("\n---")
+    print(f"Structure Passed: {passed}")
+    print(f"Structure Failed: {failed}")
+    return failed == 0
 
 if __name__ == "__main__":
-    success = run_tests()
-    sys.exit(0 if success else 1)
+    success_translation = run_tests()
+    success_structure = run_structure_tests()
+    sys.exit(0 if (success_translation and success_structure) else 1)
