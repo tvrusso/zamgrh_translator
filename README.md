@@ -2,7 +2,49 @@
 
 A structured translator and linguistic toolkit for the zombie language "Zamgrh".
 
-## Features
+## What is Zamgrh?
+
+Zamgrh is the language spoken by zombies in the low-tech browser game
+Urban Dead (now defunct) and its successor, World Wide Dead
+(https://wwdead.com)
+
+### Huh?
+
+See, in the game, zombie players start off being basically unable to
+speak at all.   With sufficient levels of experience, they can buy the
+"Death Rattle" skill, which allows them to speak, but only sorta.
+Anything you type gets garbled into generally incomprehensible
+patterns of characters bearing no resemblance to what you typed.
+However, the letters "z", "a", "m", "g", "r", "h", "n", and "b", plus
+some punctuation marks are passed through unmodified.
+
+As a result, some zombie players created a "language" we call "zamgrh"
+that involves only those characters.   A surprising range of
+communication becomes possible.
+
+The basic concept of Zamgrh is described [on this page of the archived
+Urban Dead wiki](wiki.urbandead.com/index.php/Zamgrh).
+
+## Why make a translator?
+
+The Urban Dead zombie horde ["Babble Rabble"](https://wiki.urbandead.com/index.php/Babble_Rabble) was created to advance the
+art of zamgrh communication and spread joy throughout the city of
+Malton with their babbling.
+
+Members of Babble Rabble decided that having a translator would be
+helpful to new members and to those who don't really speak the
+language fluently.
+
+## Where does it stand?
+
+Right now the translator is in early development (it's only a few days
+old!) and only translates from Zamgrh to English, and
+only has a very limited dictionary of Zamgrh words.  Development is
+progressing fast, but is currently focused on improving the grammar
+engine.  Most canonical Zamgrh words are not recognized yet, so some
+of the most fun in-game speech still can't be decoded.
+
+## Planned Features
 
 - Zamgrh → English translation
 - English → Zamgrh generation
