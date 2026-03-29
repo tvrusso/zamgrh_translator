@@ -166,7 +166,7 @@ TEST_GROUPS = {
 
     "MORPHOLOGY_REPETITION": [
         ("zambahz zambahz barg bra!nz", "Zombies zombies eat brains"),
-        ("gahz gahz g!b bra!nz", "Yous yous give brains"),,
+        ("gahz gahz g!b bra!nz", "Yous yous give brains"),
     ],
 
     "gloss_picker": [
