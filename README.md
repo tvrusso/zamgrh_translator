@@ -30,7 +30,7 @@ The basic concept of Zamgrh is described
 
 The Urban Dead zombie horde ["Babble Rabble"](https://wiki.urbandead.com/index.php/Babble_Rabble) was created to advance the
 art of zamgrh communication and spread joy to the residents of the city of
-Malton with their babbling.  Right before they eat their brains.
+Malton with their babbling.  Right before we eat their brains.
 
 Members of Babble Rabble decided that having a translator would be
 helpful to new members and to those who don't really speak the
