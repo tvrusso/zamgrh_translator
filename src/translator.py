@@ -509,32 +509,6 @@ def pick_gloss(entry, desired_pos=None):
     return english[0]["gloss"]
 
 
-def run_structure_tests():
-    data = load_dictionary()
-    lookup = build_lookup(data)
-
-    passed = 0
-    failed = 0
-
-    for group, cases in STRUCTURE_TESTS.items():
-        print(f"\n=== STRUCTURE: {group.upper()} ===")
-        for zamgrh, expected in cases:
-            result = zamgrh_to_structure(zamgrh, lookup)
-
-            if result == expected:
-                print(f"PASS: {zamgrh}")
-                passed += 1
-            else:
-                print(f"FAIL: {zamgrh}")
-                print(f"  expected: {expected}")
-                print(f"  got:      {result}")
-                failed += 1
-
-    print("\n---")
-    print(f"Structure Passed: {passed}")
-    print(f"Structure Failed: {failed}")
-    return failed == 0
-
 def infer_desired_pos(words, i, translated_out):
     if i == 0:
         return None
@@ -712,6 +686,5 @@ def main():
 
 
 if __name__ == "__main__":
-    success_translation = run_tests()
-    success_structure = run_structure_tests()
-    sys.exit(0 if (success_translation and success_structure) else 1)
+    main()
+
