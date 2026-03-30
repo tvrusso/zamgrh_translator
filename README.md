@@ -1,14 +1,14 @@
-# Zamgrh Translator
+# Zamgrh-Angr!zh Zranzra!zar (Zamgrh-English Translator)
 
 A structured translator and linguistic toolkit for the zombie language "Zamgrh".
 
-## What is Zamgrh?
+## What is Zamgrh?  (Rhaz !z Zamgrh?)
 
 Zamgrh is the language spoken by zombies in the low-tech browser game
 Urban Dead (now defunct) and its successor, World Wide Dead
 (https://wwdead.com)
 
-### Huh?
+### Huh?  (Hah?)
 
 See, in the game, zombie players start off being basically unable to
 speak at all.   With sufficient levels of experience, they can buy the
@@ -20,22 +20,24 @@ some punctuation marks are passed through unmodified.
 
 As a result, some zombie players created a "language" we call "zamgrh"
 that involves only those characters.   A surprising range of
-communication becomes possible.
+communication becomes possible.   Rarr!h!  Zah zambahz gan gab, ahn
+zah harmanz gan annarzanz!
 
 The basic concept of Zamgrh is described
 [on this page of the archived Urban Dead wiki](https://wiki.urbandead.com/index.php/Zamgrh).
 
-## Why make a translator?
+## Why make a translator?  (Hra! ma!g an zranzra!zar?)
 
 The Urban Dead zombie horde ["Babble Rabble"](https://wiki.urbandead.com/index.php/Babble_Rabble) was created to advance the
-art of zamgrh communication and spread joy throughout the city of
-Malton with their babbling.
+art of zamgrh communication and spread joy to the residents of the city of
+Malton with their babbling.  Right before they eat their brains.
 
 Members of Babble Rabble decided that having a translator would be
 helpful to new members and to those who don't really speak the
-language fluently.
+language fluently.  Also, it is helpful when the food can understand
+us.  BARHAH!  Zambahz maz gab ahn barg bra!nz!
 
-## Where does it stand?
+## Where does it stand?  (Hra!r !z !h?)
 
 Right now the translator is in early development (it's only a few days
 old!) and only translates from Zamgrh to English, and
@@ -44,7 +46,7 @@ progressing fast, but is currently focused on improving the grammar
 engine.  Most canonical Zamgrh words are not recognized yet, so some
 of the most fun in-game speech still can't be decoded.
 
-## Planned Features
+## Planned Features  (Brannz hr!!zarz)
 
 - Zamgrh → English translation
 - English → Zamgrh generation
@@ -52,14 +54,14 @@ of the most fun in-game speech still can't be decoded.
 - Validator for dictionary integrity
 - Phonetic approximation support
 
-## Project Structure
+## Project Structure (Brazhag Zzragzahr)
 
 - `data/` — dictionary files
 - `src/` — core logic
 - `tools/` — helper scripts
 - `tests/` — test cases
 
-## Getting Started
+## Getting Started  (Zarz zhambar!ng)
 
 ```bash
 python src/translator.py
