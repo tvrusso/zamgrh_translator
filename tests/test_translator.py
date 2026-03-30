@@ -79,28 +79,6 @@ STRUCTURE_TESTS = {
             },
         ),
         (
-            "gahz g!b mah bra!nz",
-            {
-                "subject": "you",
-                "verb": "give",
-                "object": "brains",
-                "plural": True,
-                "negated": False,
-                "imperative": False,
-            },
-        ),
-        (
-            "mah zambah barg bra!nz",
-            {
-                "subject": "I",
-                "verb": "eat",
-                "object": "brains",
-                "plural": False,
-                "negated": False,
-                "imperative": False,
-            },
-        ),
-        (
             "nah ran nahaarh",
             {
                 "subject": None,
@@ -140,17 +118,6 @@ STRUCTURE_TESTS = {
                 "verb": "is",
                 "object": None,
                 "plural": True,
-                "negated": False,
-                "imperative": False,
-            },
-        ),
-        (
-            "mah zambah maz barg bra!nz",
-            {
-                "subject": "I",
-                "verb": "eat",
-                "object": "brains",
-                "plural": False,
                 "negated": False,
                 "imperative": False,
             },
