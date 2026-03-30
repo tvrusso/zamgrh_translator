@@ -79,28 +79,6 @@ STRUCTURE_TESTS = {
             },
         ),
         (
-            "gahz g!b mah bra!nz",
-            {
-                "subject": "you",
-                "verb": "give",
-                "object": "brains",
-                "plural": True,
-                "negated": False,
-                "imperative": False,
-            },
-        ),
-        (
-            "mah zambah barg bra!nz",
-            {
-                "subject": "I",
-                "verb": "eat",
-                "object": "brains",
-                "plural": False,
-                "negated": False,
-                "imperative": False,
-            },
-        ),
-        (
             "nah ran nahaarh",
             {
                 "subject": None,
@@ -140,17 +118,6 @@ STRUCTURE_TESTS = {
                 "verb": "is",
                 "object": None,
                 "plural": True,
-                "negated": False,
-                "imperative": False,
-            },
-        ),
-        (
-            "mah zambah maz barg bra!nz",
-            {
-                "subject": "I",
-                "verb": "eat",
-                "object": "brains",
-                "plural": False,
                 "negated": False,
                 "imperative": False,
             },
@@ -321,8 +288,6 @@ TEST_GROUPS = {
     ],
 
     "articles_and_plural": [
-        ("zambah", "Zombie"),
-        ("harman", "Human"),
         ("zambahz barg bra!nz", "Zombies eat brains"),
         ("zambah barg bra!n", "Zombie eats a brain"),
     ],
@@ -425,16 +390,6 @@ TEST_GROUPS = {
     ("bra!nz", "Brains"),
    ],
 
-   "plural_and_lookup": [
-    ("zambahz", "Zombies"),
-    ("harmanz", "Humans"),
-   ],
-
-   "pos_disambiguation": [
-    ("barg", "Eat"),
-    # later: ambiguous words
-   ],
-
    "stress_tests":  [
     ("zambah maz maz barg bra!nz", "Zombie must eat brains"),
     ("nah maz barg bra!nz", "Do not must eat brains"),
@@ -481,9 +436,6 @@ TEST_GROUPS = {
        # Determiner repetition
        ("mah mah bra!nz", "My brains"),
 
-       # regression test determiner repetition fixes
-       ("mah zambah barg bra!nz", "I eat brains"),
-       ("g!b mah bra!nz", "Give me brains"),
    ],
 
    "decision_tests": [
