@@ -11,6 +11,7 @@ from translator import (
     zamgrh_to_english,
     zamgrh_to_structure,
     get_pos,
+    fix_verb_agreement,
 )
 
 
@@ -474,6 +475,57 @@ TEST_GROUPS = {
    #    ("harman bah", "Human is bad"),
 }
 
+# Format for pipeline unit tests:
+# "function_name" : [
+#      ("input","expected output"),
+#      ...
+#      ],
+# ...
+PIPELINE_UNIT_TESTS = {
+    "fix_verb_agreement": [
+        # If already inflected properly, keep it that way
+        ("I eat brains", "I eat brains"),
+        ("You eat brains", "You eat brains"),
+        ("He eats brains", "He eats brains"),
+        ("We eat brains", "We eat brains"),
+        ("They eat brains", "They eat brains"),
+        ("The zombie eats brains", "The zombie eats brains"),
+        ("The human eats food", "The human eats food"),
+        # Improperly inflected input, currently improperly handled output
+        ("He give brains", "He give brains"),
+        ("She eat brains", "She eat brains"),
+        ("It go away", "It go away"),
+        ("Zombies will eats brains", "Zombies will eats brains"),
+        # no over inflection in input, properly handled on output
+        ("He will eat humans", "He will eat humans"),
+        ("Zombies will eat brains", "Zombies will eat brains"),
+        # additional test cases that are likely wrong
+        # You edge cases
+        ("You gives brains", "You gives brains"),   # current (likely wrong)
+        ("You give brains", "You give brains"),
+        # plural, non-pronoun noun subjects
+        ("Humans eat brains", "Humans eat brains"),
+        ("Humans eats brains", "Humans eats brains"),  # current behavior capture
+        # Bare noun vs. determiner noun
+        ("Zombie eat brains", "Zombie eat brains"),   # likely wrong but current
+        ("Zombie eats brains", "Zombie eats brains"),
+        # Auxiliary interference
+        ("He must eat brains", "He must eat brains"),
+        ("He must eats brains", "He must eats brains"),  # should NOT inflect
+        ("He can eat brains", "He can eat brains"),
+        # multi-word subject
+        ("The big zombie eats brains", "The big zombie eats brains"),
+        ("The big zombie eat brains", "The big zombie eat brains"),  # current behavior
+        # Sentence start verbs
+        ("Eat brains", "Eat brains"),
+        ("Eats brains", "Eats brains"),
+        # copula interaction  -- these are all incorrectly handled
+        ("I is happy", "I is happy"),
+        ("They is happy", "They is happy"),
+        ("He are happy", "He are happy"),
+    ]
+}
+
 # Invariant tests
 def check_invariants(sentence: str, lookup, eng_lookup) -> list[str]:
     issues = []
@@ -597,7 +649,51 @@ def run_structure_tests():
     print(f"Structure Failed: {failed}")
     return failed == 0
 
+def run_pipeline_unit_tests():
+    data = load_dictionary()
+    lookup = build_lookup(data)
+    eng_lookup = build_english_pos_lookup(data)
+
+    passed=0
+    failed=0
+
+    for step_name, cases in PIPELINE_UNIT_TESTS.items():
+        func = globals()[step_name]
+
+        print(f"\n=== PIPELINE: {step_name} ===")
+        for inp, expected in cases:
+            result = func(inp, lookup, eng_lookup)
+            sentence = "".join(result)
+            if sentence == expected:
+                print(f"PASS: {inp}")
+                passed += 1
+            else:
+                print(f"FAIL: {inp}")
+                print(f"  expected: {expected}")
+                print(f"  got:      {sentence}")
+                failed += 1
+
+    print("\n---")
+    print(f"Unit tests Passed: {passed}")
+    print(f"Unit tests Failed: {failed}")
+    return failed == 0
+
+
 if __name__ == "__main__":
     success_translation = run_tests()
     success_structure = run_structure_tests()
-    sys.exit(0 if (success_translation and success_structure) else 1)
+    success_pipeline_unit = run_pipeline_unit_tests()
+
+    if (not success_pipeline_unit):
+        print(f"One or more pipeline unit tests failed!")
+
+    if (not success_structure):
+        print(f"One or more structure tests failed!")
+
+    if (not success_translation):
+        print(f"One or more translation tests failed!")
+
+    if (success_translation and success_structure and success_pipeline_unit):
+        print(f"All test types passed.")
+
+    sys.exit(0 if (success_translation and success_structure and success_pipeline_unit) else 1)
