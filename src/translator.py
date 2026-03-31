@@ -206,14 +206,8 @@ def fix_verb_agreement(words, lookup, eng_lookup):
         prev = result[-1] if result else None
         prev_pos = get_pos(prev, lookup, eng_lookup) if prev else set()
 
-        # handle copula first
-        if w in {"is", "are", "am"}:
-            if prev == "I":
-                w = "am"
-            elif prev and (prev.endswith("s") or prev in {"you", "we", "they"}):
-                w = "are"
-            else:
-                w = "is"
+        w, handled = handle_copula(w,prev)
+        if handled:
             result.append(w)
             continue
 
@@ -278,6 +272,17 @@ def fix_verb_agreement(words, lookup, eng_lookup):
 
     return result
 
+# fix_verb_agreement helper functions
+def handle_copula(current_word, previous_word):
+    if current_word in {"is", "are", "am"}:
+        if previous_word == "I":
+            return "am", True
+        elif previous_word and (previous_word.endswith("s") or
+                                previous_word in {"you", "we", "they"}):
+            return "are", True
+        else:
+            return "is", True
+    return current_word, False
 
 def dedupe_function_words(words, lookup, eng_lookup):
     result = []
@@ -681,7 +686,7 @@ def main():
             print("Exiting translator.")
             break
 
-        print(zamgrh_to_english(text, lookup, eng_lookup))
+        print(zamgrh_to_english(text, lookup, eng_lookup, debug=True))
         print(zamgrh_to_structure(text, lookup))
 
 

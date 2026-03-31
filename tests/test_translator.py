@@ -12,6 +12,7 @@ from translator import (
     zamgrh_to_structure,
     get_pos,
     fix_verb_agreement,
+    handle_copula,
 )
 
 
@@ -505,9 +506,9 @@ PIPELINE_UNIT_TESTS = {
         ("You give brains", "You give brains"),
         # plural, non-pronoun noun subjects
         ("Humans eat brains", "Humans eat brains"),
-        ("Humans eats brains", "Humans eats brains"),  # current behavior capture
+        ("Humans eats brains", "Humans eat brains"),
         # Bare noun vs. determiner noun
-        ("Zombie eat brains", "Zombie eat brains"),   # likely wrong but current
+        ("Zombie eat brains", "Zombie eats brains"),
         ("Zombie eats brains", "Zombie eats brains"),
         # Auxiliary interference
         ("He must eat brains", "He must eat brains"),
@@ -515,14 +516,25 @@ PIPELINE_UNIT_TESTS = {
         ("He can eat brains", "He can eat brains"),
         # multi-word subject
         ("The big zombie eats brains", "The big zombie eats brains"),
-        ("The big zombie eat brains", "The big zombie eat brains"),  # current behavior
+        ("The big zombie eat brains", "The big zombie eats brains"),
         # Sentence start verbs
         ("Eat brains", "Eat brains"),
         ("Eats brains", "Eats brains"),
-        # copula interaction  -- these are all incorrectly handled
-        ("I is happy", "I is happy"),
+        # copula interaction
+        ("I is happy", "I am happy"),
         ("They is happy", "They is happy"),
-        ("He are happy", "He are happy"),
+        ("He are happy", "He is happy"),
+    ]
+}
+
+HELPER_UNIT_TESTS = {
+    "handle_copula": [
+        (("is", "I"), ("am", True)),
+        (("is", "they"), ("are", True)),
+        (("are", "he"), ("is", True)),
+        (("eat", "I"), ("eat", False)),
+        (("is", "Zombies"),("are", True)),
+        (("are", "Zombie"),("is", True)),
     ]
 }
 
@@ -662,8 +674,9 @@ def run_pipeline_unit_tests():
 
         print(f"\n=== PIPELINE: {step_name} ===")
         for inp, expected in cases:
-            result = func(inp, lookup, eng_lookup)
-            sentence = "".join(result)
+            words = inp.split()
+            result = func(words, lookup, eng_lookup)
+            sentence = " ".join(result)
             if sentence == expected:
                 print(f"PASS: {inp}")
                 passed += 1
@@ -678,11 +691,40 @@ def run_pipeline_unit_tests():
     print(f"Unit tests Failed: {failed}")
     return failed == 0
 
+def run_pipeline_helper_unit_tests():
+    passed=0
+    failed=0
+
+    for func_name, cases in HELPER_UNIT_TESTS.items():
+        func = globals()[func_name]
+        print(f"\n=== HELPER: {func_name} ===")
+
+        for args, expected in cases:
+            result = func(*args)
+
+            if result == expected:
+                print(f"PASS: {args}->{result}")
+                passed += 1
+            else:
+                print(f"FAIL: {args}")
+                print(f"  expected: {expected}")
+                print(f"  got:      {result}")
+                failed += 1
+
+    print("\n---")
+    print(f"Helper Passed: {passed}")
+    print(f"Helper Failed: {failed}")
+    return failed == 0
+
 
 if __name__ == "__main__":
     success_translation = run_tests()
     success_structure = run_structure_tests()
     success_pipeline_unit = run_pipeline_unit_tests()
+    success_pipeline_helper_unit = run_pipeline_helper_unit_tests()
+
+    if (not success_pipeline_helper_unit):
+        print(f"One or more pipeline helper unit tests failed!")
 
     if (not success_pipeline_unit):
         print(f"One or more pipeline unit tests failed!")
