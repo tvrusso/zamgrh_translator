@@ -492,17 +492,10 @@ PIPELINE_UNIT_TESTS = {
         ("They eat brains", "They eat brains"),
         ("The zombie eats brains", "The zombie eats brains"),
         ("The human eats food", "The human eats food"),
-        # Improperly inflected input, currently improperly handled output
-        ("He give brains", "He give brains"),
-        ("She eat brains", "She eat brains"),
-        ("It go away", "It go away"),
-        ("Zombies will eats brains", "Zombies will eats brains"),
         # no over inflection in input, properly handled on output
         ("He will eat humans", "He will eat humans"),
         ("Zombies will eat brains", "Zombies will eat brains"),
-        # additional test cases that are likely wrong
         # You edge cases
-        ("You gives brains", "You gives brains"),   # current (likely wrong)
         ("You give brains", "You give brains"),
         # plural, non-pronoun noun subjects
         ("Humans eat brains", "Humans eat brains"),
@@ -512,7 +505,6 @@ PIPELINE_UNIT_TESTS = {
         ("Zombie eats brains", "Zombie eats brains"),
         # Auxiliary interference
         ("He must eat brains", "He must eat brains"),
-        ("He must eats brains", "He must eats brains"),  # should NOT inflect
         ("He can eat brains", "He can eat brains"),
         # multi-word subject
         ("The big zombie eats brains", "The big zombie eats brains"),
@@ -522,8 +514,24 @@ PIPELINE_UNIT_TESTS = {
         ("Eats brains", "Eats brains"),
         # copula interaction
         ("I is happy", "I am happy"),
-        ("They is happy", "They is happy"),
         ("He are happy", "He is happy"),
+        #---
+        # Behavior lock-in during refactor, will have to be fixed later
+        #---
+        # copula interaction
+        ("They is happy", "They is happy"), # INCORRECT
+        # Improperly inflected input, currently improperly handled output
+        ("He give brains", "He give brains"),
+        ("She eat brains", "She eat brains"),
+        ("It go away", "It go away"),
+        ("Zombies will eats brains", "Zombies will eats brains"),
+        # You edge case to fix later
+        ("You gives brains", "You gives brains"),
+        # Auxilliary interference
+        ("He must eats brains", "He must eats brains"),  # should NOT inflect
+        # ---
+        # end incorrect behavior lock-in
+        # ---
     ]
 }
 
@@ -678,7 +686,7 @@ def run_pipeline_unit_tests():
             result = func(words, lookup, eng_lookup)
             sentence = " ".join(result)
             if sentence == expected:
-                print(f"PASS: {inp}")
+                print(f"PASS: {inp}->{sentence}")
                 passed += 1
             else:
                 print(f"FAIL: {inp}")
