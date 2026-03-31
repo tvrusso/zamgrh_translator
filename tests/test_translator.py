@@ -461,6 +461,17 @@ TEST_GROUPS = {
        ("nah maz barg bra!nz", "Do not must eat brains"),
        ("maz nah barg bra!nz", "Must do not eat brains"),
    ],
+   ## We *could* add these tests in order to guard against breakage
+   ## by the agreement refactor, but in fact every one of them is already
+   ## tested by tests in a different block and these would be redundant
+   # "agreement_refactor_lock": [
+   #    ("mah zambah barg bra!nz", "I eat brains"),
+   #    ("gaa g!b mah bra!nz", "You give me brains"),
+   #    ("gahz g!b mah bra!nz", "Yous give me brains"),
+   #    ("zambah barg bra!nz", "Zombie eats brains"),
+   #    ("zambahz barg bra!nz", "Zombies eat brains"),
+   #    ("harmanz bah", "Humans are bad"),
+   #    ("harman bah", "Human is bad"),
 }
 
 # Invariant tests
