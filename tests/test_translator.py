@@ -11,6 +11,7 @@ from translator import (
     zamgrh_to_english,
     zamgrh_to_structure,
     get_pos,
+    clean,
     fix_verb_agreement,
     handle_copula,
 )
@@ -486,49 +487,47 @@ PIPELINE_UNIT_TESTS = {
     "fix_verb_agreement": [
         # If already inflected properly, keep it that way
         ("I eat brains", "I eat brains"),
-        ("You eat brains", "You eat brains"),
-        ("He eats brains", "He eats brains"),
-        ("We eat brains", "We eat brains"),
-        ("They eat brains", "They eat brains"),
-        ("The zombie eats brains", "The zombie eats brains"),
-        ("The human eats food", "The human eats food"),
+        ("You eat brains", "you eat brains"),
+        ("He eats brains", "he eats brains"),
+        ("We eat brains", "we eat brains"),
+        ("They eat brains", "they eat brains"),
+        ("The zombie eats brains", "the zombie eats brains"),
+        ("The human eats food", "the human eats food"),
         # no over inflection in input, properly handled on output
-        ("He will eat humans", "He will eat humans"),
-        ("Zombies will eat brains", "Zombies will eat brains"),
+        ("He will eat humans", "he will eat humans"),
+        ("Zombies will eat brains", "zombies will eat brains"),
         # You edge cases
-        ("You give brains", "You give brains"),
+        ("You give brains", "you give brains"),
+        ("You gives brains", "you give brains"),
         # plural, non-pronoun noun subjects
-        ("Humans eat brains", "Humans eat brains"),
-        ("Humans eats brains", "Humans eat brains"),
+        ("Humans eat brains", "humans eat brains"),
+        ("Humans eats brains", "humans eat brains"),
         # Bare noun vs. determiner noun
-        ("Zombie eat brains", "Zombie eats brains"),
-        ("Zombie eats brains", "Zombie eats brains"),
+        ("Zombie eat brains", "zombie eats brains"),
+        ("Zombie eats brains", "zombie eats brains"),
         # Auxiliary interference
-        ("He must eat brains", "He must eat brains"),
-        ("He can eat brains", "He can eat brains"),
+        ("He must eat brains", "he must eat brains"),
+        ("He can eat brains", "he can eat brains"),
         # multi-word subject
-        ("The big zombie eats brains", "The big zombie eats brains"),
-        ("The big zombie eat brains", "The big zombie eats brains"),
+        ("The big zombie eats brains", "the big zombie eats brains"),
+        ("The big zombie eat brains", "the big zombie eats brains"),
         # Sentence start verbs
-        ("Eat brains", "Eat brains"),
-        ("Eats brains", "Eats brains"),
+        ("Eat brains", "eat brains"),
+        ("Eats brains", "eats brains"),
         # copula interaction
         ("I is happy", "I am happy"),
-        ("He are happy", "He is happy"),
+        ("He are happy", "he is happy"),
+        ("They is happy", "they are happy"),
+        # improperly inflected input
+        ("It go away", "it goes away"),
+        ("He give brains", "he gives brains"),
+        ("She eat brains", "she eats brains"),
         #---
         # Behavior lock-in during refactor, will have to be fixed later
         #---
-        # copula interaction
-        ("They is happy", "They is happy"), # INCORRECT
-        # Improperly inflected input, currently improperly handled output
-        ("He give brains", "He give brains"),
-        ("She eat brains", "She eat brains"),
-        ("It go away", "It go away"),
-        ("Zombies will eats brains", "Zombies will eats brains"),
-        # You edge case to fix later
-        ("You gives brains", "You gives brains"),
         # Auxilliary interference
-        ("He must eats brains", "He must eats brains"),  # should NOT inflect
+        ("Zombies will eats brains", "zombies will eats brains"),
+        ("He must eats brains", "he must eats brains"),  # should NOT inflect
         # ---
         # end incorrect behavior lock-in
         # ---
@@ -682,7 +681,13 @@ def run_pipeline_unit_tests():
 
         print(f"\n=== PIPELINE: {step_name} ===")
         for inp, expected in cases:
-            words = inp.split()
+            raw_words = inp.split()
+            words = []
+            for raw in raw_words:
+                w = clean(raw)
+                if w == "i":
+                    w = "I"
+                words.append(w)
             result = func(words, lookup, eng_lookup)
             sentence = " ".join(result)
             if sentence == expected:
