@@ -25,8 +25,7 @@ def build_english_pos_lookup(data):
 
 
 AUX_WORDS = {"must", "will", "can", "should", "have", "has", "had", "am", "is", "are", "do", "does"}
-SUBJECT_PRONOUNS = {"he", "she", "it"}
-NON_THIRD_PERSON_PRONOUNS = {"I", "you", "we", "they"}
+SUBJECT_PRONOUNS = {"I", "you", "he", "she", "it", "we", "they"}
 VERB_LIKE_WORDS = {"eat", "give", "go", "smash", "speak", "come", "run", "have", "is", "are", "am"}
 DETERMINERS = {"a", "an", "the", "my", "your", "his", "her", "our", "their"}
 
@@ -572,7 +571,6 @@ def is_plural_subject_token(word, features):
         return True
     return word in {"we", "they"}
 
-SUBJECT_PRONOUNS = {"I", "you", "he", "she", "it", "we", "they"}
 
 def zamgrh_to_structure(text, lookup):
     words = text.split()
@@ -625,7 +623,7 @@ def zamgrh_to_structure(text, lookup):
             break
 
     has_explicit_subject = False
-    
+
     for t in tokens:
         if t["word"] == structure["verb"]:
             break
@@ -686,7 +684,7 @@ def main():
             print("Exiting translator.")
             break
 
-        print(zamgrh_to_english(text, lookup, eng_lookup, debug=True))
+        print(zamgrh_to_english(text, lookup, eng_lookup))
         print(zamgrh_to_structure(text, lookup))
 
 
