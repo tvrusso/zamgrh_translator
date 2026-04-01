@@ -14,6 +14,8 @@ from translator import (
     clean,
     fix_verb_agreement,
     handle_copula,
+    handle_auxilliary,
+    handle_main_verb,
 )
 
 
@@ -536,12 +538,154 @@ PIPELINE_UNIT_TESTS = {
 
 HELPER_UNIT_TESTS = {
     "handle_copula": [
-        (("is", "I"), ("am", True)),
-        (("is", "they"), ("are", True)),
-        (("are", "he"), ("is", True)),
-        (("eat", "I"), ("eat", False)),
-        (("is", "Zombies"),("are", True)),
-        (("are", "Zombie"),("is", True)),
+        ({"word":"is","pos":set(),
+          "prev":"I","prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("am", True)),
+        ({"word":"is","pos":set(),
+          "prev":"they","prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("are", True)),
+        ({"word":"are","pos":set(),
+          "prev":"he","prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("is", True)),
+        ({"word":"eat","pos":set(),
+          "prev":"I","prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("eat", False)),
+        ({"word":"is","pos":set(),
+          "prev":"Zombies","prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("are", True)),
+        ({"word":"are","pos":set(),
+          "prev":"Zombie","prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("is", True)),
+    ],
+    "handle_auxilliary": [
+        ({"word":"must","pos":set(),
+          "prev":None,"prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("must",True)),
+        # Not a real word, but we're testing that if we say it's an aux
+        # then it's treated as an aux
+        ({"word":"frobnitz","pos":"aux",
+          "prev":None,"prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("frobnitz",True)),
+        # We shouldn't handle this in this helper
+        ({"word":"frobnitz","pos":"noun",
+          "prev":None,"prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("frobnitz",False)),
+    ],
+    "handle_main_verb": [
+        # --- No subject → no change ---
+        (
+            {"word":"eat","pos":{"verb"},
+             "prev":None,"prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("eat", False)
+        ),
+
+        # --- Simple pronoun subjects ---
+        (
+            {"word":"eat","pos":{"verb"},
+             "prev":"he","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("eats", True)
+        ),
+        (
+            {"word":"eats","pos":{"verb"},
+             "prev":"they","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("eat", True)
+        ),
+        (
+            {"word":"eat","pos":{"verb"},
+             "prev":"I","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("eat", False)
+        ),
+
+        # --- Noun subjects ---
+        (
+            {"word":"eat","pos":{"verb"},
+             "prev":"Zombie","prev_pos":{"noun"},
+             "prev2":None,"prev2_pos":set()},
+            ("eats", True)
+        ),
+        (
+            {"word":"eats","pos":{"verb"},
+             "prev":"Zombies","prev_pos":{"noun"},
+             "prev2":None,"prev2_pos":set()},
+            ("eat", True)
+        ),
+
+        # --- Verb-like previous blocks subject detection ---
+        (
+            {"word":"eat","pos":{"verb"},
+             "prev":"must","prev_pos":{"aux"},
+             "prev2":None,"prev2_pos":set()},
+            ("eat", False)
+        ),
+
+        # --- Auxiliary blocking (prev) ---
+        (
+            {"word":"eats","pos":{"verb"},
+             "prev":"must","prev_pos":{"aux"},
+             "prev2":"he","prev2_pos":set()},
+            ("eats", False)  # should NOT fix due to aux
+        ),
+
+        # --- Auxiliary blocking (prev2) ---
+        (
+            {"word":"eats","pos":{"verb"},
+             "prev":"eat","prev_pos":{"verb"},
+             "prev2":"must","prev2_pos":{"aux"}},
+            ("eats", False)
+        ),
+
+        # --- Inflection rules: y → ies ---
+        (
+            {"word":"try","pos":{"verb"},
+             "prev":"he","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("tries", True)
+        ),
+
+        # --- Inflection rules: es endings ---
+        (
+            {"word":"go","pos":{"verb"},
+             "prev":"he","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("goes", True)
+        ),
+
+        # --- Reverse inflection (plural subject) ---
+        (
+            {"word":"tries","pos":{"verb"},
+             "prev":"they","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("try", True)
+        ),
+
+        # --- Edge: already correct, no change ---
+        (
+            {"word":"eats","pos":{"verb"},
+             "prev":"he","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("eats", False)
+        ),
+
+        # --- Non-verb should be ignored ---
+        (
+            {"word":"brains","pos":{"noun"},
+             "prev":"he","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("brains", False)
+        ),
     ]
 }
 
@@ -712,14 +856,14 @@ def run_pipeline_helper_unit_tests():
         func = globals()[func_name]
         print(f"\n=== HELPER: {func_name} ===")
 
-        for args, expected in cases:
-            result = func(*args)
+        for context, expected in cases:
+            result = func(context)
 
             if result == expected:
-                print(f"PASS: {args}->{result}")
+                print(f"PASS: {context}->{result}")
                 passed += 1
             else:
-                print(f"FAIL: {args}")
+                print(f"FAIL: {context}")
                 print(f"  expected: {expected}")
                 print(f"  got:      {result}")
                 failed += 1
