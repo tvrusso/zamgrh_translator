@@ -11,6 +11,11 @@ from translator import (
     zamgrh_to_english,
     zamgrh_to_structure,
     get_pos,
+    clean,
+    fix_verb_agreement,
+    handle_copula,
+    handle_auxilliary,
+    handle_main_verb,
 )
 
 
@@ -461,6 +466,227 @@ TEST_GROUPS = {
        ("nah maz barg bra!nz", "Do not must eat brains"),
        ("maz nah barg bra!nz", "Must do not eat brains"),
    ],
+   ## We *could* add these tests in order to guard against breakage
+   ## by the agreement refactor, but in fact every one of them is already
+   ## tested by tests in a different block and these would be redundant
+   # "agreement_refactor_lock": [
+   #    ("mah zambah barg bra!nz", "I eat brains"),
+   #    ("gaa g!b mah bra!nz", "You give me brains"),
+   #    ("gahz g!b mah bra!nz", "Yous give me brains"),
+   #    ("zambah barg bra!nz", "Zombie eats brains"),
+   #    ("zambahz barg bra!nz", "Zombies eat brains"),
+   #    ("harmanz bah", "Humans are bad"),
+   #    ("harman bah", "Human is bad"),
+}
+
+# Format for pipeline unit tests:
+# "function_name" : [
+#      ("input","expected output"),
+#      ...
+#      ],
+# ...
+PIPELINE_UNIT_TESTS = {
+    "fix_verb_agreement": [
+        # If already inflected properly, keep it that way
+        ("I eat brains", "I eat brains"),
+        ("You eat brains", "you eat brains"),
+        ("He eats brains", "he eats brains"),
+        ("We eat brains", "we eat brains"),
+        ("They eat brains", "they eat brains"),
+        ("The zombie eats brains", "the zombie eats brains"),
+        ("The human eats food", "the human eats food"),
+        # no over inflection in input, properly handled on output
+        ("He will eat humans", "he will eat humans"),
+        ("Zombies will eat brains", "zombies will eat brains"),
+        # You edge cases
+        ("You give brains", "you give brains"),
+        ("You gives brains", "you give brains"),
+        # plural, non-pronoun noun subjects
+        ("Humans eat brains", "humans eat brains"),
+        ("Humans eats brains", "humans eat brains"),
+        # Bare noun vs. determiner noun
+        ("Zombie eat brains", "zombie eats brains"),
+        ("Zombie eats brains", "zombie eats brains"),
+        # Auxiliary interference
+        ("He must eat brains", "he must eat brains"),
+        ("He can eat brains", "he can eat brains"),
+        # multi-word subject
+        ("The big zombie eats brains", "the big zombie eats brains"),
+        ("The big zombie eat brains", "the big zombie eats brains"),
+        # Sentence start verbs
+        ("Eat brains", "eat brains"),
+        ("Eats brains", "eats brains"),
+        # copula interaction
+        ("I is happy", "I am happy"),
+        ("He are happy", "he is happy"),
+        ("They is happy", "they are happy"),
+        # improperly inflected input
+        ("It go away", "it goes away"),
+        ("He give brains", "he gives brains"),
+        ("She eat brains", "she eats brains"),
+        #---
+        # Behavior lock-in during refactor, will have to be fixed later
+        #---
+        # Auxilliary interference
+        ("Zombies will eats brains", "zombies will eats brains"),
+        ("He must eats brains", "he must eats brains"),  # should NOT inflect
+        # ---
+        # end incorrect behavior lock-in
+        # ---
+    ]
+}
+
+HELPER_UNIT_TESTS = {
+    "handle_copula": [
+        ({"word":"is","pos":set(),
+          "prev":"I","prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("am", True)),
+        ({"word":"is","pos":set(),
+          "prev":"they","prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("are", True)),
+        ({"word":"are","pos":set(),
+          "prev":"he","prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("is", True)),
+        ({"word":"eat","pos":set(),
+          "prev":"I","prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("eat", False)),
+        ({"word":"is","pos":set(),
+          "prev":"Zombies","prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("are", True)),
+        ({"word":"are","pos":set(),
+          "prev":"Zombie","prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("is", True)),
+    ],
+    "handle_auxilliary": [
+        ({"word":"must","pos":set(),
+          "prev":None,"prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("must",True)),
+        # Not a real word, but we're testing that if we say it's an aux
+        # then it's treated as an aux
+        ({"word":"frobnitz","pos":"aux",
+          "prev":None,"prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("frobnitz",True)),
+        # We shouldn't handle this in this helper
+        ({"word":"frobnitz","pos":"noun",
+          "prev":None,"prev_pos":set(),
+          "prev2":None,"prev2_pos":set()},
+         ("frobnitz",False)),
+    ],
+    "handle_main_verb": [
+        # --- No subject → no change ---
+        (
+            {"word":"eat","pos":{"verb"},
+             "prev":None,"prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("eat", False)
+        ),
+
+        # --- Simple pronoun subjects ---
+        (
+            {"word":"eat","pos":{"verb"},
+             "prev":"he","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("eats", True)
+        ),
+        (
+            {"word":"eats","pos":{"verb"},
+             "prev":"they","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("eat", True)
+        ),
+        (
+            {"word":"eat","pos":{"verb"},
+             "prev":"I","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("eat", False)
+        ),
+
+        # --- Noun subjects ---
+        (
+            {"word":"eat","pos":{"verb"},
+             "prev":"Zombie","prev_pos":{"noun"},
+             "prev2":None,"prev2_pos":set()},
+            ("eats", True)
+        ),
+        (
+            {"word":"eats","pos":{"verb"},
+             "prev":"Zombies","prev_pos":{"noun"},
+             "prev2":None,"prev2_pos":set()},
+            ("eat", True)
+        ),
+
+        # --- Verb-like previous blocks subject detection ---
+        (
+            {"word":"eat","pos":{"verb"},
+             "prev":"must","prev_pos":{"aux"},
+             "prev2":None,"prev2_pos":set()},
+            ("eat", False)
+        ),
+
+        # --- Auxiliary blocking (prev) ---
+        (
+            {"word":"eats","pos":{"verb"},
+             "prev":"must","prev_pos":{"aux"},
+             "prev2":"he","prev2_pos":set()},
+            ("eats", False)  # should NOT fix due to aux
+        ),
+
+        # --- Auxiliary blocking (prev2) ---
+        (
+            {"word":"eats","pos":{"verb"},
+             "prev":"eat","prev_pos":{"verb"},
+             "prev2":"must","prev2_pos":{"aux"}},
+            ("eats", False)
+        ),
+
+        # --- Inflection rules: y → ies ---
+        (
+            {"word":"try","pos":{"verb"},
+             "prev":"he","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("tries", True)
+        ),
+
+        # --- Inflection rules: es endings ---
+        (
+            {"word":"go","pos":{"verb"},
+             "prev":"he","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("goes", True)
+        ),
+
+        # --- Reverse inflection (plural subject) ---
+        (
+            {"word":"tries","pos":{"verb"},
+             "prev":"they","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("try", True)
+        ),
+
+        # --- Edge: already correct, no change ---
+        (
+            {"word":"eats","pos":{"verb"},
+             "prev":"he","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("eats", False)
+        ),
+
+        # --- Non-verb should be ignored ---
+        (
+            {"word":"brains","pos":{"noun"},
+             "prev":"he","prev_pos":set(),
+             "prev2":None,"prev2_pos":set()},
+            ("brains", False)
+        ),
+    ]
 }
 
 # Invariant tests
@@ -586,7 +812,87 @@ def run_structure_tests():
     print(f"Structure Failed: {failed}")
     return failed == 0
 
+def run_pipeline_unit_tests():
+    data = load_dictionary()
+    lookup = build_lookup(data)
+    eng_lookup = build_english_pos_lookup(data)
+
+    passed=0
+    failed=0
+
+    for step_name, cases in PIPELINE_UNIT_TESTS.items():
+        func = globals()[step_name]
+
+        print(f"\n=== PIPELINE: {step_name} ===")
+        for inp, expected in cases:
+            raw_words = inp.split()
+            words = []
+            for raw in raw_words:
+                w = clean(raw)
+                if w == "i":
+                    w = "I"
+                words.append(w)
+            result = func(words, lookup, eng_lookup)
+            sentence = " ".join(result)
+            if sentence == expected:
+                print(f"PASS: {inp}->{sentence}")
+                passed += 1
+            else:
+                print(f"FAIL: {inp}")
+                print(f"  expected: {expected}")
+                print(f"  got:      {sentence}")
+                failed += 1
+
+    print("\n---")
+    print(f"Unit tests Passed: {passed}")
+    print(f"Unit tests Failed: {failed}")
+    return failed == 0
+
+def run_pipeline_helper_unit_tests():
+    passed=0
+    failed=0
+
+    for func_name, cases in HELPER_UNIT_TESTS.items():
+        func = globals()[func_name]
+        print(f"\n=== HELPER: {func_name} ===")
+
+        for context, expected in cases:
+            result = func(context)
+
+            if result == expected:
+                print(f"PASS: {context}->{result}")
+                passed += 1
+            else:
+                print(f"FAIL: {context}")
+                print(f"  expected: {expected}")
+                print(f"  got:      {result}")
+                failed += 1
+
+    print("\n---")
+    print(f"Helper Passed: {passed}")
+    print(f"Helper Failed: {failed}")
+    return failed == 0
+
+
 if __name__ == "__main__":
     success_translation = run_tests()
     success_structure = run_structure_tests()
-    sys.exit(0 if (success_translation and success_structure) else 1)
+    success_pipeline_unit = run_pipeline_unit_tests()
+    success_pipeline_helper_unit = run_pipeline_helper_unit_tests()
+
+    if (not success_pipeline_helper_unit):
+        print(f"One or more pipeline helper unit tests failed!")
+
+    if (not success_pipeline_unit):
+        print(f"One or more pipeline unit tests failed!")
+
+    if (not success_structure):
+        print(f"One or more structure tests failed!")
+
+    if (not success_translation):
+        print(f"One or more translation tests failed!")
+
+    if (success_translation and success_structure and success_pipeline_unit):
+        print(f"All test types passed.")
+
+    sys.exit(0 if (success_translation and success_structure and success_pipeline_unit) else 1)
