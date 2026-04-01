@@ -528,7 +528,29 @@ PIPELINE_UNIT_TESTS = {
         ("He give brains", "he gives brains"),
         ("She eat brains", "she eats brains"),
         ("Zombies will eats brains", "zombies will eat brains"),
-        ("He must eats brains", "he must eat brains"),  # should NOT inflect
+        ("He must eats brains", "he must eat brains"),
+        ("The zombie eat brains", "the zombie eats brains"),
+        ("Zombie eat brains", "zombie eats brains"),
+        # subject separated by prepositional phrase
+        ("The zombie with scars eat brains", "the zombie with scars eats brains"),
+        ("The zombies with a scar eats brains", "the zombies with a scar eat brains"),
+        # "of" phrases
+        ("The group of zombies eat brains", "the group of zombies eats brains"),
+        ("A pack of dogs bark", "a pack of dogs barks"),
+        # intervening adverbs
+        ("The zombie quickly eat brains", "the zombie quickly eats brains"),
+        ("Zombies often eats brains", "zombies often eat brains"),
+        # compound subjects
+        ("The zombie and the human eats brains", "the zombie and the human eat brains"),
+        ("Brains and blood is tasty", "brains and blood are tasty"),
+        # pronoun + modifier separation
+        ("He alone eat brains", "he alone eats brains"),
+        ("They together eats brains", "they together eat brains"),
+        # inverted or unusual order
+        ("In the room the zombie eat brains", "in the room the zombie eats brains"),
+        # gerund/verb confusion blockers
+        ("The zombie eating brains eat more", "the zombie eating brains eats more"),
+        ("The zombie in the house eat brains","the zombie in the house eats brains")
     ]
 }
 
@@ -941,6 +963,10 @@ def run_pipeline_unit_tests():
     return failed == 0
 
 def run_pipeline_helper_unit_tests():
+    data = load_dictionary()
+    lookup = build_lookup(data)
+    eng_lookup = build_english_pos_lookup(data)
+
     passed=0
     failed=0
 
@@ -948,14 +974,22 @@ def run_pipeline_helper_unit_tests():
         func = globals()[func_name]
         print(f"\n=== HELPER: {func_name} ===")
 
-        for context, expected in cases:
+        for base_context, expected in cases:
+            # augment context
+            context = dict(base_context)  # shallow copy
+
+            # ensure required fields exist
+            context.setdefault("lookup", lookup)
+            context.setdefault("eng_lookup", eng_lookup)
+            context.setdefault("result_so_far", build_result_stub(context))
+
             result = func(context)
 
             if result == expected:
-                print(f"PASS: {context}->{result}")
+                print(f"PASS: {base_context}->{result}")
                 passed += 1
             else:
-                print(f"FAIL: {context}")
+                print(f"FAIL: {base_context}")
                 print(f"  expected: {expected}")
                 print(f"  got:      {result}")
                 failed += 1
@@ -965,12 +999,21 @@ def run_pipeline_helper_unit_tests():
     print(f"Helper Failed: {failed}")
     return failed == 0
 
+def build_result_stub(context):
+    result = []
+
+    if context.get("prev2"):
+        result.append(context["prev2"])
+    if context.get("prev"):
+        result.append(context["prev"])
+
+    return result
 
 if __name__ == "__main__":
     success_translation = run_tests()
     success_structure = run_structure_tests()
-    success_pipeline_unit = run_pipeline_unit_tests()
     success_pipeline_helper_unit = run_pipeline_helper_unit_tests()
+    success_pipeline_unit = run_pipeline_unit_tests()
 
     if (not success_pipeline_helper_unit):
         print(f"One or more pipeline helper unit tests failed!")

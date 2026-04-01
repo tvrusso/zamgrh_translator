@@ -29,6 +29,7 @@ SUBJECT_PRONOUNS = {"I", "you", "he", "she", "it", "we", "they"}
 VERB_LIKE_WORDS = {"eat", "give", "go", "smash", "speak", "come", "run", "have", "is", "are", "am"}
 DETERMINERS = {"a", "an", "the", "my", "your", "his", "her", "our", "their"}
 
+SKIP_POS = {"adj", "adv", "det","prep",}
 COLLAPSIBLE_WORDS = {
     "must", "will", "can", "should", "have",
     "is", "are", "am",
@@ -236,7 +237,50 @@ def build_context(current_word, result, lookup, eng_lookup):
         "prev_pos": prev_pos,
         "prev2": prev2,
         "prev2_pos": prev2_pos,
+        "result_so_far": result,
+        "lookup": lookup,
+        "eng_lookup": eng_lookup,
     }
+
+def find_subject_head(context):
+    tokens = context["result_so_far"]
+    lookup = context["lookup"]
+    eng_lookup = context["eng_lookup"]
+
+    idx = len(tokens) - 1
+    candidate = None
+
+    while idx >= 0:
+        word = tokens[idx]
+        pos = get_pos(word, lookup, eng_lookup)
+
+        # --- normalize gerunds locally ---
+        if len(pos) == 0 and word.endswith("ing"):
+            pos = {"verb"}
+
+        # --- STOP: auxiliary ---
+        if "aux" in pos:
+            return None
+
+        # --- VERB boundary ---
+        if "verb" in pos:
+            if word.endswith("ing"):
+                idx -= 1
+                continue
+            break  # stop scanning further left
+
+        # --- skip irrelevant ---
+        if pos & SKIP_POS:
+            idx -= 1
+            continue
+
+        # --- record candidate (don't return yet!) ---
+        if "noun" in pos or word in SUBJECT_PRONOUNS:
+            candidate = word
+
+        idx -= 1
+
+    return candidate
 
 # fix_verb_agreement helper functions
 def handle_copula(context):
@@ -287,37 +331,25 @@ def handle_main_verb(context):
     return w,changed_word
 
 def detect_subject(context):
-    prev=context["prev"]
-    prev_pos=context["prev_pos"]
+    subject = find_subject_head(context)
 
-    has_subject = False
-    is_third_person = False
-
-    if not prev:
+    if not subject:
         return False, False
 
-    prev_is_verb_like = (
-        ("verb" in prev_pos) or
-        ("aux" in prev_pos) or
-        (prev in AUX_WORDS)
-    )
+    is_third_person = classify_subject(subject)
+    return True, is_third_person
 
-    # only allow subject detection if previous word is not verb-like
-    if prev_is_verb_like:
-        return False, False
+def classify_subject(word):
+    if word in {"he", "she", "it"}:
+        return True  # 3rd person singular
+    if word in {"I", "you", "we", "they"}:
+        return False  # not 3rd person singular
 
+    # noun heuristic
+    if word.endswith("s"):
+        return False  # plural noun
 
-    if "noun" in prev_pos:
-        has_subject = True
-        is_third_person = not prev.endswith("s")
-    elif prev in {"he", "she", "it"}:
-        has_subject = True
-        is_third_person = True
-    elif prev in {"I", "you", "we", "they"}:
-        has_subject = True
-        is_third_person = False
-
-    return has_subject, is_third_person
+    return True  # singular noun
 
 def detect_auxiliary(context):
     return  (
