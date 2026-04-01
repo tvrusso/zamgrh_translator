@@ -14,9 +14,10 @@ from translator import (
     clean,
     fix_verb_agreement,
     handle_copula,
-    handle_auxilliary,
+    handle_auxiliary,
     handle_main_verb,
     detect_subject,
+    detect_auxiliary,
     inflect_verb,
 )
 
@@ -526,15 +527,8 @@ PIPELINE_UNIT_TESTS = {
         ("It go away", "it goes away"),
         ("He give brains", "he gives brains"),
         ("She eat brains", "she eats brains"),
-        #---
-        # Behavior lock-in during refactor, will have to be fixed later
-        #---
-        # Auxilliary interference
-        ("Zombies will eats brains", "zombies will eats brains"),
-        ("He must eats brains", "he must eats brains"),  # should NOT inflect
-        # ---
-        # end incorrect behavior lock-in
-        # ---
+        ("Zombies will eats brains", "zombies will eat brains"),
+        ("He must eats brains", "he must eat brains"),  # should NOT inflect
     ]
 }
 
@@ -565,7 +559,7 @@ HELPER_UNIT_TESTS = {
           "prev2":None,"prev2_pos":set()},
          ("is", True)),
     ],
-    "handle_auxilliary": [
+    "handle_auxiliary": [
         ({"word":"must","pos":set(),
           "prev":None,"prev_pos":set(),
           "prev2":None,"prev2_pos":set()},
@@ -634,19 +628,21 @@ HELPER_UNIT_TESTS = {
         ),
 
         # --- Auxiliary blocking (prev) ---
+        # "he must eats" -> "eat"
         (
             {"word":"eats","pos":{"verb"},
              "prev":"must","prev_pos":{"aux"},
              "prev2":"he","prev2_pos":set()},
-            ("eats", False)  # should NOT fix due to aux
+            ("eat", True) 
         ),
 
         # --- Auxiliary blocking (prev2) ---
+        # must eat eats -> eat
         (
             {"word":"eats","pos":{"verb"},
              "prev":"eat","prev_pos":{"verb"},
              "prev2":"must","prev2_pos":{"aux"}},
-            ("eats", False)
+            ("eat", True)
         ),
 
         # --- Inflection rules: y → ies ---
@@ -771,6 +767,16 @@ HELPER_UNIT_TESTS = {
         (
             {"word": "eat", "is_third_person": True, "has_subject": False, "has_aux": False},
             ("eats", True)
+        ),
+    ],
+    "detect_auxiliary": [
+        (   # he must eat
+            {"word": "eat", "prev": "must", "prev2": "he", "prev2_pos": set()},
+            True
+        ),
+        (   # zombies will eat
+            {"word": "eat", "prev": "will", "prev2": "zombies", "prev2_pos": set()},
+            True
         ),
     ],
 }

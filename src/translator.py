@@ -208,7 +208,7 @@ def fix_verb_agreement(words, lookup, eng_lookup):
             result.append(w)
             continue
 
-        w, changed_word = handle_auxilliary(context)
+        w, changed_word = handle_auxiliary(context)
         if changed_word:
             result.append(w)
             continue
@@ -253,8 +253,8 @@ def handle_copula(context):
             return "is", True
     return current_word, False
 
-#"Handling" an auxilliary in this case means returning it unmodified
-def handle_auxilliary(context):
+#"Handling" an auxiliary in this case means returning it unmodified
+def handle_auxiliary(context):
     w = context["word"]
     pos=context["pos"]
     if w in AUX_WORDS or "aux" in pos:
@@ -275,10 +275,14 @@ def handle_main_verb(context):
 
     context["has_subject"], context["is_third_person"] = detect_subject(context)
 
-    context["has_aux"] = detect_auxilliary(context)
+    context["has_aux"] = detect_auxiliary(context)
 
-    if context["has_subject"] and not context["has_aux"]:
-        w,changed_word=inflect_verb(context)
+    if context["has_aux"]:
+        # force base form (non-third-person)
+        context["is_third_person"] = False
+        w, changed_word = inflect_verb(context)
+    elif context["has_subject"]:
+        w, changed_word = inflect_verb(context)
 
     return w,changed_word
 
@@ -315,7 +319,7 @@ def detect_subject(context):
 
     return has_subject, is_third_person
 
-def detect_auxilliary(context):
+def detect_auxiliary(context):
     return  (
         ("aux" in context["prev2_pos"]) or
         (context["prev"] in AUX_WORDS if context["prev"] else False)
@@ -323,7 +327,8 @@ def detect_auxilliary(context):
 
 def inflect_verb(context):
     word = context["word"]
-    is_third_person = context["is_third_person"]
+    is_third_person = context.get("is_third_person")
+
     if is_third_person:
         if not word.endswith("s"):
             if word.endswith("y"):
