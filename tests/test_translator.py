@@ -16,6 +16,8 @@ from translator import (
     handle_copula,
     handle_auxilliary,
     handle_main_verb,
+    detect_subject,
+    inflect_verb,
 )
 
 
@@ -686,7 +688,91 @@ HELPER_UNIT_TESTS = {
              "prev2":None,"prev2_pos":set()},
             ("brains", False)
         ),
-    ]
+    ],
+    "detect_subject": [
+        # pronouns
+        (
+            {"prev": "he", "prev_pos": set(), "word": "eat", "pos": {"verb"}},
+            (True, True)  # has_subject, is_third_person
+        ),
+        (
+            {"prev": "they", "prev_pos": set(), "word": "eat", "pos": {"verb"}},
+            (True, False)
+        ),
+        (
+            {"prev": "I", "prev_pos": set(), "word": "eat", "pos": {"verb"}},
+            (True, False)
+        ),
+
+        # noun subjects
+        (
+            {"prev": "zombie", "prev_pos": {"noun"}, "word": "eat", "pos": {"verb"}},
+            (True, True)
+        ),
+        (
+            {"prev": "zombies", "prev_pos": {"noun"}, "word": "eat", "pos": {"verb"}},
+            (True, False)
+        ),
+
+        # blocked by verb-like previous word
+        (
+            {"prev": "will", "prev_pos": {"aux"}, "word": "eat", "pos": {"verb"}},
+            (False, False)
+        ),
+        (
+            {"prev": "eat", "prev_pos": {"verb"}, "word": "brains", "pos": {"noun"}},
+            (False, False)
+        ),
+
+        # no subject
+        (
+            {"prev": None, "prev_pos": set(), "word": "eat", "pos": {"verb"}},
+            (False, False)
+        ),
+    ],
+    "inflect_verb": [
+        # third person singular
+        (
+            {"word": "eat", "is_third_person": True, "has_subject": True, "has_aux": False},
+            ("eats", True)
+        ),
+        (
+            {"word": "go", "is_third_person": True, "has_subject": True, "has_aux": False},
+            ("goes", True)
+        ),
+        (
+            {"word": "try", "is_third_person": True, "has_subject": True, "has_aux": False},
+            ("tries", True)
+        ),
+
+        # plural / non-third-person
+        (
+            {"word": "eats", "is_third_person": False, "has_subject": True, "has_aux": False},
+            ("eat", True)
+        ),
+
+        # already correct → no change
+        (
+            {"word": "eat", "is_third_person": False, "has_subject": True, "has_aux": False},
+            ("eat", False)
+        ),
+
+        # blocked by auxiliary
+        (
+            {"word": "eat", "is_third_person": True, "has_subject": True, "has_aux": True},
+            ("eats", True)
+        ),
+        (
+            {"word": "eats", "is_third_person": True, "has_subject": True, "has_aux": True},
+            ("eats", False)
+        ),
+
+        # no subject → no change
+        (
+            {"word": "eat", "is_third_person": True, "has_subject": False, "has_aux": False},
+            ("eats", True)
+        ),
+    ],
 }
 
 # Invariant tests

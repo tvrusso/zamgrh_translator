@@ -267,19 +267,20 @@ def handle_main_verb(context):
     prev = context["prev"]
     prev_pos = context["prev_pos"]
     prev2_pos = context["prev2_pos"]
+    changed_word=False
 
     # You're not a verb.  We don't want your kind here
     if "verb" not in context["pos"]:
         return context["word"],False
 
-    has_subject, is_third_person = detect_subject(context)
+    context["has_subject"], context["is_third_person"] = detect_subject(context)
 
-    has_aux = detect_auxilliary(context)
+    context["has_aux"] = detect_auxilliary(context)
 
-    if has_subject and not has_aux:
-        w=inflect_verb(w,is_third_person)
+    if context["has_subject"] and not context["has_aux"]:
+        w,changed_word=inflect_verb(context)
 
-    return w,(w != context["word"])
+    return w,changed_word
 
 def detect_subject(context):
     prev=context["prev"]
@@ -320,7 +321,9 @@ def detect_auxilliary(context):
         (context["prev"] in AUX_WORDS if context["prev"] else False)
     )
 
-def inflect_verb(word, is_third_person):
+def inflect_verb(context):
+    word = context["word"]
+    is_third_person = context["is_third_person"]
     if is_third_person:
         if not word.endswith("s"):
             if word.endswith("y"):
@@ -336,7 +339,7 @@ def inflect_verb(word, is_third_person):
             word = word[:-2]
         elif word.endswith("s"):
             word = word[:-1]
-    return word
+    return word,(word != context["word"])
 
 def dedupe_function_words(words, lookup, eng_lookup):
     result = []
