@@ -267,51 +267,76 @@ def handle_main_verb(context):
     prev = context["prev"]
     prev_pos = context["prev_pos"]
     prev2_pos = context["prev2_pos"]
-    if "verb" in pos:
-        has_subject = False
+
+    # You're not a verb.  We don't want your kind here
+    if "verb" not in context["pos"]:
+        return context["word"],False
+
+    has_subject, is_third_person = detect_subject(context)
+
+    has_aux = detect_auxilliary(context)
+
+    if has_subject and not has_aux:
+        w=inflect_verb(w,is_third_person)
+
+    return w,(w != context["word"])
+
+def detect_subject(context):
+    prev=context["prev"]
+    prev_pos=context["prev_pos"]
+
+    has_subject = False
+    is_third_person = False
+
+    if not prev:
+        return False, False
+
+    prev_is_verb_like = (
+        ("verb" in prev_pos) or
+        ("aux" in prev_pos) or
+        (prev in AUX_WORDS)
+    )
+
+    # only allow subject detection if previous word is not verb-like
+    if prev_is_verb_like:
+        return False, False
+
+
+    if "noun" in prev_pos:
+        has_subject = True
+        is_third_person = not prev.endswith("s")
+    elif prev in {"he", "she", "it"}:
+        has_subject = True
+        is_third_person = True
+    elif prev in {"I", "you", "we", "they"}:
+        has_subject = True
         is_third_person = False
 
-        if prev:
-            prev_is_verb_like = (
-                ("verb" in prev_pos) or
-                ("aux" in prev_pos) or
-                (prev in AUX_WORDS)
-            )
+    return has_subject, is_third_person
 
-            # only allow subject detection if previous word is not verb-like
-            if not prev_is_verb_like:
-                if "noun" in prev_pos:
-                    has_subject = True
-                    is_third_person = not prev.endswith("s")
-                elif prev in {"he", "she", "it"}:
-                    has_subject = True
-                    is_third_person = True
-                elif prev in {"I", "you", "we", "they"}:
-                    has_subject = True
-                    is_third_person = False
+def detect_auxilliary(context):
+    return  (
+        ("aux" in context["prev2_pos"]) or
+        (context["prev"] in AUX_WORDS if context["prev"] else False)
+    )
 
-        has_aux = (
-            ("aux" in prev2_pos) or
-            (prev in AUX_WORDS if prev else False)
-        )
-
-        if has_subject and not has_aux:
-            if is_third_person:
-                if not w.endswith("s"):
-                    if w.endswith("y"):
-                        w = w[:-1] + "ies"
-                    elif w.endswith(("s", "sh", "ch", "x", "z", "o")):
-                        w = w + "es"
-                    else:
-                        w = w + "s"
+def inflect_verb(word, is_third_person):
+    if is_third_person:
+        if not word.endswith("s"):
+            if word.endswith("y"):
+                word = word[:-1] + "ies"
+            elif word.endswith(("s", "sh", "ch", "x", "z", "o")):
+                word = word + "es"
             else:
-                if w.endswith("ies"):
-                    w = w[:-3] + "y"
-                elif w.endswith("es") and w[:-2].endswith(("s", "sh", "ch", "x", "z", "o")):
-                    w = w[:-2]
-                elif w.endswith("s"):
-                    w = w[:-1]
-    return w,(w != context["word"])
+                word = word + "s"
+    else:
+        if word.endswith("ies"):
+            word = word[:-3] + "y"
+        elif word.endswith("es") and word[:-2].endswith(("s", "sh", "ch", "x", "z", "o")):
+            word = word[:-2]
+        elif word.endswith("s"):
+            word = word[:-1]
+    return word
 
 def dedupe_function_words(words, lookup, eng_lookup):
     result = []
