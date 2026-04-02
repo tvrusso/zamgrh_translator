@@ -205,18 +205,24 @@ def fix_verb_agreement(words, lookup, eng_lookup):
         context = build_context(w,result,lookup,eng_lookup)
 
         w, changed_word = handle_copula(context)
+        result_word = w  # keep track
+
         if changed_word:
-            result.append(w)
-            continue
+            # DO NOT continue — allow late correction
+            pass
+        else:
+            w, changed_word = handle_auxiliary(context)
+            if changed_word:
+                result_word = w
+            else:
+                w, changed_word = handle_main_verb(context)
+                result_word = w
 
-        w, changed_word = handle_auxiliary(context)
-        if changed_word:
-            result.append(w)
-            continue
+        # 👇 ALWAYS run late copula correction
+        context["word"] = result_word
+        result_word, _ = handle_copula_late(context)
 
-        w,changed_word = handle_main_verb(context)
-
-        result.append(w)
+        result.append(result_word)
 
     return result
 
@@ -284,6 +290,41 @@ def find_subject_head(context):
 
     return candidate
 
+def has_compound_subject(context):
+    tokens = context["result_so_far"]
+    lookup = context["lookup"]
+    eng_lookup = context["eng_lookup"]
+
+    idx = len(tokens) - 1
+
+    seen_noun = False
+    seen_and = False
+
+    while idx >= 0:
+        word = tokens[idx]
+        pos = get_pos(word, lookup, eng_lookup)
+
+        # --- stop at clause boundary ---
+        if "verb" in pos or "aux" in pos:
+            break
+
+        # --- normalize gerunds ---
+        if len(pos) == 0 and word.endswith("ing"):
+            pos = {"verb"}
+
+        if "noun" in pos:
+            if seen_and:
+                return True   # noun ... and ... noun
+            seen_noun = True
+
+        elif word == "and":
+            if seen_noun:
+                seen_and = True
+
+        idx -= 1
+
+    return False
+
 # fix_verb_agreement helper functions
 def handle_copula(context):
     current_word = context["word"]
@@ -298,6 +339,27 @@ def handle_copula(context):
         else:
             return "is", True
     return current_word, False
+
+def handle_copula_late(context):
+    word = context["word"]
+    if word not in {"is", "are", "am"}:
+        return word, False
+
+    has_subject, is_third_person = detect_subject(context)
+
+    if not has_subject:
+        return word, False
+
+    subject = find_subject_head(context)
+    # --- special case: I ---
+    if subject == "I":
+        new_word = "am"
+    elif is_third_person:
+        new_word = "is"
+    else:
+        new_word = "are"
+
+    return new_word, (new_word != word)
 
 #"Handling" an auxiliary in this case means returning it unmodified
 def handle_auxiliary(context):
@@ -333,6 +395,11 @@ def handle_main_verb(context):
     return w,changed_word
 
 def detect_subject(context):
+    if has_compound_subject(context):
+        result_so_far=context["result_so_far"]
+        current_word=context["word"]
+        return True, False   # plural → NOT third person singular
+
     subject = find_subject_head(context)
 
     if not subject:
@@ -362,6 +429,7 @@ def detect_auxiliary(context):
 def inflect_verb(context):
     word = context["word"]
     is_third_person = context.get("is_third_person")
+    result_so_far = context.get("result_so_far")
 
     if is_third_person:
         if not word.endswith("s"):

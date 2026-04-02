@@ -542,7 +542,7 @@ PIPELINE_UNIT_TESTS = {
         ("Zombies often eats brains", "zombies often eat brains"),
         # compound subjects
         ("The zombie and the human eats brains", "the zombie and the human eat brains"),
-        ("Brains and human is tasty", "brains and human are tasty"),
+        ("Brains and human is nice", "brains and human are nice"),
         # pronoun + modifier separation
         ("He alone eat brains", "he alone eats brains"),
         ("They together eats brains", "they together eat brains"),
