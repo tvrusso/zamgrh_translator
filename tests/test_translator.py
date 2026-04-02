@@ -857,13 +857,15 @@ def check_invariants(sentence: str, lookup, eng_lookup) -> list[str]:
 # Test runner
 # ---------------------------
 
-def run_tests():
+def run_tests(verbose=False):
     translator, lookup, eng_lookup = build_translator()
     passed = 0
     failed = 0
 
     for group, cases in TEST_GROUPS.items():
         print(f"\n=== {group.upper()} ===")
+        group_passed=0
+        group_failed=0
 
         for zamgrh, expected in cases:
             result = translator(zamgrh)
@@ -874,11 +876,14 @@ def run_tests():
                 print(f"  result: {result}")
                 print(f"  issues: {inv_errors}")
                 failed += 1
+                group_failed +=1
                 continue
 
             if result == expected:
-                print(f"PASS: {zamgrh}")
+                if (verbose):
+                    print(f"PASS: {zamgrh}")
                 passed += 1
+                group_passed += 1
             else:
                 print(f"FAIL: {zamgrh}")
                 print(f"  expected: {expected}")
@@ -893,14 +898,16 @@ def run_tests():
                 print(f"[structure] {structure}")
 
                 failed += 1
-
+                group_failed +=1
+        print(f"Group tests passed: {group_passed}")
+        print(f"Group tests failed: {group_failed}")
     print("\n---")
     print(f"Passed: {passed}")
     print(f"Failed: {failed}")
 
     return failed == 0
 
-def run_structure_tests():
+def run_structure_tests(verbose=False):
     data = load_dictionary()
     lookup = build_lookup(data)
 
@@ -908,25 +915,32 @@ def run_structure_tests():
     failed = 0
 
     for group, cases in STRUCTURE_TESTS.items():
+        group_passed=0
+        group_failed=0
         print(f"\n=== STRUCTURE: {group.upper()} ===")
         for zamgrh, expected in cases:
             result = zamgrh_to_structure(zamgrh, lookup)
 
             if result == expected:
-                print(f"PASS: {zamgrh}")
+                if (verbose):
+                    print(f"PASS: {zamgrh}")
                 passed += 1
+                group_passed +=1
             else:
                 print(f"FAIL: {zamgrh}")
                 print(f"  expected: {expected}")
                 print(f"  got:      {result}")
                 failed += 1
+                group_failed +=1
 
+        print(f"Group tests passed: {group_passed}")
+        print(f"Group tests failed: {group_failed}")
     print("\n---")
     print(f"Structure Passed: {passed}")
     print(f"Structure Failed: {failed}")
     return failed == 0
 
-def run_pipeline_unit_tests():
+def run_pipeline_unit_tests(verbose=False):
     data = load_dictionary()
     lookup = build_lookup(data)
     eng_lookup = build_english_pos_lookup(data)
@@ -938,6 +952,8 @@ def run_pipeline_unit_tests():
         func = globals()[step_name]
 
         print(f"\n=== PIPELINE: {step_name} ===")
+        step_passed=0
+        step_failed=0
         for inp, expected in cases:
             raw_words = inp.split()
             words = []
@@ -949,20 +965,24 @@ def run_pipeline_unit_tests():
             result = func(words, lookup, eng_lookup)
             sentence = " ".join(result)
             if sentence == expected:
-                print(f"PASS: {inp}->{sentence}")
+                if (verbose):
+                    print(f"PASS: {inp}->{sentence}")
                 passed += 1
+                step_passed +=1
             else:
                 print(f"FAIL: {inp}")
                 print(f"  expected: {expected}")
                 print(f"  got:      {sentence}")
                 failed += 1
-
+                step_failed +=1
+        print(f"Step tests passed: {step_passed}")
+        print(f"Step tests failed: {step_failed}")
     print("\n---")
     print(f"Unit tests Passed: {passed}")
     print(f"Unit tests Failed: {failed}")
     return failed == 0
 
-def run_pipeline_helper_unit_tests():
+def run_pipeline_helper_unit_tests(verbose=False):
     data = load_dictionary()
     lookup = build_lookup(data)
     eng_lookup = build_english_pos_lookup(data)
@@ -971,6 +991,8 @@ def run_pipeline_helper_unit_tests():
     failed=0
 
     for func_name, cases in HELPER_UNIT_TESTS.items():
+        func_passed=0
+        func_failed=0
         func = globals()[func_name]
         print(f"\n=== HELPER: {func_name} ===")
 
@@ -986,14 +1008,18 @@ def run_pipeline_helper_unit_tests():
             result = func(context)
 
             if result == expected:
-                print(f"PASS: {base_context}->{result}")
+                if (verbose):
+                    print(f"PASS: {base_context}->{result}")
                 passed += 1
+                func_passed +=1
             else:
                 print(f"FAIL: {base_context}")
                 print(f"  expected: {expected}")
                 print(f"  got:      {result}")
                 failed += 1
-
+                func_failed +=1
+        print(f"Func tests passed: {func_passed}")
+        print(f"Func tests failed: {func_failed}")
     print("\n---")
     print(f"Helper Passed: {passed}")
     print(f"Helper Failed: {failed}")
@@ -1010,10 +1036,15 @@ def build_result_stub(context):
     return result
 
 if __name__ == "__main__":
-    success_translation = run_tests()
-    success_structure = run_structure_tests()
-    success_pipeline_helper_unit = run_pipeline_helper_unit_tests()
-    success_pipeline_unit = run_pipeline_unit_tests()
+    verbose = False
+    command_line_args = sys.argv
+    if ("--verbose" in command_line_args):
+        verbose=True
+
+    success_translation = run_tests(verbose)
+    success_structure = run_structure_tests(verbose)
+    success_pipeline_helper_unit = run_pipeline_helper_unit_tests(verbose)
+    success_pipeline_unit = run_pipeline_unit_tests(verbose)
 
     if (not success_pipeline_helper_unit):
         print(f"One or more pipeline helper unit tests failed!")
