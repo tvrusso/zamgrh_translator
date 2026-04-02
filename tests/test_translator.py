@@ -536,7 +536,7 @@ PIPELINE_UNIT_TESTS = {
         ("The zombies with a scar eats brains", "the zombies with a scar eat brains"),
         # "of" phrases
         ("The group of zombies eat brains", "the group of zombies eats brains"),
-        ("A pack of dogs bark", "a pack of dogs barks"),
+        ("A group of zombies gab", "a group of zombies gabs"),
         # intervening adverbs
         ("The zombie quickly eat brains", "the zombie quickly eats brains"),
         ("Zombies often eats brains", "zombies often eat brains"),
