@@ -275,9 +275,11 @@ def find_subject_head(context):
             continue
 
         # --- record candidate (don't return yet!) ---
-        if "noun" in pos or word in SUBJECT_PRONOUNS:
+        if "noun" in pos:
             candidate = word
-
+        elif word in SUBJECT_PRONOUNS:
+            if candidate is None:   # only if we haven't found a noun yet
+                candidate = word
         idx -= 1
 
     return candidate

@@ -550,7 +550,7 @@ PIPELINE_UNIT_TESTS = {
         ("In the room the zombie eat brains", "in the room the zombie eats brains"),
         # gerund/verb confusion blockers
         ("The zombie eating brains eat more", "the zombie eating brains eats more"),
-        ("The zombie in the house eat brains","the zombie in the house eats brains")
+        ("The zombie in the house eat brains","the zombie in the house eats brains"),
     ]
 }
 
