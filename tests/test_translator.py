@@ -14,8 +14,11 @@ from translator import (
     clean,
     fix_verb_agreement,
     handle_copula,
-    handle_auxilliary,
+    handle_auxiliary,
     handle_main_verb,
+    detect_subject,
+    detect_auxiliary,
+    inflect_verb,
 )
 
 
@@ -524,15 +527,30 @@ PIPELINE_UNIT_TESTS = {
         ("It go away", "it goes away"),
         ("He give brains", "he gives brains"),
         ("She eat brains", "she eats brains"),
-        #---
-        # Behavior lock-in during refactor, will have to be fixed later
-        #---
-        # Auxilliary interference
-        ("Zombies will eats brains", "zombies will eats brains"),
-        ("He must eats brains", "he must eats brains"),  # should NOT inflect
-        # ---
-        # end incorrect behavior lock-in
-        # ---
+        ("Zombies will eats brains", "zombies will eat brains"),
+        ("He must eats brains", "he must eat brains"),
+        ("The zombie eat brains", "the zombie eats brains"),
+        ("Zombie eat brains", "zombie eats brains"),
+        # subject separated by prepositional phrase
+        ("The zombie with scars eat brains", "the zombie with scars eats brains"),
+        ("The zombies with a scar eats brains", "the zombies with a scar eat brains"),
+        # "of" phrases
+        ("The group of zombies eat brains", "the group of zombies eats brains"),
+        ("A group of zombies gab", "a group of zombies gabs"),
+        # intervening adverbs
+        ("The zombie quickly eat brains", "the zombie quickly eats brains"),
+        ("Zombies often eats brains", "zombies often eat brains"),
+        # compound subjects
+        ("The zombie and the human eats brains", "the zombie and the human eat brains"),
+        ("Brains and human is nice", "brains and human are nice"),
+        # pronoun + modifier separation
+        ("He alone eat brains", "he alone eats brains"),
+        ("They together eats brains", "they together eat brains"),
+        # inverted or unusual order
+        ("In the room the zombie eat brains", "in the room the zombie eats brains"),
+        # gerund/verb confusion blockers
+        ("The zombie eating brains eat more", "the zombie eating brains eats more"),
+        ("The zombie in the house eat brains","the zombie in the house eats brains"),
     ]
 }
 
@@ -563,7 +581,7 @@ HELPER_UNIT_TESTS = {
           "prev2":None,"prev2_pos":set()},
          ("is", True)),
     ],
-    "handle_auxilliary": [
+    "handle_auxiliary": [
         ({"word":"must","pos":set(),
           "prev":None,"prev_pos":set(),
           "prev2":None,"prev2_pos":set()},
@@ -632,19 +650,21 @@ HELPER_UNIT_TESTS = {
         ),
 
         # --- Auxiliary blocking (prev) ---
+        # "he must eats" -> "eat"
         (
             {"word":"eats","pos":{"verb"},
              "prev":"must","prev_pos":{"aux"},
              "prev2":"he","prev2_pos":set()},
-            ("eats", False)  # should NOT fix due to aux
+            ("eat", True) 
         ),
 
         # --- Auxiliary blocking (prev2) ---
+        # must eat eats -> eat
         (
             {"word":"eats","pos":{"verb"},
              "prev":"eat","prev_pos":{"verb"},
              "prev2":"must","prev2_pos":{"aux"}},
-            ("eats", False)
+            ("eat", True)
         ),
 
         # --- Inflection rules: y → ies ---
@@ -686,7 +706,101 @@ HELPER_UNIT_TESTS = {
              "prev2":None,"prev2_pos":set()},
             ("brains", False)
         ),
-    ]
+    ],
+    "detect_subject": [
+        # pronouns
+        (
+            {"prev": "he", "prev_pos": set(), "word": "eat", "pos": {"verb"}},
+            (True, True)  # has_subject, is_third_person
+        ),
+        (
+            {"prev": "they", "prev_pos": set(), "word": "eat", "pos": {"verb"}},
+            (True, False)
+        ),
+        (
+            {"prev": "I", "prev_pos": set(), "word": "eat", "pos": {"verb"}},
+            (True, False)
+        ),
+
+        # noun subjects
+        (
+            {"prev": "zombie", "prev_pos": {"noun"}, "word": "eat", "pos": {"verb"}},
+            (True, True)
+        ),
+        (
+            {"prev": "zombies", "prev_pos": {"noun"}, "word": "eat", "pos": {"verb"}},
+            (True, False)
+        ),
+
+        # blocked by verb-like previous word
+        (
+            {"prev": "will", "prev_pos": {"aux"}, "word": "eat", "pos": {"verb"}},
+            (False, False)
+        ),
+        (
+            {"prev": "eat", "prev_pos": {"verb"}, "word": "brains", "pos": {"noun"}},
+            (False, False)
+        ),
+
+        # no subject
+        (
+            {"prev": None, "prev_pos": set(), "word": "eat", "pos": {"verb"}},
+            (False, False)
+        ),
+    ],
+    "inflect_verb": [
+        # third person singular
+        (
+            {"word": "eat", "is_third_person": True, "has_subject": True, "has_aux": False},
+            ("eats", True)
+        ),
+        (
+            {"word": "go", "is_third_person": True, "has_subject": True, "has_aux": False},
+            ("goes", True)
+        ),
+        (
+            {"word": "try", "is_third_person": True, "has_subject": True, "has_aux": False},
+            ("tries", True)
+        ),
+
+        # plural / non-third-person
+        (
+            {"word": "eats", "is_third_person": False, "has_subject": True, "has_aux": False},
+            ("eat", True)
+        ),
+
+        # already correct → no change
+        (
+            {"word": "eat", "is_third_person": False, "has_subject": True, "has_aux": False},
+            ("eat", False)
+        ),
+
+        # blocked by auxiliary
+        (
+            {"word": "eat", "is_third_person": True, "has_subject": True, "has_aux": True},
+            ("eats", True)
+        ),
+        (
+            {"word": "eats", "is_third_person": True, "has_subject": True, "has_aux": True},
+            ("eats", False)
+        ),
+
+        # no subject → no change
+        (
+            {"word": "eat", "is_third_person": True, "has_subject": False, "has_aux": False},
+            ("eats", True)
+        ),
+    ],
+    "detect_auxiliary": [
+        (   # he must eat
+            {"word": "eat", "prev": "must", "prev2": "he", "prev2_pos": set()},
+            True
+        ),
+        (   # zombies will eat
+            {"word": "eat", "prev": "will", "prev2": "zombies", "prev2_pos": set()},
+            True
+        ),
+    ],
 }
 
 # Invariant tests
@@ -743,13 +857,15 @@ def check_invariants(sentence: str, lookup, eng_lookup) -> list[str]:
 # Test runner
 # ---------------------------
 
-def run_tests():
+def run_tests(verbose=False):
     translator, lookup, eng_lookup = build_translator()
     passed = 0
     failed = 0
 
     for group, cases in TEST_GROUPS.items():
         print(f"\n=== {group.upper()} ===")
+        group_passed=0
+        group_failed=0
 
         for zamgrh, expected in cases:
             result = translator(zamgrh)
@@ -760,11 +876,14 @@ def run_tests():
                 print(f"  result: {result}")
                 print(f"  issues: {inv_errors}")
                 failed += 1
+                group_failed +=1
                 continue
 
             if result == expected:
-                print(f"PASS: {zamgrh}")
+                if (verbose):
+                    print(f"PASS: {zamgrh}")
                 passed += 1
+                group_passed += 1
             else:
                 print(f"FAIL: {zamgrh}")
                 print(f"  expected: {expected}")
@@ -779,14 +898,16 @@ def run_tests():
                 print(f"[structure] {structure}")
 
                 failed += 1
-
+                group_failed +=1
+        print(f"Group tests passed: {group_passed}")
+        print(f"Group tests failed: {group_failed}")
     print("\n---")
     print(f"Passed: {passed}")
     print(f"Failed: {failed}")
 
     return failed == 0
 
-def run_structure_tests():
+def run_structure_tests(verbose=False):
     data = load_dictionary()
     lookup = build_lookup(data)
 
@@ -794,25 +915,32 @@ def run_structure_tests():
     failed = 0
 
     for group, cases in STRUCTURE_TESTS.items():
+        group_passed=0
+        group_failed=0
         print(f"\n=== STRUCTURE: {group.upper()} ===")
         for zamgrh, expected in cases:
             result = zamgrh_to_structure(zamgrh, lookup)
 
             if result == expected:
-                print(f"PASS: {zamgrh}")
+                if (verbose):
+                    print(f"PASS: {zamgrh}")
                 passed += 1
+                group_passed +=1
             else:
                 print(f"FAIL: {zamgrh}")
                 print(f"  expected: {expected}")
                 print(f"  got:      {result}")
                 failed += 1
+                group_failed +=1
 
+        print(f"Group tests passed: {group_passed}")
+        print(f"Group tests failed: {group_failed}")
     print("\n---")
     print(f"Structure Passed: {passed}")
     print(f"Structure Failed: {failed}")
     return failed == 0
 
-def run_pipeline_unit_tests():
+def run_pipeline_unit_tests(verbose=False):
     data = load_dictionary()
     lookup = build_lookup(data)
     eng_lookup = build_english_pos_lookup(data)
@@ -824,6 +952,8 @@ def run_pipeline_unit_tests():
         func = globals()[step_name]
 
         print(f"\n=== PIPELINE: {step_name} ===")
+        step_passed=0
+        step_failed=0
         for inp, expected in cases:
             raw_words = inp.split()
             words = []
@@ -835,50 +965,86 @@ def run_pipeline_unit_tests():
             result = func(words, lookup, eng_lookup)
             sentence = " ".join(result)
             if sentence == expected:
-                print(f"PASS: {inp}->{sentence}")
+                if (verbose):
+                    print(f"PASS: {inp}->{sentence}")
                 passed += 1
+                step_passed +=1
             else:
                 print(f"FAIL: {inp}")
                 print(f"  expected: {expected}")
                 print(f"  got:      {sentence}")
                 failed += 1
-
+                step_failed +=1
+        print(f"Step tests passed: {step_passed}")
+        print(f"Step tests failed: {step_failed}")
     print("\n---")
     print(f"Unit tests Passed: {passed}")
     print(f"Unit tests Failed: {failed}")
     return failed == 0
 
-def run_pipeline_helper_unit_tests():
+def run_pipeline_helper_unit_tests(verbose=False):
+    data = load_dictionary()
+    lookup = build_lookup(data)
+    eng_lookup = build_english_pos_lookup(data)
+
     passed=0
     failed=0
 
     for func_name, cases in HELPER_UNIT_TESTS.items():
+        func_passed=0
+        func_failed=0
         func = globals()[func_name]
         print(f"\n=== HELPER: {func_name} ===")
 
-        for context, expected in cases:
+        for base_context, expected in cases:
+            # augment context
+            context = dict(base_context)  # shallow copy
+
+            # ensure required fields exist
+            context.setdefault("lookup", lookup)
+            context.setdefault("eng_lookup", eng_lookup)
+            context.setdefault("result_so_far", build_result_stub(context))
+
             result = func(context)
 
             if result == expected:
-                print(f"PASS: {context}->{result}")
+                if (verbose):
+                    print(f"PASS: {base_context}->{result}")
                 passed += 1
+                func_passed +=1
             else:
-                print(f"FAIL: {context}")
+                print(f"FAIL: {base_context}")
                 print(f"  expected: {expected}")
                 print(f"  got:      {result}")
                 failed += 1
-
+                func_failed +=1
+        print(f"Func tests passed: {func_passed}")
+        print(f"Func tests failed: {func_failed}")
     print("\n---")
     print(f"Helper Passed: {passed}")
     print(f"Helper Failed: {failed}")
     return failed == 0
 
+def build_result_stub(context):
+    result = []
+
+    if context.get("prev2"):
+        result.append(context["prev2"])
+    if context.get("prev"):
+        result.append(context["prev"])
+
+    return result
 
 if __name__ == "__main__":
-    success_translation = run_tests()
-    success_structure = run_structure_tests()
-    success_pipeline_unit = run_pipeline_unit_tests()
-    success_pipeline_helper_unit = run_pipeline_helper_unit_tests()
+    verbose = False
+    command_line_args = sys.argv
+    if ("--verbose" in command_line_args):
+        verbose=True
+
+    success_translation = run_tests(verbose)
+    success_structure = run_structure_tests(verbose)
+    success_pipeline_helper_unit = run_pipeline_helper_unit_tests(verbose)
+    success_pipeline_unit = run_pipeline_unit_tests(verbose)
 
     if (not success_pipeline_helper_unit):
         print(f"One or more pipeline helper unit tests failed!")

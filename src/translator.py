@@ -29,6 +29,7 @@ SUBJECT_PRONOUNS = {"I", "you", "he", "she", "it", "we", "they"}
 VERB_LIKE_WORDS = {"eat", "give", "go", "smash", "speak", "come", "run", "have", "is", "are", "am"}
 DETERMINERS = {"a", "an", "the", "my", "your", "his", "her", "our", "their"}
 
+SKIP_POS = {"adj", "adv", "det","prep",}
 COLLAPSIBLE_WORDS = {
     "must", "will", "can", "should", "have",
     "is", "are", "am",
@@ -204,18 +205,24 @@ def fix_verb_agreement(words, lookup, eng_lookup):
         context = build_context(w,result,lookup,eng_lookup)
 
         w, changed_word = handle_copula(context)
+        result_word = w  # keep track
+
         if changed_word:
-            result.append(w)
-            continue
+            # DO NOT continue — allow late correction
+            pass
+        else:
+            w, changed_word = handle_auxiliary(context)
+            if changed_word:
+                result_word = w
+            else:
+                w, changed_word = handle_main_verb(context)
+                result_word = w
 
-        w, changed_word = handle_auxilliary(context)
-        if changed_word:
-            result.append(w)
-            continue
+        # 👇 ALWAYS run late copula correction
+        context["word"] = result_word
+        result_word, _ = handle_copula_late(context)
 
-        w,changed_word = handle_main_verb(context)
-
-        result.append(w)
+        result.append(result_word)
 
     return result
 
@@ -236,7 +243,87 @@ def build_context(current_word, result, lookup, eng_lookup):
         "prev_pos": prev_pos,
         "prev2": prev2,
         "prev2_pos": prev2_pos,
+        "result_so_far": result,
+        "lookup": lookup,
+        "eng_lookup": eng_lookup,
     }
+
+def find_subject_head(context):
+    tokens = context["result_so_far"]
+    lookup = context["lookup"]
+    eng_lookup = context["eng_lookup"]
+
+    idx = len(tokens) - 1
+    candidate = None
+
+    while idx >= 0:
+        word = tokens[idx]
+        pos = get_pos(word, lookup, eng_lookup)
+
+        # --- normalize gerunds locally ---
+        if len(pos) == 0 and word.endswith("ing"):
+            pos = {"verb"}
+
+        # --- STOP: auxiliary ---
+        if "aux" in pos:
+            return None
+
+        # --- VERB boundary ---
+        if "verb" in pos:
+            if word.endswith("ing"):
+                idx -= 1
+                continue
+            break  # stop scanning further left
+
+        # --- skip irrelevant ---
+        if pos & SKIP_POS:
+            idx -= 1
+            continue
+
+        # --- record candidate (don't return yet!) ---
+        if "noun" in pos:
+            candidate = word
+        elif word in SUBJECT_PRONOUNS:
+            if candidate is None:   # only if we haven't found a noun yet
+                candidate = word
+        idx -= 1
+
+    return candidate
+
+def has_compound_subject(context):
+    tokens = context["result_so_far"]
+    lookup = context["lookup"]
+    eng_lookup = context["eng_lookup"]
+
+    idx = len(tokens) - 1
+
+    seen_noun = False
+    seen_and = False
+
+    while idx >= 0:
+        word = tokens[idx]
+        pos = get_pos(word, lookup, eng_lookup)
+
+        # --- stop at clause boundary ---
+        if "verb" in pos or "aux" in pos:
+            break
+
+        # --- normalize gerunds ---
+        if len(pos) == 0 and word.endswith("ing"):
+            pos = {"verb"}
+
+        if "noun" in pos:
+            if seen_and:
+                return True   # noun ... and ... noun
+            seen_noun = True
+
+        elif word == "and":
+            if seen_noun:
+                seen_and = True
+
+        idx -= 1
+
+    return False
 
 # fix_verb_agreement helper functions
 def handle_copula(context):
@@ -253,8 +340,29 @@ def handle_copula(context):
             return "is", True
     return current_word, False
 
-#"Handling" an auxilliary in this case means returning it unmodified
-def handle_auxilliary(context):
+def handle_copula_late(context):
+    word = context["word"]
+    if word not in {"is", "are", "am"}:
+        return word, False
+
+    has_subject, is_third_person = detect_subject(context)
+
+    if not has_subject:
+        return word, False
+
+    subject = find_subject_head(context)
+    # --- special case: I ---
+    if subject == "I":
+        new_word = "am"
+    elif is_third_person:
+        new_word = "is"
+    else:
+        new_word = "are"
+
+    return new_word, (new_word != word)
+
+#"Handling" an auxiliary in this case means returning it unmodified
+def handle_auxiliary(context):
     w = context["word"]
     pos=context["pos"]
     if w in AUX_WORDS or "aux" in pos:
@@ -267,60 +375,62 @@ def handle_main_verb(context):
     prev = context["prev"]
     prev_pos = context["prev_pos"]
     prev2_pos = context["prev2_pos"]
+    changed_word=False
 
     # You're not a verb.  We don't want your kind here
     if "verb" not in context["pos"]:
         return context["word"],False
 
-    has_subject, is_third_person = detect_subject(context)
+    context["has_subject"], context["is_third_person"] = detect_subject(context)
 
-    has_aux = detect_auxilliary(context)
+    context["has_aux"] = detect_auxiliary(context)
 
-    if has_subject and not has_aux:
-        w=inflect_verb(w,is_third_person)
+    if context["has_aux"]:
+        # force base form (non-third-person)
+        context["is_third_person"] = False
+        w, changed_word = inflect_verb(context)
+    elif context["has_subject"]:
+        w, changed_word = inflect_verb(context)
 
-    return w,(w != context["word"])
+    return w,changed_word
 
 def detect_subject(context):
-    prev=context["prev"]
-    prev_pos=context["prev_pos"]
+    if has_compound_subject(context):
+        result_so_far=context["result_so_far"]
+        current_word=context["word"]
+        return True, False   # plural → NOT third person singular
 
-    has_subject = False
-    is_third_person = False
+    subject = find_subject_head(context)
 
-    if not prev:
+    if not subject:
         return False, False
 
-    prev_is_verb_like = (
-        ("verb" in prev_pos) or
-        ("aux" in prev_pos) or
-        (prev in AUX_WORDS)
-    )
+    is_third_person = classify_subject(subject)
+    return True, is_third_person
 
-    # only allow subject detection if previous word is not verb-like
-    if prev_is_verb_like:
-        return False, False
+def classify_subject(word):
+    if word in {"he", "she", "it"}:
+        return True  # 3rd person singular
+    if word in {"I", "you", "we", "they"}:
+        return False  # not 3rd person singular
 
+    # noun heuristic
+    if word.endswith("s"):
+        return False  # plural noun
 
-    if "noun" in prev_pos:
-        has_subject = True
-        is_third_person = not prev.endswith("s")
-    elif prev in {"he", "she", "it"}:
-        has_subject = True
-        is_third_person = True
-    elif prev in {"I", "you", "we", "they"}:
-        has_subject = True
-        is_third_person = False
+    return True  # singular noun
 
-    return has_subject, is_third_person
-
-def detect_auxilliary(context):
+def detect_auxiliary(context):
     return  (
         ("aux" in context["prev2_pos"]) or
         (context["prev"] in AUX_WORDS if context["prev"] else False)
     )
 
-def inflect_verb(word, is_third_person):
+def inflect_verb(context):
+    word = context["word"]
+    is_third_person = context.get("is_third_person")
+    result_so_far = context.get("result_so_far")
+
     if is_third_person:
         if not word.endswith("s"):
             if word.endswith("y"):
@@ -336,7 +446,7 @@ def inflect_verb(word, is_third_person):
             word = word[:-2]
         elif word.endswith("s"):
             word = word[:-1]
-    return word
+    return word,(word != context["word"])
 
 def dedupe_function_words(words, lookup, eng_lookup):
     result = []
