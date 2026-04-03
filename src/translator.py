@@ -1,3 +1,4 @@
+import sys
 import json
 import re
 from pathlib import Path
@@ -828,6 +829,11 @@ def zamgrh_to_structure(text, lookup):
     return structure
 
 def main():
+    debug = False
+    command_line_args = sys.argv
+    if ("--debug" in command_line_args):
+        debug=True
+
     data = load_dictionary()
     lookup = build_lookup(data)
     eng_lookup = build_english_pos_lookup(data)
@@ -849,8 +855,9 @@ def main():
             print("Exiting translator.")
             break
 
-        print(zamgrh_to_english(text, lookup, eng_lookup))
-        print(zamgrh_to_structure(text, lookup))
+        print(zamgrh_to_english(text, lookup, eng_lookup,debug))
+        if debug:
+            print(zamgrh_to_structure(text, lookup))
 
 
 if __name__ == "__main__":
