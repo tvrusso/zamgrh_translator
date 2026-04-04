@@ -20,6 +20,7 @@ def run_check(name, cmd):
     return True
 
 def main():
+
     all_passed = True
     for name, cmd in CHECKS:
         if not run_check(name, cmd):
@@ -30,6 +31,15 @@ def main():
         sys.exit(1)
 
     print("\n🎉 All checks passed. Safe to merge.")
+
+
+    hooks_path = subprocess.check_output(
+        ["git", "config", "core.hooksPath"],
+        text=True
+    ).strip()
+
+    if hooks_path != "scripts/git_hooks":
+        print("WARNING: Git hooks not configured. Run setup_hooks.bat")
 
 if __name__ == "__main__":
     main()

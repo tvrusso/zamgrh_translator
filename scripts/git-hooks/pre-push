@@ -1,0 +1,6 @@
+#!/bin/sh
+python tests/run_all_checks.py
+if [ $? -ne 0 ]; then
+  echo "Push blocked: checks failed"
+  exit 1
+fi
