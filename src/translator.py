@@ -885,10 +885,17 @@ def zamgrh_to_structure(text, lookup):
     return structure
 
 def main():
-    debug = False
-    command_line_args = sys.argv
-    if ("--debug" in command_line_args):
-        debug=True
+    debug = 0
+    for arg in sys.argv[1:]:
+        if arg.startswith("--debug"):
+            if "=" in arg:
+                try:
+                    debug = int(arg.split("=", 1)[1])
+                except ValueError:
+                    print("Invalid debug value. Use --debug=0,1,2")
+                    return
+            else:
+                debug = 2  # default if just "--debug"
 
     data = load_dictionary()
     lookup = build_lookup(data)
