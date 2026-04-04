@@ -500,7 +500,7 @@ TEST_GROUPS = {
     "edge_case_hardening_multiple_clauses": [
         (
             "zambah barg bra!nz an harman ran nahaarh",
-            "Zombie eats brains and human go away",
+            "Zombie eats brains and a human go away",
         ),
         (
             "nah g!b bra!nz an nah ran nahaarh",
@@ -512,14 +512,14 @@ TEST_GROUPS = {
         ),
         (
             "zambah barg bra!nz arh harman barg zarram",
-            "Zombie eats brains or human eat a serum",
+            "Zombie eats brains or a human eat a serum",
         ),
     ],
 
     "edge_case_hardening_chained_conjunctions": [
         (
             "g!b bra!nz an g!b zarram an g!b gaa harman",
-            "Give brains and give a serum and gives you a human",
+            "Give brains and give a serum and gives a you human",
         ),
         (
             "g!b bra!nz arh g!b zarram arh g!b barragahz",
