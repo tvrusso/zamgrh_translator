@@ -65,4 +65,3 @@ of the most fun in-game speech still can't be decoded.
 
 ```bash
 python src/translator.py
-
