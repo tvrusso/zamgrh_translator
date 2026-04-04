@@ -37,7 +37,7 @@ def main():
             ["git", "config", "core.hooksPath"],
             text=True
         ).strip()
-        if hooks_path != "scripts/git_hooks":
+        if hooks_path != "scripts/git-hooks":
             print("⚠️ WARNING: Git hooks not configured. Run setup_hooks.bat")
         else:
             print("✅ Git hooks correctly configured.")
