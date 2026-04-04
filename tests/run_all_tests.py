@@ -1,3 +1,6 @@
+#
+# a one-script-fits-all test runner to be used in pre-push hooks
+#
 import subprocess
 import sys
 
