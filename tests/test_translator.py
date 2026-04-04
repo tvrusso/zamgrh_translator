@@ -213,19 +213,16 @@ STRUCTURE_TESTS = {
 }
 
 TEST_GROUPS = {
-
     "core": [
         ("zambahz maz barg bra!nz", "Zombies must eat brains"),
         ("mah zambah bargz bra!nz", "I eat brains"),
         ("zambahz zmazh barragahz", "Zombies smash barricades"),
     ],
-
     "pronouns": [
         ("g!b gaa bra!nz", "Give you brains"),
         ("gaa g!b mah bra!nz", "You give me brains"),
         ("gab m!z ahz", "Speak with us"),
     ],
-
     "morphology": [
         ("zambah", "Zombie"),
         ("zambahz", "Zombies"),
@@ -237,14 +234,12 @@ TEST_GROUPS = {
         ("haz", "Have"),
         ("gahz", "Yous"),
     ],
-
     "MORPHOLOGY_SENTENCES": [
         ("zambahz barg bra!nz", "Zombies eat brains"),
         ("harmanz barg bra!nz", "Humans eat brains"),
         ("zambah barg bra!n", "Zombie eats a brain"),
         ("harman barg bra!nz", "Human eats brains"),
     ],
-
     "MORPHOLOGY_GUARDRAILS": [
         ("maz", "Must"),
         ("haz", "Have"),
@@ -253,7 +248,6 @@ TEST_GROUPS = {
         ("mazzz", "[mazzz]"),
         ("hazzz", "[hazzz]"),
     ],
-
     "MORPHOLOGY_INTERACTIONS": [
         ("harmanz gan ran nahaarh", "Humans will go away"),
         ("zambahz zmazh harmanz", "Zombies smash humans"),
@@ -264,12 +258,10 @@ TEST_GROUPS = {
         ("nah gahz g!b mah bra!nz", "Do not yous give me brains"),
         ("gahz gan barg bra!nz", "Yous will eat brains"),
     ],
-
     "MORPHOLOGY_REPETITION": [
         ("zambahz zambahz barg bra!nz", "Zombies zombies eat brains"),
         ("gahz gahz g!b bra!nz", "Yous yous give brains"),
     ],
-
     "gloss_picker": [
         ("mah zambah gan barg bra!nz", "I will eat brains"),
         ("mah gang", "My group"),
@@ -277,103 +269,85 @@ TEST_GROUPS = {
         ("mah zambah", "I"),
         ("za harman", "The human"),
     ],
-
-     "negation": [
+    "negation": [
         ("nah g!b bra!nz", "Do not give brains"),
         ("nah ran nahaarh", "Do not go away"),
         ("nah nah g!b bra!nz", "Do not do not give brains"),
     ],
-
     "questions": [
         ("!z raam azza !nn?", "Is a room at the inn?"),
         ("zambah barg bra!nz?", "Zombie eats brains?"),
     ],
-
     "imperatives": [
         ("g!b bra!nz", "Give brains"),
         ("g!b mah bra!nz", "Give me brains"),
         ("barg bra!nz", "Eat brains"),
     ],
-
     "articles_and_plural": [
         ("zambahz barg bra!nz", "Zombies eat brains"),
         ("zambah barg bra!n", "Zombie eats a brain"),
     ],
-
     "agreement": [
         ("zambah bargz bra!nz", "Zombie eats brains"),
         ("harmanz bah", "Humans are bad"),
         ("harman bah", "Human is bad"),
     ],
-
     "conjunctions": [
         ("g!b bra!nz an g!b zarram", "Give brains and give a serum"),
         ("g!b bra!nz arh g!b zarram", "Give brains or give a serum"),
     ],
-
     "unknown_words": [
         ("zambahz flargh bra!nz", "Zombies [flargh] brains"),
     ],
-
     "edge_cases": [
         ("", ""),
         ("nah", "Do not"),
         ("bra!nz", "Brains"),
     ],
-
     "duplicate_grammar_triggers": [
-        ("zambah !z bah", "Zombie is bad"),          # no double copula
-        ("zambahz !z bah", "Zombies are bad"),       # explicit copula + plural normalization
-        ("mah zambah gonna barg bra!nz", "I am going to eat brains"),  # no missing "am"
+        ("zambah !z bah", "Zombie is bad"),
+        ("zambahz !z bah", "Zombies are bad"),
+        ("mah zambah gonna barg bra!nz", "I am going to eat brains"),
     ],
-
     "preposition_and_article_collisions": [
         ("g!b bra!nz zaa harman", "Give brains to a human"),
         ("g!b bra!nz zaa zah harman", "Give brains to the human"),
-        ("gaam zaa mah", "Come to me"),              # no "to I"
+        ("gaam zaa mah", "Come to me"),
     ],
-
     "auxiliary_collisions": [
         ("mah zambah maz hab bra!nz", "I must have brains"),
         ("mah zambah gan barg bra!nz", "I will eat brains"),
-        ("mah zambah haz barg bra!nz", "I have eat brains"),  # useful as a current-behavior lock if parser is imperfect
+        ("mah zambah haz barg bra!nz", "I have eat brains"),
     ],
-
     "copula_vs_lexical_is": [
         ("zambah n!z", "Zombie is nice"),
         ("zambah !z n!z", "Zombie is nice"),
         ("zambah !z !z", "Zombie is"),
     ],
-
     "unknown_word_mixed_with_known": [
         ("gab flargh ahz", "Speak [flargh] us"),
         ("flargh zambah", "[flargh] zombie"),
         ("zambah flargh harman", "Zombie [flargh] human"),
     ],
-
     "punctuation_and_case": [
         ("HARRAH!", "Hello"),
         ("G!B BRA!NZ!", "Give brains"),
         ("nah G!B BRA!NZ!", "Do not give brains"),
     ],
-
     "repeated_words": [
         ("nam nam nam", "Eat eat eat"),
         ("bra!nz bra!nz bra!nz", "Brains brains brains"),
         ("nah nah nah g!b bra!nz", "Do not do not do not give brains"),
     ],
-
     "plural_normalization_edges": [
         ("harmanz", "Humans"),
         ("zambahz", "Zombies"),
-        ("gahz", "Yous"),   # useful if this breaks incorrectly; catches over-eager plural stripping
+        ("gahz", "Yous"),
     ],
-
     "empty_and_whitespace": [
         ("", ""),
         ("   ", ""),
     ],
-
     "long_sentences": [
         (
             "mah zambah maz barg bra!nz an zmazh harman",
@@ -384,104 +358,163 @@ TEST_GROUPS = {
             "Do not give brains or zombies smash you and a human goes away"
         ),
     ],
+    "normalization": [
+        ("bra!nz.", "Brains"),
+        ("BRA!NZ!", "Brains"),
+        ("zambah,", "Zombie"),
+        ("nah?", "Do not?"),
+    ],
+    "dictionary_integrity": [
+        ("zambah", "Zombie"),
+        ("barg", "Eat"),
+        ("bra!nz", "Brains"),
+    ],
+    "stress_tests": [
+        ("zambah maz maz barg bra!nz", "Zombie must eat brains"),
+        ("nah maz barg bra!nz", "Do not must eat brains"),
+        ("bra!nz maz barg", "Brains must eat"),
+    ],
+    "stress_pipeline_interactions": [
+        ("mah zambah maz gan barg bra!nz", "I must will eat brains"),
+        ("mah zambah gan maz barg bra!nz", "I will must eat brains"),
+        ("nah maz barg bra!nz", "Do not must eat brains"),
+        ("maz nah barg bra!nz", "Must do not eat brains"),
+        ("g!b gaa zaa mah", "Give you to me"),
+        ("gaa zaa gaa", "You to you"),
+        ("za zah harman", "The human"),
+        ("zah za harman", "The human"),
+        ("zambah !z maz", "Zombie is must"),
+        ("zambah maz !z", "Zombie must is"),
+        ("bra!nz mah g!b", "Brains I give"),
+        ("maz bra!nz barg", "Must brains eat"),
+        ("mah flargh maz barg bra!nz", "I [flargh] must eat brains"),
+        ("flargh maz nah barg", "[flargh] must do not eat"),
+        (
+            "mah zambah maz barg bra!nz an nah g!b gaa",
+            "I must eat brains and do not give you"
+        ),
+        ("maz maz maz barg bra!nz", "Must eat brains"),
+        ("nah nah maz barg bra!nz", "Do not do not must eat brains"),
+        ("mah mah bra!nz", "My brains"),
+    ],
+    "decision_tests": [
+        ("mah zambah gan barg bra!nz", "I will eat brains"),
+        ("mah zambah maz barg bra!nz", "I must eat brains"),
+        ("mah zambah maz gan barg bra!nz", "I must will eat brains"),
+        ("gaa g!b gaa bra!nz", "You give you brains"),
+        ("za harman", "The human"),
+        ("zah harman", "The human"),
+        ("zambah barg bra!nz", "Zombie eats brains"),
+        ("zambahz barg bra!nz", "Zombies eat brains"),
+        ("nah maz barg bra!nz", "Do not must eat brains"),
+        ("maz nah barg bra!nz", "Must do not eat brains"),
+    ],
 
-   "normalization": [
-       ("bra!nz.", "Brains"),
-       ("BRA!NZ!", "Brains"),
-       ("zambah,", "Zombie"),
-       ("nah?", "Do not?"),
-   ],
+    "edge_case_hardening_minimal": [
+        ("", ""),
+        ("   ", ""),
+        ("zambah", "Zombie"),
+        ("bra!nz", "Brains"),
+        ("nah", "Do not"),
+        ("flargh", "[flargh]"),
+        ("nah nah", "Do not do not"),
+        ("maz maz", "Must"),
+        ("bra!nz bra!nz", "Brains brains"),
+        ("zambah zambah", "Zombie zombie"),
+    ],
 
-   "dictionary_integrity": [
-    ("zambah", "Zombie"),
-    ("barg", "Eat"),
-    ("bra!nz", "Brains"),
-   ],
+    "edge_case_hardening_single_word_and_repetition": [
+        ("g!b", "Give"),
+        ("barg", "Eat"),
+        ("ran", "Go"),
+        ("nah nah nah", "Do not do not do not"),
+        ("nam nam nam", "Eat eat eat"),
+        ("gahz gahz", "Yous yous"),
+        ("flargh flargh", "[flargh] [flargh]"),
+    ],
 
-   "stress_tests":  [
-    ("zambah maz maz barg bra!nz", "Zombie must eat brains"),
-    ("nah maz barg bra!nz", "Do not must eat brains"),
-    ("bra!nz maz barg", "Brains must eat"),  # weird structure
-   ],
+    "edge_case_hardening_weird_ordering": [
+        ("zambah zah barg", "Zombie the eats"),
+        ("zambah za barg", "Zombie the eats"),
+        ("bra!nz zambah bargz", "Brains zombie eat"),
+        ("barg zambah bra!nz", "Eat zombie brains"),
+        ("mah zambah !z barg", "I am eat"),
+        ("maz gan barg bra!nz", "Must will eat brains"),
+        ("za harman barg", "The human eats"),
+        ("arh zambah barg bra!nz", "Or zombie eats brains"),
+    ],
 
-   "stress_pipeline_interactions": [
-       # AUX stacking chaos
-       ("mah zambah maz gan barg bra!nz", "I must will eat brains"),
-       ("mah zambah gan maz barg bra!nz", "I will must eat brains"),
+    "edge_case_hardening_multiple_clauses": [
+        (
+            "zambah barg bra!nz an harman ran nahaarh",
+            "Zombie eats brains and human go away",
+        ),
+        (
+            "nah g!b bra!nz an nah ran nahaarh",
+            "Do not give brains and do not go away",
+        ),
+        (
+            "mah zambah maz barg bra!nz an zmazh harman an ran nahaarh",
+            "I must eat brains and smash a human and goes away",
+        ),
+        (
+            "zambah barg bra!nz arh harman barg zarram",
+            "Zombie eats brains or human eat a serum",
+        ),
+    ],
 
-       # NEGATION + AUX conflicts
-       ("nah maz barg bra!nz", "Do not must eat brains"),
-       ("maz nah barg bra!nz", "Must do not eat brains"),
+    "edge_case_hardening_chained_conjunctions": [
+        (
+            "g!b bra!nz an g!b zarram an g!b gaa harman",
+            "Give brains and give a serum and gives you a human",
+        ),
+        (
+            "g!b bra!nz arh g!b zarram arh g!b barragahz",
+            "Give brains or give a serum or gives barricades",
+        ),
+        (
+            "zambahz zmazh harmanz an harmanz gan ran nahaarh arh zambah barg bra!nz",
+            "Zombies smash humans and humans will go away or a zombie eats brains",
+        ),
+    ],
 
-       # PRONOUN + PREPOSITION collision
-       ("g!b gaa zaa mah", "Give you to me"),
-       ("gaa zaa gaa", "You to you"),
+    "edge_case_hardening_unknown_mix": [
+        ("flargh an zambah barg bra!nz", "[flargh] and zombie eats brains"),
+        ("nah flargh ran nahaarh", "Do not [flargh] go away"),
+        ("mah flargh an gaa flargh", "I [flargh] and you [flargh]"),
+        ("g!b flargh zaa harman", "Give [flargh] to a human"),
+    ],
 
-       # ARTICLE stacking
-       ("za zah harman", "The human"),
-       ("zah za harman", "The human"),
+    "edge_case_hardening_function_word_collisions": [
+        ("za zah harman barg", "The human eats"),
+        ("zah za harman barg", "The human eats"),
+        ("nah maz gan barg bra!nz", "Do not must will eat brains"),
+        ("maz nah gan barg bra!nz", "Must do not will eat brains"),
+        ("zambah !z !z bah", "Zombie is bad"),
+        ("mah mah bra!nz", "My brains"),
+    ],
 
-       # COPULA conflicts
-       ("zambah !z maz", "Zombie is must"),
-       ("zambah maz !z", "Zombie must is"),
+    "edge_case_hardening_predictable_malformed": [
+        ("zambah the eats", "Zombie [the] [eats]"),
+        ("zombie the eats", "[zombie] [the] [eats]"),
+        ("the zombie eats", "[the] [zombie] [eats]"),
+        ("eats the zombie", "[eats] [the] [zombie]"),
+        ("zambah an arh barg", "Zombie and or eats"),
+        ("g!b an bra!nz", "Give and brains"),
+    ],
 
-       # WORD ORDER chaos
-       ("bra!nz mah g!b", "Brains I give"),
-       ("maz bra!nz barg", "Must brains eat"),
-
-       # UNKNOWN + STRUCTURE interaction
-       ("mah flargh maz barg bra!nz", "I [flargh] must eat brains"),
-       ("flargh maz nah barg", "[flargh] must do not eat"),
-
-       # MULTI-PHRASE chaining
-       ("mah zambah maz barg bra!nz an nah g!b gaa",
-        "I must eat brains and do not give you"),
-
-       # REPETITION with structure
-       ("maz maz maz barg bra!nz", "Must eat brains"),
-       ("nah nah maz barg bra!nz", "Do not do not must eat brains"),
-
-       # Determiner repetition
-       ("mah mah bra!nz", "My brains"),
-
-   ],
-
-   "decision_tests": [
-       # AUX ordering should matter
-       ("mah zambah gan barg bra!nz", "I will eat brains"),
-       ("mah zambah maz barg bra!nz", "I must eat brains"),
-
-       # Now ambiguous stacking — should NOT behave identically
-       ("mah zambah maz gan barg bra!nz", "I must will eat brains"),
-
-       # Pronoun ambiguity
-       ("gaa g!b gaa bra!nz", "You give you brains"),
-
-       # Article choice must be consistent
-       ("za harman", "The human"),
-       ("zah harman", "The human"),  # if both map to "the", fine — but must be consistent
-
-       # Singular vs plural must diverge
-       ("zambah barg bra!nz", "Zombie eats brains"),
-       ("zambahz barg bra!nz", "Zombies eat brains"),
-
-       # Negation scope ambiguity
-       ("nah maz barg bra!nz", "Do not must eat brains"),
-       ("maz nah barg bra!nz", "Must do not eat brains"),
-   ],
-   ## We *could* add these tests in order to guard against breakage
-   ## by the agreement refactor, but in fact every one of them is already
-   ## tested by tests in a different block and these would be redundant
-   # "agreement_refactor_lock": [
-   #    ("mah zambah barg bra!nz", "I eat brains"),
-   #    ("gaa g!b mah bra!nz", "You give me brains"),
-   #    ("gahz g!b mah bra!nz", "Yous give me brains"),
-   #    ("zambah barg bra!nz", "Zombie eats brains"),
-   #    ("zambahz barg bra!nz", "Zombies eat brains"),
-   #    ("harmanz bah", "Humans are bad"),
-   #    ("harman bah", "Human is bad"),
+    ## We *could* add these tests in order to guard against breakage
+    ## by the agreement refactor, but in fact every one of them is already
+    ## tested by tests in a different block and these would be redundant
+    # "agreement_refactor_lock": [
+    #    ("mah zambah barg bra!nz", "I eat brains"),
+    #    ("gaa g!b mah bra!nz", "You give me brains"),
+    #    ("gahz g!b mah bra!nz", "Yous give me brains"),
+    #    ("zambah barg bra!nz", "Zombie eats brains"),
+    #    ("zambahz barg bra!nz", "Zombies eat brains"),
+    #    ("harmanz bah", "Humans are bad"),
+    #    ("harman bah", "Human is bad"),
 }
-
 # Format for pipeline unit tests:
 # "function_name" : [
 #      ("input","expected output"),
