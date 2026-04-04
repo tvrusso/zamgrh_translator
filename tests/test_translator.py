@@ -519,7 +519,7 @@ TEST_GROUPS = {
     "edge_case_hardening_chained_conjunctions": [
         (
             "g!b bra!nz an g!b zarram an g!b gaa harman",
-            "Give brains and give a serum and gives a you human",
+            "Give brains and give a serum and gives you a human",
         ),
         (
             "g!b bra!nz arh g!b zarram arh g!b barragahz",

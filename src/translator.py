@@ -894,6 +894,11 @@ def insert_articles(words, lookup, eng_lookup):
     for i, w in enumerate(words):
         pos = get_pos(w, lookup, eng_lookup)
 
+        # --- PRONOUN GUARD ---
+        if w in SUBJECT_PRONOUNS:
+            result.append(w)
+            continue
+
         is_noun = "noun" in pos
         is_verb = "verb" in pos or "aux" in pos
         is_pure_noun = (
@@ -947,6 +952,7 @@ def insert_articles(words, lookup, eng_lookup):
                 prev is not None
                 and prev not in DETERMINERS
                 and prev not in {"to", "and", "or"}
+                and prev not in SUBJECT_PRONOUNS
                 and "verb" not in prev_pos
                 and "aux" not in prev_pos
                 and "noun" not in prev_pos
