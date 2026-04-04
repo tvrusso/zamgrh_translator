@@ -1,0 +1,226 @@
+import ast
+import sys
+from pathlib import Path
+
+# Adjust paths if needed
+ROOT = Path(__file__).parent.parent
+SRC_DIR = ROOT / "src"
+DATA_PATH = ROOT / "data" / "zamgrh_dictionary.json"
+TEST_PATH = ROOT / "tests" / "test_translator.py"
+
+sys.path.append(str(SRC_DIR))
+
+from translator import (  # noqa: E402
+    load_dictionary,
+    build_lookup,
+    build_english_pos_lookup,
+    clean,
+    normalize_morphology,
+    AUX_WORDS,
+    VERB_LIKE_WORDS,
+    DETERMINERS,
+)
+
+
+KNOWN_ENGLISH_LITERALS = {
+    # Common English-side tokens used in pipeline/helper/unit tests
+    "i", "me", "you", "he", "she", "it", "we", "they",
+    "am", "is", "are", "was", "were",
+    "eat", "eats", "give", "gives", "go", "goes",
+    "try", "tries", "smash", "speak", "come", "run",
+    "must", "will", "can", "should", "have", "has", "had",
+    "do", "does", "not",
+    "a", "an", "the", "my", "your", "his", "her", "our", "their",
+    "to", "and", "or", "with", "of", "in", "on",
+    "happy", "nice", "bad", "big", "quickly", "often", "alone", "together",
+    "group", "gang", "brains", "brain", "human", "humans", "zombie", "zombies",
+    "serum", "barricades", "food", "house", "room", "inn", "away", "going",
+}
+
+
+def load_test_ast(test_path: Path) -> ast.AST:
+    return ast.parse(test_path.read_text(encoding="utf-8"), filename=str(test_path))
+
+
+def extract_dict_literal(module: ast.AST, name: str):
+    for node in module.body:
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id == name:
+                    return ast.literal_eval(node.value)
+    raise ValueError(f"Could not find {name} in {TEST_PATH}")
+
+
+def iter_case_inputs(mapping):
+    for _group, cases in mapping.items():
+        for case in cases:
+            if isinstance(case, (list, tuple)) and len(case) >= 1:
+                yield case[0]
+
+
+def tokenize_zamgrh_input(text: str) -> list[str]:
+    return [clean(tok) for tok in text.split() if clean(tok)]
+
+
+def tokenize_english_input(text: str) -> list[str]:
+    tokens = []
+    for raw in text.split():
+        w = clean(raw)
+        if not w:
+            continue
+        if w == "i":
+            w = "I"
+        tokens.append(w)
+    return tokens
+
+
+def is_bracket_unknown(expected_output: str, raw_token: str) -> bool:
+    return f"[{raw_token}]" in expected_output
+
+
+def audit_zamgrh_test_vocab(test_groups, lookup):
+    missing = {}
+    missing_pos = {}
+    missing_gloss = {}
+    known_unknowns = set()
+
+    for group, cases in test_groups.items():
+        for case in cases:
+            if not isinstance(case, (list, tuple)) or len(case) < 2:
+                continue
+            zamgrh_input, expected_output = case[0], case[1]
+
+            for raw in zamgrh_input.split():
+                token = clean(raw)
+                if not token:
+                    continue
+
+                base, _features = normalize_morphology(token, lookup)
+                entry = lookup.get(base)
+
+                if entry is None:
+                    if is_bracket_unknown(expected_output, raw):
+                        known_unknowns.add(token)
+                    else:
+                        missing.setdefault(token, set()).add(group)
+                    continue
+
+                pos = entry.get("pos", [])
+                english = entry.get("english", [])
+
+                if not pos:
+                    missing_pos.setdefault(base, set()).add(group)
+
+                has_gloss = any(sense.get("gloss") for sense in english)
+                if not has_gloss:
+                    missing_gloss.setdefault(base, set()).add(group)
+
+    return missing, missing_pos, missing_gloss, known_unknowns
+
+
+def audit_english_side_inputs(pipeline_unit_tests, helper_unit_tests, eng_lookup):
+    missing_eng_pos = {}
+
+    def maybe_flag(token: str, context_name: str):
+        if not token:
+            return
+        low = token.lower()
+        if low.startswith("[") and low.endswith("]"):
+            return
+        if low in KNOWN_ENGLISH_LITERALS:
+            return
+        if low in eng_lookup:
+            return
+        if low.endswith("s") and low[:-1] in eng_lookup:
+            return
+        missing_eng_pos.setdefault(low, set()).add(context_name)
+
+    for step_name, cases in pipeline_unit_tests.items():
+        for inp, _expected in cases:
+            for token in tokenize_english_input(inp):
+                maybe_flag(token, f"PIPELINE_UNIT_TESTS.{step_name}")
+
+    for helper_name, cases in helper_unit_tests.items():
+        for context, _expected in cases:
+            for key in ("word", "prev", "prev2"):
+                token = context.get(key)
+                if isinstance(token, str):
+                    maybe_flag(token, f"HELPER_UNIT_TESTS.{helper_name}")
+
+    return missing_eng_pos
+
+
+def print_section(title: str, items: dict[str, set[str]]):
+    print(f"\n=== {title} ===")
+    if not items:
+        print("None")
+        return
+    for token in sorted(items):
+        groups = ", ".join(sorted(items[token]))
+        print(f"- {token}: {groups}")
+
+
+def print_set_section(title: str, items: set[str]):
+    print(f"\n=== {title} ===")
+    if not items:
+        print("None")
+        return
+    for token in sorted(items):
+        print(f"- {token}")
+
+
+def main():
+    if not DATA_PATH.exists():
+        raise FileNotFoundError(f"Dictionary file not found: {DATA_PATH}")
+    if not TEST_PATH.exists():
+        raise FileNotFoundError(f"Test file not found: {TEST_PATH}")
+
+    data = load_dictionary()
+    lookup = build_lookup(data)
+    eng_lookup = build_english_pos_lookup(data)
+
+    module = load_test_ast(TEST_PATH)
+    test_groups = extract_dict_literal(module, "TEST_GROUPS")
+    pipeline_unit_tests = extract_dict_literal(module, "PIPELINE_UNIT_TESTS")
+    helper_unit_tests = extract_dict_literal(module, "HELPER_UNIT_TESTS")
+
+    missing, missing_pos, missing_gloss, known_unknowns = audit_zamgrh_test_vocab(
+        test_groups, lookup
+    )
+    missing_eng_pos = audit_english_side_inputs(
+        pipeline_unit_tests, helper_unit_tests, eng_lookup
+    )
+
+    print("Dictionary vs Test Audit")
+    print("========================")
+    print(f"Dictionary entries: {len(data)}")
+    print(f"Test groups: {len(test_groups)}")
+    print(f"Pipeline unit groups: {len(pipeline_unit_tests)}")
+    print(f"Helper unit groups: {len(helper_unit_tests)}")
+
+    print_section("Missing Zamgrh dictionary entries used in TEST_GROUPS", missing)
+    print_section("Dictionary entries missing POS", missing_pos)
+    print_section("Dictionary entries missing English gloss", missing_gloss)
+    print_set_section("Intentional unknown tokens already bracketed by tests", known_unknowns)
+    print_section("English-side test tokens without POS support in eng_lookup", missing_eng_pos)
+
+    total_problems = (
+        len(missing)
+        + len(missing_pos)
+        + len(missing_gloss)
+        + len(missing_eng_pos)
+    )
+    print("\n=== SUMMARY ===")
+    if total_problems == 0:
+        print("No dictionary-alignment problems found.")
+    else:
+        print(f"Found {total_problems} categories of dictionary-alignment issues.")
+
+    print("\nNote:")
+    print("- Intentional nonsense tokens like 'flargh' are okay if tests expect bracketed output.")
+    print("- English-side missing POS entries often indicate test literals that bypass the Zamgrh dictionary.")
+    print("- This is a light-pass audit, not a full lexical cleanup.")
+
+
+if __name__ == "__main__":
+    main()
