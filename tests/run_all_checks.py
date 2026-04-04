@@ -32,14 +32,17 @@ def main():
 
     print("\n🎉 All checks passed. Safe to merge.")
 
-
-    hooks_path = subprocess.check_output(
-        ["git", "config", "core.hooksPath"],
-        text=True
-    ).strip()
-
-    if hooks_path != "scripts/git_hooks":
-        print("WARNING: Git hooks not configured. Run setup_hooks.bat")
+    try:
+        hooks_path = subprocess.check_output(
+            ["git", "config", "core.hooksPath"],
+            text=True
+        ).strip()
+        if hooks_path != "scripts/git_hooks":
+            print("⚠️ WARNING: Git hooks not configured. Run setup_hooks.bat")
+        else:
+            print("✅ Git hooks correctly configured.")
+    except Exception:
+        print("⚠️ WARNING: Could not verify git hooks configuration.")
 
 if __name__ == "__main__":
     main()
