@@ -219,19 +219,16 @@ STRUCTURE_TESTS = {
 }
 
 TEST_GROUPS = {
-
     "core": [
         ("zambahz maz barg bra!nz", "Zombies must eat brains"),
         ("mah zambah bargz bra!nz", "I eat brains"),
         ("zambahz zmazh barragahz", "Zombies smash barricades"),
     ],
-
     "pronouns": [
         ("g!b gaa bra!nz", "Give you brains"),
         ("gaa g!b mah bra!nz", "You give me brains"),
         ("gab m!z ahz", "Speak with us"),
     ],
-
     "morphology": [
         ("zambah", "Zombie"),
         ("zambahz", "Zombies"),
@@ -243,14 +240,12 @@ TEST_GROUPS = {
         ("haz", "Have"),
         ("gahz", "Yous"),
     ],
-
     "MORPHOLOGY_SENTENCES": [
         ("zambahz barg bra!nz", "Zombies eat brains"),
         ("harmanz barg bra!nz", "Humans eat brains"),
         ("zambah barg bra!n", "Zombie eats a brain"),
         ("harman barg bra!nz", "Human eats brains"),
     ],
-
     "MORPHOLOGY_GUARDRAILS": [
         ("maz", "Must"),
         ("haz", "Have"),
@@ -259,7 +254,6 @@ TEST_GROUPS = {
         ("mazzz", "[mazzz]"),
         ("hazzz", "[hazzz]"),
     ],
-
     "MORPHOLOGY_INTERACTIONS": [
         ("harmanz gan ran nahaarh", "Humans will go away"),
         ("zambahz zmazh harmanz", "Zombies smash humans"),
@@ -270,12 +264,10 @@ TEST_GROUPS = {
         ("nah gahz g!b mah bra!nz", "Do not yous give me brains"),
         ("gahz gan barg bra!nz", "Yous will eat brains"),
     ],
-
     "MORPHOLOGY_REPETITION": [
         ("zambahz zambahz barg bra!nz", "Zombies zombies eat brains"),
         ("gahz gahz g!b bra!nz", "Yous yous give brains"),
     ],
-
     "gloss_picker": [
         ("mah zambah gan barg bra!nz", "I will eat brains"),
         ("mah gang", "My group"),
@@ -283,103 +275,85 @@ TEST_GROUPS = {
         ("mah zambah", "I"),
         ("za harman", "The human"),
     ],
-
-     "negation": [
+    "negation": [
         ("nah g!b bra!nz", "Do not give brains"),
         ("nah ran nahaarh", "Do not go away"),
         ("nah nah g!b bra!nz", "Do not do not give brains"),
     ],
-
     "questions": [
         ("!z raam azza !nn?", "Is a room at the inn?"),
         ("zambah barg bra!nz?", "Zombie eats brains?"),
     ],
-
     "imperatives": [
         ("g!b bra!nz", "Give brains"),
         ("g!b mah bra!nz", "Give me brains"),
         ("barg bra!nz", "Eat brains"),
     ],
-
     "articles_and_plural": [
         ("zambahz barg bra!nz", "Zombies eat brains"),
         ("zambah barg bra!n", "Zombie eats a brain"),
     ],
-
     "agreement": [
         ("zambah bargz bra!nz", "Zombie eats brains"),
         ("harmanz bah", "Humans are bad"),
         ("harman bah", "Human is bad"),
     ],
-
     "conjunctions": [
         ("g!b bra!nz an g!b zarram", "Give brains and give a serum"),
         ("g!b bra!nz arh g!b zarram", "Give brains or give a serum"),
     ],
-
     "unknown_words": [
         ("zambahz flargh bra!nz", "Zombies [flargh] brains"),
     ],
-
     "edge_cases": [
         ("", ""),
         ("nah", "Do not"),
         ("bra!nz", "Brains"),
     ],
-
     "duplicate_grammar_triggers": [
-        ("zambah !z bah", "Zombie is bad"),          # no double copula
-        ("zambahz !z bah", "Zombies are bad"),       # explicit copula + plural normalization
-        ("mah zambah gonna barg bra!nz", "I am going to eat brains"),  # no missing "am"
+        ("zambah !z bah", "Zombie is bad"),
+        ("zambahz !z bah", "Zombies are bad"),
+        ("mah zambah gonna barg bra!nz", "I am going to eat brains"),
     ],
-
     "preposition_and_article_collisions": [
         ("g!b bra!nz zaa harman", "Give brains to a human"),
         ("g!b bra!nz zaa zah harman", "Give brains to the human"),
-        ("gaam zaa mah", "Come to me"),              # no "to I"
+        ("gaam zaa mah", "Come to me"),
     ],
-
     "auxiliary_collisions": [
         ("mah zambah maz hab bra!nz", "I must have brains"),
         ("mah zambah gan barg bra!nz", "I will eat brains"),
-        ("mah zambah haz barg bra!nz", "I have eat brains"),  # useful as a current-behavior lock if parser is imperfect
+        ("mah zambah haz barg bra!nz", "I have eat brains"),
     ],
-
     "copula_vs_lexical_is": [
         ("zambah n!z", "Zombie is nice"),
         ("zambah !z n!z", "Zombie is nice"),
         ("zambah !z !z", "Zombie is"),
     ],
-
     "unknown_word_mixed_with_known": [
         ("gab flargh ahz", "Speak [flargh] us"),
         ("flargh zambah", "[flargh] zombie"),
         ("zambah flargh harman", "Zombie [flargh] human"),
     ],
-
     "punctuation_and_case": [
         ("HARRAH!", "Hello"),
         ("G!B BRA!NZ!", "Give brains"),
         ("nah G!B BRA!NZ!", "Do not give brains"),
     ],
-
     "repeated_words": [
         ("nam nam nam", "Eat eat eat"),
         ("bra!nz bra!nz bra!nz", "Brains brains brains"),
         ("nah nah nah g!b bra!nz", "Do not do not do not give brains"),
     ],
-
     "plural_normalization_edges": [
         ("harmanz", "Humans"),
         ("zambahz", "Zombies"),
-        ("gahz", "Yous"),   # useful if this breaks incorrectly; catches over-eager plural stripping
+        ("gahz", "Yous"),
     ],
-
     "empty_and_whitespace": [
         ("", ""),
         ("   ", ""),
     ],
-
     "long_sentences": [
         (
             "mah zambah maz barg bra!nz an zmazh harman",
@@ -390,104 +364,117 @@ TEST_GROUPS = {
             "Do not give brains or zombies smash you and a human goes away"
         ),
     ],
+    "normalization": [
+        ("bra!nz.", "Brains"),
+        ("BRA!NZ!", "Brains"),
+        ("zambah,", "Zombie"),
+        ("nah?", "Do not?"),
+    ],
+    "dictionary_integrity": [
+        ("zambah", "Zombie"),
+        ("barg", "Eat"),
+        ("bra!nz", "Brains"),
+    ],
+    "stress_tests": [
+        ("zambah maz maz barg bra!nz", "Zombie must eat brains"),
+        ("nah maz barg bra!nz", "Do not must eat brains"),
+        ("bra!nz maz barg", "Brains must eat"),
+    ],
+    "stress_pipeline_interactions": [
+        ("mah zambah maz gan barg bra!nz", "I must will eat brains"),
+        ("mah zambah gan maz barg bra!nz", "I will must eat brains"),
+        ("nah maz barg bra!nz", "Do not must eat brains"),
+        ("maz nah barg bra!nz", "Must do not eat brains"),
+        ("g!b gaa zaa mah", "Give you to me"),
+        ("gaa zaa gaa", "You to you"),
+        ("za zah harman", "The human"),
+        ("zah za harman", "The human"),
+        ("zambah !z maz", "Zombie is must"),
+        ("zambah maz !z", "Zombie must is"),
+        ("bra!nz mah g!b", "Brains I give"),
+        ("maz bra!nz barg", "Must brains eat"),
+        ("mah flargh maz barg bra!nz", "I [flargh] must eat brains"),
+        ("flargh maz nah barg", "[flargh] must do not eat"),
+        (
+            "mah zambah maz barg bra!nz an nah g!b gaa",
+            "I must eat brains and do not give you"
+        ),
+        ("maz maz maz barg bra!nz", "Must eat brains"),
+        ("nah nah maz barg bra!nz", "Do not do not must eat brains"),
+        ("mah mah bra!nz", "My brains"),
+    ],
+    "decision_tests": [
+        ("mah zambah gan barg bra!nz", "I will eat brains"),
+        ("mah zambah maz barg bra!nz", "I must eat brains"),
+        ("mah zambah maz gan barg bra!nz", "I must will eat brains"),
+        ("gaa g!b gaa bra!nz", "You give you brains"),
+        ("za harman", "The human"),
+        ("zah harman", "The human"),
+        ("zambah barg bra!nz", "Zombie eats brains"),
+        ("zambahz barg bra!nz", "Zombies eat brains"),
+        ("nah maz barg bra!nz", "Do not must eat brains"),
+        ("maz nah barg bra!nz", "Must do not eat brains"),
+    ],
 
-   "normalization": [
-       ("bra!nz.", "Brains"),
-       ("BRA!NZ!", "Brains"),
-       ("zambah,", "Zombie"),
-       ("nah?", "Do not?"),
-   ],
+    "regression_agreement_and_copula": [
+        ("mah zambah gonna barg bra!nz", "I am going to eat brains"),
+        ("zambah !z bah", "Zombie is bad"),
+        ("zambahz !z bah", "Zombies are bad"),
+        ("harman bah", "Human is bad"),
+        ("harmanz bah", "Humans are bad"),
+        ("zambah bargz bra!nz", "Zombie eats brains"),
+    ],
+    "weird_but_valid": [
+        ("bra!nz maz barg", "Brains must eat"),
+        ("maz bra!nz barg", "Must brains eat"),
+        ("bra!nz mah g!b", "Brains I give"),
+        ("gahz gahz g!b bra!nz", "Yous yous give brains"),
+        ("nah nah g!b bra!nz", "Do not do not give brains"),
+        ("zambah !z !z", "Zombie is"),
+    ],
+    "regression_articles_and_collisions": [
+        ("g!b bra!nz zaa harman", "Give brains to a human"),
+        ("g!b bra!nz zaa zah harman", "Give brains to the human"),
+        ("gaam zaa mah", "Come to me"),
+        ("g!b bra!nz an g!b zarram", "Give brains and give a serum"),
+        ("g!b bra!nz arh g!b zarram", "Give brains or give a serum"),
+        (
+            "nah g!b bra!nz arh zambahz zmazh gaa an harman ran nahaarh",
+            "Do not give brains or zombies smash you and a human goes away"
+        ),
+    ],
+    "regression_pipeline_interactions": [
+        (
+            "mah zambah maz barg bra!nz an zmazh harman",
+            "I must eat brains and smash a human"
+        ),
+        ("mah flargh maz barg bra!nz", "I [flargh] must eat brains"),
+        ("flargh maz nah barg", "[flargh] must do not eat"),
+        ("zambahz flargh bra!nz", "Zombies [flargh] brains"),
+    ],
+    "torture_tests": [
+        (
+            "nah mah zambah maz gan barg bra!nz an flargh zaa gaa",
+            "Do not I must will eat brains and [flargh] to you",
+        ),
+        (
+        "mah zambah gonna barg bra!nz an g!b gaa zaa harman",
+        "I am going to eat brains and give you to a human",
+        ),
+],
 
-   "dictionary_integrity": [
-    ("zambah", "Zombie"),
-    ("barg", "Eat"),
-    ("bra!nz", "Brains"),
-   ],
-
-   "stress_tests":  [
-    ("zambah maz maz barg bra!nz", "Zombie must eat brains"),
-    ("nah maz barg bra!nz", "Do not must eat brains"),
-    ("bra!nz maz barg", "Brains must eat"),  # weird structure
-   ],
-
-   "stress_pipeline_interactions": [
-       # AUX stacking chaos
-       ("mah zambah maz gan barg bra!nz", "I must will eat brains"),
-       ("mah zambah gan maz barg bra!nz", "I will must eat brains"),
-
-       # NEGATION + AUX conflicts
-       ("nah maz barg bra!nz", "Do not must eat brains"),
-       ("maz nah barg bra!nz", "Must do not eat brains"),
-
-       # PRONOUN + PREPOSITION collision
-       ("g!b gaa zaa mah", "Give you to me"),
-       ("gaa zaa gaa", "You to you"),
-
-       # ARTICLE stacking
-       ("za zah harman", "The human"),
-       ("zah za harman", "The human"),
-
-       # COPULA conflicts
-       ("zambah !z maz", "Zombie is must"),
-       ("zambah maz !z", "Zombie must is"),
-
-       # WORD ORDER chaos
-       ("bra!nz mah g!b", "Brains I give"),
-       ("maz bra!nz barg", "Must brains eat"),
-
-       # UNKNOWN + STRUCTURE interaction
-       ("mah flargh maz barg bra!nz", "I [flargh] must eat brains"),
-       ("flargh maz nah barg", "[flargh] must do not eat"),
-
-       # MULTI-PHRASE chaining
-       ("mah zambah maz barg bra!nz an nah g!b gaa",
-        "I must eat brains and do not give you"),
-
-       # REPETITION with structure
-       ("maz maz maz barg bra!nz", "Must eat brains"),
-       ("nah nah maz barg bra!nz", "Do not do not must eat brains"),
-
-       # Determiner repetition
-       ("mah mah bra!nz", "My brains"),
-
-   ],
-
-   "decision_tests": [
-       # AUX ordering should matter
-       ("mah zambah gan barg bra!nz", "I will eat brains"),
-       ("mah zambah maz barg bra!nz", "I must eat brains"),
-
-       # Now ambiguous stacking — should NOT behave identically
-       ("mah zambah maz gan barg bra!nz", "I must will eat brains"),
-
-       # Pronoun ambiguity
-       ("gaa g!b gaa bra!nz", "You give you brains"),
-
-       # Article choice must be consistent
-       ("za harman", "The human"),
-       ("zah harman", "The human"),  # if both map to "the", fine — but must be consistent
-
-       # Singular vs plural must diverge
-       ("zambah barg bra!nz", "Zombie eats brains"),
-       ("zambahz barg bra!nz", "Zombies eat brains"),
-
-       # Negation scope ambiguity
-       ("nah maz barg bra!nz", "Do not must eat brains"),
-       ("maz nah barg bra!nz", "Must do not eat brains"),
-   ],
-   ## We *could* add these tests in order to guard against breakage
-   ## by the agreement refactor, but in fact every one of them is already
-   ## tested by tests in a different block and these would be redundant
-   # "agreement_refactor_lock": [
-   #    ("mah zambah barg bra!nz", "I eat brains"),
-   #    ("gaa g!b mah bra!nz", "You give me brains"),
-   #    ("gahz g!b mah bra!nz", "Yous give me brains"),
-   #    ("zambah barg bra!nz", "Zombie eats brains"),
-   #    ("zambahz barg bra!nz", "Zombies eat brains"),
-   #    ("harmanz bah", "Humans are bad"),
-   #    ("harman bah", "Human is bad"),
+    ## We *could* add these tests in order to guard against breakage
+    ## by the agreement refactor, but in fact every one of them is already
+    ## tested by tests in a different block and these would be redundant
+    # "agreement_refactor_lock": [
+    #    ("mah zambah barg bra!nz", "I eat brains"),
+    #    ("gaa g!b mah bra!nz", "You give me brains"),
+    #    ("gahz g!b mah bra!nz", "Yous give me brains"),
+    #    ("zambah barg bra!nz", "Zombie eats brains"),
+    #    ("zambahz barg bra!nz", "Zombies eat brains"),
+    #    ("harmanz bah", "Humans are bad"),
+    #    ("harman bah", "Human is bad"),
 }
-
 # Format for pipeline unit tests:
 # "function_name" : [
 #      ("input","expected output"),
@@ -940,23 +927,29 @@ def run_tests(verbose=False):
 
     for group, cases in TEST_GROUPS.items():
         print(f"\n=== {group.upper()} ===")
-        group_passed=0
-        group_failed=0
+        group_passed = 0
+        group_failed = 0
 
         for zamgrh, expected in cases:
             result = translator(zamgrh)
-
             inv_errors = check_invariants(result, lookup, eng_lookup)
+
             if inv_errors:
                 print(f"FAIL (invariant): {zamgrh}")
                 print(f"  result: {result}")
                 print(f"  issues: {inv_errors}")
+                print(f"\n--- DEBUG TRACE ---")
+                print(f"[input] {zamgrh}")
+                translator(zamgrh, debug=True)
+                structure = zamgrh_to_structure(zamgrh, lookup)
+                print(f"[structure] {structure}")
+                print(f"--- END DEBUG TRACE ---")
                 failed += 1
-                group_failed +=1
+                group_failed += 1
                 continue
 
             if result == expected:
-                if (verbose):
+                if verbose:
                     print(f"PASS: {zamgrh}")
                 passed += 1
                 group_passed += 1
@@ -964,23 +957,21 @@ def run_tests(verbose=False):
                 print(f"FAIL: {zamgrh}")
                 print(f"  expected: {expected}")
                 print(f"  got:      {result}")
-
-                # 🔍 Debug pipeline
-                print(f"\nDEBUG for {zamgrh}:")
+                print(f"\n--- DEBUG TRACE ---")
+                print(f"[input] {zamgrh}")
                 translator(zamgrh, debug=True)
-
-                # 🔍 Structure insight (NEW)
                 structure = zamgrh_to_structure(zamgrh, lookup)
                 print(f"[structure] {structure}")
-
+                print(f"--- END DEBUG TRACE ---")
                 failed += 1
-                group_failed +=1
+                group_failed += 1
+
         print(f"Group tests passed: {group_passed}")
         print(f"Group tests failed: {group_failed}")
+
     print("\n---")
     print(f"Passed: {passed}")
     print(f"Failed: {failed}")
-
     return failed == 0
 
 def run_structure_tests(verbose=False):
@@ -1020,16 +1011,15 @@ def run_pipeline_unit_tests(verbose=False):
     data = load_dictionary()
     lookup = build_lookup(data)
     eng_lookup = build_english_pos_lookup(data)
-
-    passed=0
-    failed=0
+    passed = 0
+    failed = 0
 
     for step_name, cases in PIPELINE_UNIT_TESTS.items():
         func = globals()[step_name]
-
         print(f"\n=== PIPELINE: {step_name} ===")
-        step_passed=0
-        step_failed=0
+        step_passed = 0
+        step_failed = 0
+
         for inp, expected in cases:
             raw_words = inp.split()
             words = []
@@ -1038,21 +1028,26 @@ def run_pipeline_unit_tests(verbose=False):
                 if w == "i":
                     w = "I"
                 words.append(w)
+
             result = func(words, lookup, eng_lookup)
             sentence = " ".join(result)
+
             if sentence == expected:
-                if (verbose):
+                if verbose:
                     print(f"PASS: {inp}->{sentence}")
                 passed += 1
-                step_passed +=1
+                step_passed += 1
             else:
                 print(f"FAIL: {inp}")
                 print(f"  expected: {expected}")
                 print(f"  got:      {sentence}")
+                print(f"  tokens:   {words}")
                 failed += 1
-                step_failed +=1
+                step_failed += 1
+
         print(f"Step tests passed: {step_passed}")
         print(f"Step tests failed: {step_failed}")
+
     print("\n---")
     print(f"Unit tests Passed: {passed}")
     print(f"Unit tests Failed: {failed}")
