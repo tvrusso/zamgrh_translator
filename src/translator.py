@@ -161,6 +161,7 @@ def fix_object_pronouns(words, lookup, eng_lookup):
             result.append(w)
     return result
 
+fix_pronouns = fix_object_pronouns
 
 def insert_copula(words, lookup, eng_lookup):
     result = []
@@ -520,13 +521,24 @@ def insert_articles(words, lookup, eng_lookup):
 
     for i, w in enumerate(words):
         pos = get_pos(w, lookup, eng_lookup)
+
         is_noun = "noun" in pos
         is_verb = "verb" in pos or "aux" in pos
-        is_pure_noun = is_noun and not is_verb and w not in AUX_WORDS and w not in VERB_LIKE_WORDS
+        is_pure_noun = (
+            is_noun
+            and not is_verb
+            and w not in AUX_WORDS
+            and w not in VERB_LIKE_WORDS
+        )
 
         nxt = words[i + 1] if i + 1 < len(words) else None
         nxt_pos = get_pos(nxt, lookup, eng_lookup) if nxt else set()
-        next_is_noun = nxt is not None and "noun" in nxt_pos and "verb" not in nxt_pos and "aux" not in nxt_pos
+        next_is_noun = (
+            nxt is not None
+            and "noun" in nxt_pos
+            and "verb" not in nxt_pos
+            and "aux" not in nxt_pos
+        )
 
         if is_verb or w in AUX_WORDS or w in VERB_LIKE_WORDS:
             seen_verb = True
@@ -537,6 +549,7 @@ def insert_articles(words, lookup, eng_lookup):
         should_article_after_to = (
             is_pure_noun
             and i > 0
+            and result
             and result[-1] == "to"
             and not w.endswith("s")
             and not next_is_noun
@@ -547,14 +560,28 @@ def insert_articles(words, lookup, eng_lookup):
             and seen_verb
             and not consumed_object
             and not next_is_noun
+            and not w.endswith("s")
         )
 
         if should_article_as_object or should_article_after_to:
-            is_plural = w.endswith("s")
             prev = result[-1] if result else None
 
-            if not is_plural and prev not in DETERMINERS:
-                article = "an" if w[0].lower() in "aeiou" else "a"
+            # If previous token looks like a modifier, insert article before it.
+            prev_pos = get_pos(prev, lookup, eng_lookup) if prev else set()
+            prev_is_modifier = (
+                prev is not None
+                and prev not in DETERMINERS
+                and prev not in {"to", "and", "or"}
+                and "verb" not in prev_pos
+                and "aux" not in prev_pos
+                and "noun" not in prev_pos
+                and "conj" not in prev_pos
+            )
+            article = "an" if w[0].lower() in "aeiou" else "a"
+
+            if prev_is_modifier:
+                result.insert(len(result) - 1, article)
+            elif prev not in DETERMINERS:
                 result.append(article)
 
             consumed_object = True
@@ -562,7 +589,6 @@ def insert_articles(words, lookup, eng_lookup):
         result.append(w)
 
     return result
-
 
 def fix_determiners(words, lookup, eng_lookup):
     result = []
