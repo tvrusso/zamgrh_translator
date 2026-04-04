@@ -97,6 +97,40 @@ def build_english_pos_lookup(data):
 # Translation pipeline
 # ---------------------------
 
+SKIP_POS = {"adj", "adv", "det","prep",}
+COLLAPSIBLE_WORDS = {
+    "must", "will", "can", "should", "have",
+    "is", "are", "am",
+    "the", "a", "an",
+}
+
+# ---------------------------
+# Validation helpers
+# ---------------------------
+
+def assert_token_list(words, label="words"):
+    assert isinstance(words, list), f"{label} must be a list, got {type(words).__name__}"
+    assert all(isinstance(w, str) for w in words), f"{label} must contain only strings"
+    assert all(w is not None for w in words), f"{label} must not contain None"
+    assert all(w != "" for w in words), f"{label} must not contain empty-string tokens"
+
+
+def assert_lookup_shapes(lookup, eng_lookup):
+    assert isinstance(lookup, dict), f"lookup must be dict, got {type(lookup).__name__}"
+    assert isinstance(eng_lookup, dict), f"eng_lookup must be dict, got {type(eng_lookup).__name__}"
+
+
+def assert_unknown_token_shape(words, label="words"):
+    for w in words:
+        if w.startswith("["):
+            assert w.endswith("]"), f"{label} contains malformed unknown token: {w}"
+
+
+def validate_pipeline_step_result(words, label):
+    assert_token_list(words, label)
+    assert_unknown_token_shape(words, label)
+
+# translation pipeline
 def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
     """
     Apply the English grammar cleanup pipeline.
@@ -127,6 +161,11 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
     - dedupe_function_words: duplicate function-word cleanup
     - fix_am_progressive: narrow "I am going to" repair
     - fix_verb_agreement: final verb/copula agreement pass
+
+    Debug levels:
+    - 0: no debug output
+    - 1: show only steps that changed the token stream
+    - 2: show every step, including unchanged ones
     """
     assert_token_list(words, "pipeline input")
     assert_lookup_shapes(lookup, eng_lookup)
@@ -147,17 +186,35 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
         ("fix_verb_agreement", fix_verb_agreement),
     ]
 
+    def render(tokens):
+        return " ".join(tokens) if tokens else "<empty>"
+
     if debug:
-        print(f"[INPUT]        {' '.join(words)}")
+        print("\n=== DEBUG: GRAMMAR PIPELINE ===")
+        print(f"[INPUT]")
+        print(f"  tokens: {render(words)}")
 
     for name, step in PIPELINE:
+        before = list(words)
         words = step(words, lookup, eng_lookup)
+
         validate_pipeline_step_result(words, f"{name} output")
-        if debug:
-            print(f"[{name:<24}] {' '.join(words)}")
+
+        changed = before != words
+        should_print = (debug >= 2) or (debug >= 1 and changed)
+
+        if should_print:
+            print(f"\n[STEP] {name}")
+            print(f"  input:   {render(before)}")
+            print(f"  output:  {render(words)}")
+            print(f"  status:  {'CHANGED' if changed else 'unchanged'}")
+
+    if debug:
+        print("\n[FINAL]")
+        print(f"  tokens: {render(words)}")
+        print("=== END DEBUG ===")
 
     return words
-
 
 def question_postprocess(text, structure, original_text):
     """
@@ -1087,7 +1144,7 @@ def render_gloss_with_features(gloss, features, pos):
     return gloss
 
 
-def zamgrh_to_english(text, lookup, eng_lookup, debug=False):
+def zamgrh_to_english(text, lookup, eng_lookup, debug=0):
     """
     Translate Zamgrh text to English.
 
@@ -1234,10 +1291,17 @@ def main():
     """
     CLI entry point for interactive translation.
     """
-    debug = False
-    command_line_args = sys.argv
-    if "--debug" in command_line_args:
-        debug = True
+    debug = 0
+    for arg in sys.argv[1:]:
+        if arg.startswith("--debug"):
+            if "=" in arg:
+                try:
+                    debug = int(arg.split("=", 1)[1])
+                except ValueError:
+                    print("Invalid debug value. Use --debug=0,1,2")
+                    return
+            else:
+                debug = 2  # default if just "--debug"
 
     data = load_dictionary()
     lookup = build_lookup(data)
