@@ -1,4 +1,6 @@
 __pycache__/
+.idea/
+.idea/**
 *.pyc
 *.json.bak
 .env
