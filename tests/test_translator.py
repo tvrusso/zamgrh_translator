@@ -461,7 +461,101 @@ TEST_GROUPS = {
         "mah zambah gonna barg bra!nz an g!b gaa zaa harman",
         "I am going to eat brains and give you to a human",
         ),
-],
+    ],
+
+    "edge_case_hardening_minimal": [
+        ("", ""),
+        ("   ", ""),
+        ("zambah", "Zombie"),
+        ("bra!nz", "Brains"),
+        ("nah", "Do not"),
+        ("flargh", "[flargh]"),
+        ("nah nah", "Do not do not"),
+        ("maz maz", "Must"),
+        ("bra!nz bra!nz", "Brains brains"),
+        ("zambah zambah", "Zombie zombie"),
+    ],
+
+    "edge_case_hardening_single_word_and_repetition": [
+        ("g!b", "Give"),
+        ("barg", "Eat"),
+        ("ran", "Go"),
+        ("nah nah nah", "Do not do not do not"),
+        ("nam nam nam", "Eat eat eat"),
+        ("gahz gahz", "Yous yous"),
+        ("flargh flargh", "[flargh] [flargh]"),
+    ],
+
+    "edge_case_hardening_weird_ordering": [
+        ("zambah zah barg", "Zombie the eats"),
+        ("zambah za barg", "Zombie the eats"),
+        ("bra!nz zambah bargz", "Brains zombie eat"),
+        ("barg zambah bra!nz", "Eat zombie brains"),
+        ("mah zambah !z barg", "I am eat"),
+        ("maz gan barg bra!nz", "Must will eat brains"),
+        ("za harman barg", "The human eats"),
+        ("arh zambah barg bra!nz", "Or zombie eats brains"),
+    ],
+
+    "edge_case_hardening_multiple_clauses": [
+        (
+            "zambah barg bra!nz an harman ran nahaarh",
+            "Zombie eats brains and human go away",
+        ),
+        (
+            "nah g!b bra!nz an nah ran nahaarh",
+            "Do not give brains and do not go away",
+        ),
+        (
+            "mah zambah maz barg bra!nz an zmazh harman an ran nahaarh",
+            "I must eat brains and smash a human and goes away",
+        ),
+        (
+            "zambah barg bra!nz arh harman barg zarram",
+            "Zombie eats brains or human eat a serum",
+        ),
+    ],
+
+    "edge_case_hardening_chained_conjunctions": [
+        (
+            "g!b bra!nz an g!b zarram an g!b gaa harman",
+            "Give brains and give a serum and gives you a human",
+        ),
+        (
+            "g!b bra!nz arh g!b zarram arh g!b barragahz",
+            "Give brains or give a serum or gives barricades",
+        ),
+        (
+            "zambahz zmazh harmanz an harmanz gan ran nahaarh arh zambah barg bra!nz",
+            "Zombies smash humans and humans will go away or a zombie eats brains",
+        ),
+    ],
+
+    "edge_case_hardening_unknown_mix": [
+        ("flargh an zambah barg bra!nz", "[flargh] and zombie eats brains"),
+        ("nah flargh ran nahaarh", "Do not [flargh] go away"),
+        ("mah flargh an gaa flargh", "I [flargh] and you [flargh]"),
+        ("g!b flargh zaa harman", "Give [flargh] to a human"),
+    ],
+
+    "edge_case_hardening_function_word_collisions": [
+        ("za zah harman barg", "The human eats"),
+        ("zah za harman barg", "The human eats"),
+        ("nah maz gan barg bra!nz", "Do not must will eat brains"),
+        ("maz nah gan barg bra!nz", "Must do not will eat brains"),
+        ("zambah !z !z bah", "Zombie is bad"),
+        ("mah mah bra!nz", "My brains"),
+    ],
+
+    "edge_case_hardening_predictable_malformed": [
+        ("zambah the eats", "Zombie [the] [eats]"),
+        ("zombie the eats", "[zombie] [the] [eats]"),
+        ("the zombie eats", "[the] [zombie] [eats]"),
+        ("eats the zombie", "[eats] [the] [zombie]"),
+        ("zambah an arh barg", "Zombie and or eats"),
+        ("g!b an bra!nz", "Give and brains"),
+    ],
+
 
     ## We *could* add these tests in order to guard against breakage
     ## by the agreement refactor, but in fact every one of them is already
