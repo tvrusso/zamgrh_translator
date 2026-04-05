@@ -354,38 +354,6 @@
     "confidence": 1.0
   },
   {
-    "word": "bra!nz",
-    "pos": [
-      "noun"
-    ],
-    "english": [
-      {
-        "gloss": "brains",
-        "weight": 1.0
-      }
-    ],
-    "phonetic": {
-      "approx": "brains",
-      "syllables": [
-        "bra!nz"
-      ]
-    },
-    "examples": [
-      {
-        "zamgrh": "Bra!nz!",
-        "english": "Brains!"
-      }
-    ],
-    "usage": {
-      "tone": [
-        "aggressive",
-        "hungry"
-      ]
-    },
-    "source": "canon",
-    "confidence": 1.0
-  },
-  {
     "word": "g!b",
     "pos": [
       "verb"

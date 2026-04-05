@@ -827,6 +827,14 @@ def normalize_morphology(word, lookup):
 
     return word, {}
 
+def apply_plural(word, features):
+    if not word:
+        return word
+    if features.get("number") != "plural":
+        return word
+    if word.endswith("s"):
+        return word
+    return word + "s"
 
 # ---------------------------
 # Helpers for dictionary-driven POS logic
@@ -1272,9 +1280,9 @@ def zamgrh_to_structure(text, lookup):
             break
 
         if "noun" in t["pos"]:
-            structure["subject"] = t["word"]
+            structure["subject"] = apply_plural(t["word"],t["features"])
             has_explicit_subject = True
-            if t["features"].get("number") == "plural" or t["word"].endswith("s"):
+            if t["features"].get("number") == "plural":
                 structure["plural"] = True
             break
 
@@ -1287,7 +1295,7 @@ def zamgrh_to_structure(text, lookup):
             seen_verb = True
             continue
         if seen_verb and "noun" in t["pos"]:
-            structure["object"] = t["word"]
+            structure["object"] = apply_plural(t["word"],t["features"])
             break
 
     return structure
