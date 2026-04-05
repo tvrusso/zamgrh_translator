@@ -149,6 +149,81 @@ def audit_english_side_inputs(pipeline_unit_tests, helper_unit_tests, eng_lookup
 
     return missing_eng_pos
 
+def fmt_pos(pos_list):
+    return ",".join(pos_list) if pos_list else "?"
+
+def find_potential_plural_pairs(entries):
+    pairs = set()
+    word_map = {e["word"]: e for e in entries if "word" in e}
+
+    for word, entry in word_map.items():
+        if word.endswith("z"):
+            base = word[:-1]
+            if base in word_map:
+                base_pos = word_map[base].get("pos", [])
+                word_pos = entry.get("pos", [])
+                pairs.add(f"{base} ({fmt_pos(base_pos)}) ↔ {word} ({fmt_pos(word_pos)})")
+
+    return pairs
+
+def build_synonym_map(entries):
+    synonym_map = {}
+
+    for entry in entries:
+        word = entry.get("word")
+        synonyms = entry.get("synonyms", []) or []
+
+        for syn in synonyms:
+            synonym_map.setdefault(word, set()).add(syn)
+            synonym_map.setdefault(syn, set()).add(word)
+
+    return synonym_map
+
+def is_known_synonym_cluster(words, synonym_map):
+    word_set = set(words)
+
+    for w in word_set:
+        known = synonym_map.get(w, set())
+        # If any word is missing links to others → not fully explained
+        if not word_set.issubset(known.union({w})):
+            return False
+
+    return True
+
+def filter_unexplained_clusters(clusters, synonym_map):
+    result = {}
+
+    for gloss, entries in clusters.items():
+        words = [word for word, _pos in entries]
+
+        if not is_known_synonym_cluster(words, synonym_map):
+            result[gloss] = entries
+
+    return result
+
+def build_gloss_clusters(entries):
+    gloss_map = {}
+
+    for entry in entries:
+        word = entry.get("word")
+        pos = entry.get("pos", [])
+        english = entry.get("english", [])
+
+        for gloss_entry in english:
+            gloss = gloss_entry.get("gloss")
+            if not gloss:
+                continue
+
+            gloss_map.setdefault(gloss, []).append((word, pos))
+
+    return gloss_map
+
+def find_multi_word_glosses(gloss_map):
+    return {
+        gloss: entries
+        for gloss, entries in gloss_map.items()
+        if len(entries) > 1
+    }
 
 def print_section(title: str, items: dict[str, set[str]]):
     print(f"\n=== {title} ===")
@@ -171,6 +246,19 @@ def print_set_section(title: str, items: set[str], per_line: int = 10):
         chunk = sorted_items[i:i + per_line]
         print(", ".join(chunk))
 
+def print_gloss_clusters(title: str, clusters: dict):
+    print(f"\n=== {title} ===")
+    if not clusters:
+        print("None")
+        return
+
+    for gloss in sorted(clusters):
+        entries = clusters[gloss]
+        formatted = ", ".join(
+            f"{word} ({','.join(pos) if pos else '?'})"
+            for word, pos in entries
+        )
+        print(f"- {gloss}: {formatted}")
 
 def main():
     if not DATA_PATH.exists():
@@ -181,6 +269,13 @@ def main():
     data = load_dictionary()
     lookup = build_lookup(data)
     eng_lookup = build_english_pos_lookup(data)
+
+    plural_pairs = find_potential_plural_pairs(data)
+    gloss_map = build_gloss_clusters(data)
+    multi_glosses = find_multi_word_glosses(gloss_map)
+
+    synonym_map = build_synonym_map(data)
+    unexplained_clusters = filter_unexplained_clusters(multi_glosses, synonym_map)
 
     module = load_test_ast(TEST_PATH)
     test_groups = extract_dict_literal(module, "TEST_GROUPS")
@@ -270,6 +365,11 @@ def main():
 
     print_set_section("Dictionary entries NOT used in tests", set(unused_words))
     print_set_section("English glosses NOT exercised in tests", set(unused_glosses))
+    print_set_section("Potential plural duplicates (consider normalization)", plural_pairs)
+    print_gloss_clusters(
+        "Gloss clusters needing synonym annotation or review",
+        unexplained_clusters
+    )
 
     total_problems = (
         len(missing)
