@@ -313,7 +313,7 @@ TEST_GROUPS = {
     "duplicate_grammar_triggers": [
         ("zambah !z bah", "Zombie is bad"),
         ("zambahz !z bah", "Zombies are bad"),
-        ("mah zambah gonna barg bra!nz", "I am going to eat brains"),
+        ("mah zambah ganna barg bra!nz", "I am going to eat brains"),
     ],
     "preposition_and_article_collisions": [
         ("g!b bra!nz zaa harman", "Give brains to a human"),
@@ -417,7 +417,7 @@ TEST_GROUPS = {
     ],
 
     "regression_agreement_and_copula": [
-        ("mah zambah gonna barg bra!nz", "I am going to eat brains"),
+        ("mah zambah ganna barg bra!nz", "I am going to eat brains"),
         ("zambah !z bah", "Zombie is bad"),
         ("zambahz !z bah", "Zombies are bad"),
         ("harman bah", "Human is bad"),
@@ -458,7 +458,7 @@ TEST_GROUPS = {
             "Do not I must will eat brains and [flargh] to you",
         ),
         (
-        "mah zambah gonna barg bra!nz an g!b gaa zaa harman",
+        "mah zambah ganna barg bra!nz an g!b gaa zaa harman",
         "I am going to eat brains and give you to a human",
         ),
     ],

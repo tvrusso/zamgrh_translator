@@ -90,20 +90,6 @@
   "confidence": 0.9
   },
   {
-  "word": "gonna",
-  "pos": ["aux"],
-  "english": [
-    { "gloss": "going to", "weight": 1.0 }
-  ],
-  "phonetic": { "approx": "gon-nah", "syllables": ["gon", "na"] },
-  "examples": [
-    { "zamgrh": "Mah zambah gonna barg bra!nz.", "english": "I am going to eat brains." }
-  ],
-  "usage": { "tone": ["neutral", "future"] },
-  "source": "group_standard",
-  "confidence": 0.9
-  },
-  {
   "word": "gah",
   "pos": ["pron"],
   "english": [
@@ -669,18 +655,6 @@
       { "zamgrh": "Zambahz zmazh barragahz.", "english": "Zombies smash barricades." }
     ],
     "usage": { "tone": ["aggressive"] },
-    "source": "group_standard",
-    "confidence": 0.9
-  },
-  {
-    "word": "zoggar",
-    "pos": ["noun"],
-    "english": [{ "gloss": "doctor", "weight": 1.0 }],
-    "phonetic": { "approx": "doctor", "syllables": ["zog", "gar"] },
-    "examples": [
-      { "zamgrh": "Zoggar azz!z !n hazb!gar.", "english": "Doctor is in the hospital." }
-    ],
-    "usage": { "tone": ["neutral"] },
     "source": "group_standard",
     "confidence": 0.9
   },
