@@ -183,20 +183,54 @@ def check_duplicates(words, errors):
     for word in duplicates:
         errors.append(f"Duplicate word entry: '{word}'.")
 
-def check_duplicate_glosses(gloss_map, warnings):
-    for gloss, words in sorted(gloss_map.items()):
-        if len(words) > 1:
-            words_sorted = sorted(words)
+def build_synonym_map(data):
+    synonym_map = {}
+    for entry in data:
+        word = entry.get("word")
+        synonyms = entry.get("synonyms", [])
+        if isinstance(word, str) and isinstance(synonyms, list):
+            synonym_map[word] = set(synonyms)
+        else:
+            synonym_map[word] = set()
+    return synonym_map
 
-            # Heuristic: short list = likely intentional synonym set
-            if len(words_sorted) <= 3:
-                warnings.append(
-                    f"Gloss '{gloss}' has possible synonyms: {words_sorted}"
-                )
-            else:
-                warnings.append(
-                    f"Gloss '{gloss}' appears in many entries (possible duplication issue): {words_sorted}"
-                )
+
+def are_synonyms_fully_linked(words, synonym_map):
+    """
+    Check if all words are mutually connected via synonyms.
+    (Strict mode, but only used for warning suppression for now)
+    """
+    word_set = set(words)
+
+    for word in word_set:
+        linked = synonym_map.get(word, set())
+        # Must at least reference all other words in the group
+        if not word_set - {word} <= linked:
+            return False
+
+    return True
+
+
+def check_duplicate_glosses(gloss_map, synonym_map, warnings):
+    for gloss, words in sorted(gloss_map.items()):
+        if len(words) <= 1:
+            continue
+
+        words_sorted = sorted(words)
+
+        # Suppress warning if explicitly modeled as synonyms
+        if are_synonyms_fully_linked(words_sorted, synonym_map):
+            continue
+
+        # Otherwise warn as before
+        if len(words_sorted) <= 3:
+            warnings.append(
+                f"Gloss '{gloss}' has possible synonyms: {words_sorted}"
+            )
+        else:
+            warnings.append(
+                f"Gloss '{gloss}' appears in many entries (possible duplication issue): {words_sorted}"
+            )
 
 def check_sort_order(words, warnings):
     sorted_words = sorted(words, key=str.lower)
@@ -218,6 +252,7 @@ def main():
     warnings = []
     seen_words = []
     gloss_map = {}
+    synonym_map = build_synonym_map(data)
 
     for index, entry in enumerate(data, start=1):
         validate_entry(entry, index, seen_words, errors, warnings)
@@ -233,7 +268,7 @@ def main():
     check_duplicates(seen_words, errors)
     check_invalid_characters(seen_words, errors)
     check_sort_order(seen_words, warnings)
-    check_duplicate_glosses(gloss_map, warnings)
+    check_duplicate_glosses(gloss_map, synonym_map, warnings)
 
     if errors:
         print("VALIDATION FAILED")
