@@ -23,6 +23,7 @@ ALLOWED_POS = {
 
 REQUIRED_TOP_LEVEL_FIELDS = {"word", "pos", "english"}
 
+ALLOWED_ZAMGRH_CHARS = set("zamgrhnb!")
 
 def load_dictionary(path: Path):
     try:
@@ -152,12 +153,33 @@ def check_duplicates(words, errors):
     for word in duplicates:
         errors.append(f"Duplicate word entry: '{word}'.")
 
+def check_duplicate_glosses(gloss_map, warnings):
+    for gloss, words in sorted(gloss_map.items()):
+        if len(words) > 1:
+            words_sorted = sorted(words)
+
+            # Heuristic: short list = likely intentional synonym set
+            if len(words_sorted) <= 3:
+                warnings.append(
+                    f"Gloss '{gloss}' has possible synonyms: {words_sorted}"
+                )
+            else:
+                warnings.append(
+                    f"Gloss '{gloss}' appears in many entries (possible duplication issue): {words_sorted}"
+                )
 
 def check_sort_order(words, warnings):
     sorted_words = sorted(words, key=str.lower)
     if words != sorted_words:
         warnings.append("Dictionary is not alphabetically sorted by 'word'.")
 
+def check_invalid_characters(words, errors):
+    for word in words:
+        invalid_chars = {c for c in word.lower() if c not in ALLOWED_ZAMGRH_CHARS}
+        if invalid_chars:
+            errors.append(
+                f"Word '{word}' contains invalid Zamgrh characters: {sorted(invalid_chars)}"
+            )
 
 def main():
     data = load_dictionary(DATA_PATH)
@@ -165,12 +187,23 @@ def main():
     errors = []
     warnings = []
     seen_words = []
+    gloss_map = {}
 
     for index, entry in enumerate(data, start=1):
         validate_entry(entry, index, seen_words, errors, warnings)
 
+        word = entry.get("word")
+        english = entry.get("english", [])
+
+        for gloss_entry in english:
+            gloss = gloss_entry.get("gloss")
+            if is_nonempty_string(gloss):
+                gloss_map.setdefault(gloss, set()).add(word)
+
     check_duplicates(seen_words, errors)
+    check_invalid_characters(seen_words, errors)
     check_sort_order(seen_words, warnings)
+    check_duplicate_glosses(gloss_map, warnings)
 
     if errors:
         print("VALIDATION FAILED")
