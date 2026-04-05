@@ -184,12 +184,70 @@ def main():
     pipeline_unit_tests = extract_dict_literal(module, "PIPELINE_UNIT_TESTS")
     helper_unit_tests = extract_dict_literal(module, "HELPER_UNIT_TESTS")
 
+    used_zamgrh = set()
+    used_english = set()
+
+    # --- Collect usage from TEST_GROUPS ---
+    for group, cases in test_groups.items():
+        for case in cases:
+            if not isinstance(case, (list, tuple)) or len(case) < 2:
+                continue
+
+            zamgrh_input, expected_output = case[0], case[1]
+
+            # Zamgrh tokens
+            for tok in tokenize_zamgrh_input(zamgrh_input):
+                base, _ = normalize_morphology(tok, lookup)
+                if base:
+                    used_zamgrh.add(base)
+
+            # English tokens
+            for tok in tokenize_english_input(expected_output):
+                used_english.add(tok.lower())
+
+    # --- Collect usage from PIPELINE_UNIT_TESTS ---
+    for step_name, cases in pipeline_unit_tests.items():
+        for inp, expected in cases:
+            for tok in tokenize_english_input(inp):
+                used_english.add(tok.lower())
+            for tok in tokenize_english_input(expected):
+                used_english.add(tok.lower())
+
+    # --- Collect usage from HELPER_UNIT_TESTS ---
+    for helper_name, cases in helper_unit_tests.items():
+        for context, expected in cases:
+            for key in ("word", "prev", "prev2"):
+                token = context.get(key)
+                if isinstance(token, str):
+                    used_english.add(token.lower())
+
+            if isinstance(expected, tuple):
+                for val in expected:
+                    if isinstance(val, str):
+                        used_english.add(val.lower())
+
     missing, missing_pos, missing_gloss, known_unknowns = audit_zamgrh_test_vocab(
         test_groups, lookup
     )
     missing_eng_pos = audit_english_side_inputs(
         pipeline_unit_tests, helper_unit_tests, eng_lookup
     )
+
+    dict_words = set()
+    dict_glosses = set()
+
+    for entry in data:
+        word = entry.get("word")
+        if word:
+            dict_words.add(word)
+
+            for sense in entry.get("english", []):
+                gloss = sense.get("gloss")
+                if gloss:
+                    dict_glosses.add(gloss.lower())
+
+    unused_words = sorted(dict_words - used_zamgrh)
+    unused_glosses = sorted(dict_glosses - used_english)
 
     print("Dictionary vs Test Audit")
     print("========================")
@@ -203,6 +261,8 @@ def main():
     print_section("Dictionary entries missing English gloss", missing_gloss)
     print_set_section("Intentional unknown tokens already bracketed by tests", known_unknowns)
     print_section("English-side test tokens without POS support in eng_lookup", missing_eng_pos)
+    print_set_section("Dictionary entries NOT used in tests", set(unused_words))
+    print_set_section("English glosses NOT exercised in tests", set(unused_glosses))
 
     total_problems = (
         len(missing)
@@ -210,6 +270,16 @@ def main():
         + len(missing_gloss)
         + len(missing_eng_pos)
     )
+
+    coverage_notes = (
+        len(unused_words)
+        + len(unused_glosses)
+    )
+
+    print("\n=== COVERAGE ===")
+    print(f"Dictionary coverage: {len(dict_words) - len(unused_words)}/{len(dict_words)} entries used")
+    print(f"Gloss coverage: {len(dict_glosses) - len(unused_glosses)}/{len(dict_glosses)} used")
+
     print("\n=== SUMMARY ===")
     if total_problems == 0:
         print("No dictionary-alignment problems found.")
