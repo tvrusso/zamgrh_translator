@@ -68,6 +68,12 @@ def validate_entry(entry, index, seen_words, errors, warnings):
             f"Word '{word}': leading/trailing whitespace detected; consider trimming."
         )
 
+    # Lowercase recommendation (warning only)
+    if normalized_word != normalized_word.lower():
+        warnings.append(
+            f"Word '{normalized_word}': should be lowercase (recommended)."
+        )
+
     seen_words.append(normalized_word)
 
     pos = entry.get("pos")
@@ -80,6 +86,11 @@ def validate_entry(entry, index, seen_words, errors, warnings):
                     f"Word '{normalized_word}': POS values must be non-empty strings."
                 )
                 continue
+            # Optional normalization warning
+            if p != p.strip():
+                warnings.append(
+                    f"Word '{normalized_word}': POS '{p}' has extra whitespace."
+                )
             if p not in ALLOWED_POS:
                 errors.append(
                     f"Word '{normalized_word}': invalid POS '{p}'. "
@@ -97,6 +108,14 @@ def validate_entry(entry, index, seen_words, errors, warnings):
                 )
                 continue
 
+            # Enforce required fields in gloss entry
+            required_gloss_fields = {"gloss"}
+            missing = required_gloss_fields - set(gloss_entry.keys())
+            for field in missing:
+                errors.append(
+                    f"Word '{normalized_word}': english[{i}] missing required field '{field}'."
+                )
+
             gloss = gloss_entry.get("gloss")
             if not is_nonempty_string(gloss):
                 errors.append(
@@ -104,11 +123,22 @@ def validate_entry(entry, index, seen_words, errors, warnings):
                 )
 
             weight = gloss_entry.get("weight")
-            if weight is not None and not isinstance(weight, (int, float)):
-                errors.append(
-                    f"Word '{normalized_word}': english[{i}] 'weight' must be numeric."
-                )
+            # weight is optional, but must be numeric if present
+            if weight is not None:
+                if not isinstance(weight, (int, float)):
+                    errors.append(
+                        f"Word '{normalized_word}': english[{i}] 'weight' must be numeric."
+                    )
 
+        # Optional: warn if multiple glosses but no weights
+        if len(english) > 1:
+            has_any_weight = any(
+                isinstance(g.get("weight"), (int, float)) for g in english
+            )
+            if not has_any_weight:
+                warnings.append(
+                    f"Word '{normalized_word}': multiple glosses without weights (recommended)."
+                )
     synonyms = entry.get("synonyms")
     if synonyms is not None:
         if not isinstance(synonyms, list):
@@ -153,20 +183,54 @@ def check_duplicates(words, errors):
     for word in duplicates:
         errors.append(f"Duplicate word entry: '{word}'.")
 
-def check_duplicate_glosses(gloss_map, warnings):
-    for gloss, words in sorted(gloss_map.items()):
-        if len(words) > 1:
-            words_sorted = sorted(words)
+def build_synonym_map(data):
+    synonym_map = {}
+    for entry in data:
+        word = entry.get("word")
+        synonyms = entry.get("synonyms", [])
+        if isinstance(word, str) and isinstance(synonyms, list):
+            synonym_map[word] = set(synonyms)
+        else:
+            synonym_map[word] = set()
+    return synonym_map
 
-            # Heuristic: short list = likely intentional synonym set
-            if len(words_sorted) <= 3:
-                warnings.append(
-                    f"Gloss '{gloss}' has possible synonyms: {words_sorted}"
-                )
-            else:
-                warnings.append(
-                    f"Gloss '{gloss}' appears in many entries (possible duplication issue): {words_sorted}"
-                )
+
+def are_synonyms_fully_linked(words, synonym_map):
+    """
+    Check if all words are mutually connected via synonyms.
+    (Strict mode, but only used for warning suppression for now)
+    """
+    word_set = set(words)
+
+    for word in word_set:
+        linked = synonym_map.get(word, set())
+        # Must at least reference all other words in the group
+        if not word_set - {word} <= linked:
+            return False
+
+    return True
+
+
+def check_duplicate_glosses(gloss_map, synonym_map, warnings):
+    for gloss, words in sorted(gloss_map.items()):
+        if len(words) <= 1:
+            continue
+
+        words_sorted = sorted(words)
+
+        # Suppress warning if explicitly modeled as synonyms
+        if are_synonyms_fully_linked(words_sorted, synonym_map):
+            continue
+
+        # Otherwise warn as before
+        if len(words_sorted) <= 3:
+            warnings.append(
+                f"Gloss '{gloss}' has possible synonyms: {words_sorted}"
+            )
+        else:
+            warnings.append(
+                f"Gloss '{gloss}' appears in many entries (possible duplication issue): {words_sorted}"
+            )
 
 def check_sort_order(words, warnings):
     sorted_words = sorted(words, key=str.lower)
@@ -188,6 +252,7 @@ def main():
     warnings = []
     seen_words = []
     gloss_map = {}
+    synonym_map = build_synonym_map(data)
 
     for index, entry in enumerate(data, start=1):
         validate_entry(entry, index, seen_words, errors, warnings)
@@ -203,7 +268,7 @@ def main():
     check_duplicates(seen_words, errors)
     check_invalid_characters(seen_words, errors)
     check_sort_order(seen_words, warnings)
-    check_duplicate_glosses(gloss_map, warnings)
+    check_duplicate_glosses(gloss_map, synonym_map, warnings)
 
     if errors:
         print("VALIDATION FAILED")
