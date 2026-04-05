@@ -39,19 +39,35 @@ us.  BARHAH!  Zambahz maz gab ahn barg bra!nz!
 
 ## Where does it stand?  (Hra!r !z !h?)
 
-Right now the translator is in early development (it's only a few days
-old!) and only translates from Zamgrh to English, and
-only has a very limited dictionary of Zamgrh words.  Development is
+Right now the translator is in early development and only translates
+from Zamgrh to English but with
+only a very limited dictionary of Zamgrh words.  Development is
 progressing fast, but is currently focused on improving the grammar
-engine.  Most canonical Zamgrh words are not recognized yet, so some
-of the most fun in-game speech still can't be decoded.
+engine, refining the dictionary schema, and developing tools to audit
+and validate the dictionary.  We're also working on refining the
+translator's morphology rules so that we don't have to have a
+dictionary entry for every single inflection of words.
+
+Most canonical Zamgrh words are not recognized yet, so some
+of the most fun in-game speech still can't be decoded.  But it's
+pretty good with the words it does know, and can recognize some
+advanced sentence structures in Zamgrh and translate them to nearly
+correct English.  Mah zambah gan gab an zah harmanz gan ran nahaarh,
+arh mah zambah barg bra!nz!
+
+We are also able to generate a human readable "Zombie Dictionary"
+directly from our JSON dictionary with a script in the tools
+directory.  You can find that rendition of our ccurrent dictionary in
+the wiki.
+
+Harmanz maz gab zamgrh!
 
 ## Planned Features  (Brannz hr!!zarz)
 
 - Zamgrh → English translation
 - English → Zamgrh generation
 - Curated JSON dictionary
-- Validator for dictionary integrity
+- Validator and auditor for dictionary integrity
 - Phonetic approximation support
 
 ## Project Structure (Brazhag Zzragzahr)
