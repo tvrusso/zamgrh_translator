@@ -160,13 +160,16 @@ def print_section(title: str, items: dict[str, set[str]]):
         print(f"- {token}: {groups}")
 
 
-def print_set_section(title: str, items: set[str]):
+def print_set_section(title: str, items: set[str], per_line: int = 10):
     print(f"\n=== {title} ===")
     if not items:
         print("None")
         return
-    for token in sorted(items):
-        print(f"- {token}")
+
+    sorted_items = sorted(items)
+    for i in range(0, len(sorted_items), per_line):
+        chunk = sorted_items[i:i + per_line]
+        print(", ".join(chunk))
 
 
 def main():
@@ -256,11 +259,15 @@ def main():
     print(f"Pipeline unit groups: {len(pipeline_unit_tests)}")
     print(f"Helper unit groups: {len(helper_unit_tests)}")
 
-    print_section("Missing Zamgrh dictionary entries used in TEST_GROUPS", missing)
-    print_section("Dictionary entries missing POS", missing_pos)
-    print_section("Dictionary entries missing English gloss", missing_gloss)
-    print_set_section("Intentional unknown tokens already bracketed by tests", known_unknowns)
-    print_section("English-side test tokens without POS support in eng_lookup", missing_eng_pos)
+    print("\n=== STRUCTURAL ISSUES ===")
+    print_section("Missing dictionary entries (used in tests)", missing)
+    print_section("Entries missing POS", missing_pos)
+    print_section("Entries missing English gloss", missing_gloss)
+    print_section("English tokens missing POS support", missing_eng_pos)
+
+    print("\n=== LEXICAL SIGNALS ===")
+    print_set_section("Intentional unknown tokens (bracketed in tests)", known_unknowns)
+
     print_set_section("Dictionary entries NOT used in tests", set(unused_words))
     print_set_section("English glosses NOT exercised in tests", set(unused_glosses))
 
@@ -282,9 +289,9 @@ def main():
 
     print("\n=== SUMMARY ===")
     if total_problems == 0:
-        print("No dictionary-alignment problems found.")
+        print("No structural dictionary-alignment problems found.")
     else:
-        print(f"Found {total_problems} categories of dictionary-alignment issues.")
+        print(f"Found {total_problems} structural alignment issue categories.")
 
     print("\nNote:")
     print("- Intentional nonsense tokens like 'flargh' are okay if tests expect bracketed output.")
