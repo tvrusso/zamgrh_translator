@@ -38,6 +38,9 @@ def format_entry(entry):
     lines.append(f"**Meaning:** {gloss_str}")
 
     # Optional fields
+    if "source" in entry or "confidence" in entry:
+        lines.append("")
+
     if "source" in entry:
         lines.append(f"**Source:** {entry['source']}")
 
@@ -45,13 +48,16 @@ def format_entry(entry):
         lines.append(f"**Confidence:** {entry['confidence']:.2f}")
 
     if "synonyms" in entry and entry["synonyms"]:
+        lines.append("")
         lines.append(f"**Synonyms:** {', '.join(entry['synonyms'])}")
 
     if entry.get("preferred") is True:
+        lines.append("")
         lines.append(f"**Preferred:** yes")
 
     if "usage" in entry and "tone" in entry["usage"]:
         tones = ", ".join(entry["usage"]["tone"])
+        lines.append("")
         lines.append(f"**Tone:** {tones}")
 
     if "phonetic" in entry:
