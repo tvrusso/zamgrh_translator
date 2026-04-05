@@ -62,7 +62,7 @@ STRUCTURE_TESTS = {
         (
             "zambahz barg bra!nz",
             {
-                "subject": "zombie",
+                "subject": "zombies",
                 "verb": "eat",
                 "object": "brains",
                 "plural": True,
@@ -84,7 +84,7 @@ STRUCTURE_TESTS = {
         (
             "harmanz bah",
             {
-                "subject": "human",
+                "subject": "humans",
                 "verb": None,
                 "object": None,
                 "plural": True,
@@ -117,7 +117,7 @@ STRUCTURE_TESTS = {
         (
             "harmanz barg bra!nz",
             {
-                "subject": "human",
+                "subject": "humans",
                 "verb": "eat",
                 "object": "brains",
                 "plural": True,
@@ -128,7 +128,7 @@ STRUCTURE_TESTS = {
         (
             "zambahz !z bah",
             {
-                "subject": "zombie",
+                "subject": "zombies",
                 "verb": "is",
                 "object": None,
                 "plural": True,
