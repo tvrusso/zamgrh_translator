@@ -68,6 +68,12 @@ def validate_entry(entry, index, seen_words, errors, warnings):
             f"Word '{word}': leading/trailing whitespace detected; consider trimming."
         )
 
+    # Lowercase recommendation (warning only)
+    if normalized_word != normalized_word.lower():
+        warnings.append(
+            f"Word '{normalized_word}': should be lowercase (recommended)."
+        )
+
     seen_words.append(normalized_word)
 
     pos = entry.get("pos")
@@ -80,6 +86,11 @@ def validate_entry(entry, index, seen_words, errors, warnings):
                     f"Word '{normalized_word}': POS values must be non-empty strings."
                 )
                 continue
+            # Optional normalization warning
+            if p != p.strip():
+                warnings.append(
+                    f"Word '{normalized_word}': POS '{p}' has extra whitespace."
+                )
             if p not in ALLOWED_POS:
                 errors.append(
                     f"Word '{normalized_word}': invalid POS '{p}'. "
@@ -97,6 +108,14 @@ def validate_entry(entry, index, seen_words, errors, warnings):
                 )
                 continue
 
+            # Enforce required fields in gloss entry
+            required_gloss_fields = {"gloss"}
+            missing = required_gloss_fields - set(gloss_entry.keys())
+            for field in missing:
+                errors.append(
+                    f"Word '{normalized_word}': english[{i}] missing required field '{field}'."
+                )
+
             gloss = gloss_entry.get("gloss")
             if not is_nonempty_string(gloss):
                 errors.append(
@@ -104,11 +123,22 @@ def validate_entry(entry, index, seen_words, errors, warnings):
                 )
 
             weight = gloss_entry.get("weight")
-            if weight is not None and not isinstance(weight, (int, float)):
-                errors.append(
-                    f"Word '{normalized_word}': english[{i}] 'weight' must be numeric."
-                )
+            # weight is optional, but must be numeric if present
+            if weight is not None:
+                if not isinstance(weight, (int, float)):
+                    errors.append(
+                        f"Word '{normalized_word}': english[{i}] 'weight' must be numeric."
+                    )
 
+        # Optional: warn if multiple glosses but no weights
+        if len(english) > 1:
+            has_any_weight = any(
+                isinstance(g.get("weight"), (int, float)) for g in english
+            )
+            if not has_any_weight:
+                warnings.append(
+                    f"Word '{normalized_word}': multiple glosses without weights (recommended)."
+                )
     synonyms = entry.get("synonyms")
     if synonyms is not None:
         if not isinstance(synonyms, list):
