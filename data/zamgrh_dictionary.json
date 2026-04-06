@@ -71,7 +71,7 @@
         "neutral"
       ]
     },
-    "source": "group_standard",
+    "source": "observed",
     "confidence": 0.9
   },
   {
@@ -407,12 +407,15 @@
         "english": "You will eat."
       }
     ],
+    "synonyms": [
+      "gah"
+    ],
     "usage": {
       "tone": [
         "neutral"
       ]
     },
-    "source": "group_standard",
+    "source": "canon",
     "confidence": 0.9
   },
   {
@@ -439,7 +442,7 @@
       }
     ],
     "synonyms": [
-        "grahm"
+      "grahm"
     ],
     "usage": {
       "tone": [
@@ -513,12 +516,15 @@
         "english": "Zombies smash you."
       }
     ],
+    "synonyms": [
+      "gaa"
+    ],
     "usage": {
       "tone": [
         "neutral"
       ]
     },
-    "source": "group_standard",
+    "source": "observed_variant",
     "confidence": 0.9
   },
   {
@@ -529,16 +535,7 @@
     ],
     "english": [
       {
-        "gloss": "will",
-        "weight": 1.0
-      },
-      {
-        "gloss": "can",
-        "weight": 0.9
-      },
-      {
-        "gloss": "gun",
-        "weight": 0.8
+        "gloss": "will"
       }
     ],
     "phonetic": {
@@ -557,12 +554,16 @@
         "english": "Machine gun."
       }
     ],
+    "synonyms": [
+      "ganna"
+    ],
     "usage": {
       "tone": [
         "neutral"
       ]
     },
-    "source": "group_standard",
+    "notes": "Observed variant used for 'will' (ganna). Also appears in ambiguous phonetic contexts overlapping with 'can' and 'gun'.",
+    "source": "observed_variant",
     "confidence": 0.9
   },
   {
@@ -628,6 +629,9 @@
         "english": "I will eat."
       }
     ],
+    "synonyms": [
+      "gan"
+    ],
     "usage": {
       "tone": [
         "neutral"
@@ -660,7 +664,7 @@
       }
     ],
     "synonyms": [
-        "gaam"
+      "gaam"
     ],
     "usage": {
       "tone": [
@@ -709,12 +713,7 @@
     ],
     "english": [
       {
-        "gloss": "help",
-        "weight": 1.0
-      },
-      {
-        "gloss": "have",
-        "weight": 0.8
+        "gloss": "help"
       }
     ],
     "phonetic": {
@@ -727,10 +726,6 @@
       {
         "zamgrh": "Hab mah!",
         "english": "Help me."
-      },
-      {
-        "zamgrh": "Maz hab bra!nz",
-        "english": "Must have brains."
       }
     ],
     "usage": {
@@ -738,7 +733,8 @@
         "neutral"
       ]
     },
-    "source": "group_standard",
+    "notes": "Often used as 'have' in observed speech, but canonically means 'help'",
+    "source": "canon",
     "confidence": 0.9
   },
   {
@@ -938,7 +934,7 @@
         "neutral"
       ]
     },
-    "source": "canon",
+    "source": "observed_variant",
     "confidence": 0.95
   },
   {
