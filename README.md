@@ -20,8 +20,8 @@ some punctuation marks are passed through unmodified.
 
 As a result, some zombie players created a "language" we call "zamgrh"
 that involves only those characters.   A surprising range of
-communication becomes possible.   Rarr!h!  Zah zambahz gan gab, ahn
-zah harmanz gan annarzanz!
+communication becomes possible.   Rarr!h!  Zah zambahz ganna gab, ahn
+zah harmanz ganna annarzanz!
 
 The basic concept of Zamgrh is described
 [on this page of the archived Urban Dead wiki](https://wiki.urbandead.com/index.php/Zamgrh).
@@ -52,8 +52,8 @@ Most canonical Zamgrh words are not recognized yet, so some
 of the most fun in-game speech still can't be decoded.  But it's
 pretty good with the words it does know, and can recognize some
 advanced sentence structures in Zamgrh and translate them to nearly
-correct English.  Mah zambah gan gab an zah harmanz gan ran nahaarh,
-arh mah zambah barg bra!nz!
+correct English.  Mah zambah ganna gab an zah harmanz ganna ran nahaarh,
+arh mah zambah ganna barg bra!nz!
 
 We are also able to generate a human readable "Zombie Dictionary"
 directly from our JSON dictionary with a script in the tools
