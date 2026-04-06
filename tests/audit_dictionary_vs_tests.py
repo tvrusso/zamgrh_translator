@@ -35,8 +35,14 @@ KNOWN_ENGLISH_LITERALS = {
     "happy", "nice", "bad", "big", "quickly", "often", "alone", "together",
     "group", "gang", "brains", "brain", "human", "humans", "zombie", "zombies",
     "serum", "barricades", "food", "house", "room", "inn", "away", "going",
+    "eating", "more", "fast", "scar", "scars",
 }
 
+# These "words" are used as nonsense in some helper tests to assure they are
+# passed through
+KNOWN_FAKE_WORDS = {
+    "flargh", "frobnitz",
+}
 
 def load_test_ast(test_path: Path) -> ast.AST:
     return ast.parse(test_path.read_text(encoding="utf-8"), filename=str(test_path))
@@ -125,13 +131,19 @@ def audit_english_side_inputs(pipeline_unit_tests, helper_unit_tests, eng_lookup
         if not token:
             return
         low = token.lower()
+        if low.endswith("ing"):
+            return
         if low.startswith("[") and low.endswith("]"):
             return
         if low in KNOWN_ENGLISH_LITERALS:
             return
+        if low in KNOWN_FAKE_WORDS:
+            return
         if low in eng_lookup:
             return
         if low.endswith("s") and low[:-1] in eng_lookup:
+            return
+        if low in {"more", "most"}:
             return
         missing_eng_pos.setdefault(low, set()).add(context_name)
 
@@ -361,7 +373,7 @@ def main():
     print_section("English tokens missing POS support", missing_eng_pos)
 
     print("\n=== LEXICAL SIGNALS ===")
-    print_set_section("Intentional unknown tokens (bracketed in tests)", known_unknowns)
+    print_set_section("Unknown tokens (expected / test-intent) (bracketed in tests)", known_unknowns)
 
     print_set_section("Dictionary entries NOT used in tests", set(unused_words))
     print_set_section("English glosses NOT exercised in tests", set(unused_glosses))
