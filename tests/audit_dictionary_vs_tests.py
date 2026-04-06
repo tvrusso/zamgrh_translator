@@ -373,7 +373,7 @@ def main():
     print_section("English tokens missing POS support", missing_eng_pos)
 
     print("\n=== LEXICAL SIGNALS ===")
-    print_set_section("Intentional unknown tokens (bracketed in tests)", known_unknowns)
+    print_set_section("Unknown tokens (expected / test-intent) (bracketed in tests)", known_unknowns)
 
     print_set_section("Dictionary entries NOT used in tests", set(unused_words))
     print_set_section("English glosses NOT exercised in tests", set(unused_glosses))
