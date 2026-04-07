@@ -16,9 +16,7 @@ ALLOWED_POS = {
     "aux",
     "interj",
     "conj",
-    "phrase",
     "proper_noun",
-    "insult",
 }
 
 REQUIRED_TOP_LEVEL_FIELDS = {"word", "pos", "english"}
