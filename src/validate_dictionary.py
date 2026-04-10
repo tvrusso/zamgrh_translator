@@ -16,9 +16,7 @@ ALLOWED_POS = {
     "aux",
     "interj",
     "conj",
-    "phrase",
     "proper_noun",
-    "insult",
 }
 
 REQUIRED_TOP_LEVEL_FIELDS = {"word", "pos", "english"}
@@ -80,6 +78,10 @@ def validate_entry(entry, index, seen_words, errors, warnings):
     if not isinstance(pos, list) or not pos:
         errors.append(f"Word '{normalized_word}': 'pos' must be a non-empty list.")
     else:
+        if  len(pos) > 2:
+            warnings.append(
+                f"Word '{normalized_word}': has {len(pos)} POS tags (possible over-tagging)."
+            )
         for p in pos:
             if not is_nonempty_string(p):
                 errors.append(
@@ -132,13 +134,13 @@ def validate_entry(entry, index, seen_words, errors, warnings):
 
         # Optional: warn if multiple glosses but no weights
         if len(english) > 1:
-            has_any_weight = any(
-                isinstance(g.get("weight"), (int, float)) for g in english
-            )
-            if not has_any_weight:
+            glosses = [g.get("gloss", "").lower() for g in english]
+            # naive heuristic: very different lengths / forms
+            if len(set(glosses)) > 1:
                 warnings.append(
-                    f"Word '{normalized_word}': multiple glosses without weights (recommended)."
+                    f"Word '{normalized_word}': multiple glosses present — verify semantic consistency ({glosses})"
                 )
+
     synonyms = entry.get("synonyms")
     if synonyms is not None:
         if not isinstance(synonyms, list):
@@ -149,6 +151,10 @@ def validate_entry(entry, index, seen_words, errors, warnings):
                     errors.append(
                         f"Word '{normalized_word}': synonyms[{i}] must be a non-empty string."
                     )
+            if normalized_word in synonyms:
+                warnings.append(
+                    f"Word '{normalized_word}': lists itself as a synonym."
+                )
 
     examples = entry.get("examples")
     if examples is not None:
@@ -176,6 +182,11 @@ def validate_entry(entry, index, seen_words, errors, warnings):
     if "preferred" in entry and not isinstance(entry["preferred"], bool):
         errors.append(f"Word '{normalized_word}': 'preferred' must be true or false.")
 
+    source = entry.get("source")
+    if source is None:
+        warnings.append(
+            f"Word '{normalized_word}': missing 'source' field (recommended)."
+        )
 
 def check_duplicates(words, errors):
     counts = Counter(words)

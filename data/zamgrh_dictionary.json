@@ -9,7 +9,8 @@
         "gloss": "inn",
         "weight": 1.0
       }
-    ]
+    ],
+    "source": "canon"
   },
   {
     "word": "!z",
@@ -146,7 +147,8 @@
         "gloss": "at the",
         "weight": 1.0
       }
-    ]
+    ],
+    "source": "group_standard"
   },
   {
     "word": "bah",
@@ -903,41 +905,6 @@
     "confidence": 0.9
   },
   {
-    "word": "ma",
-    "pos": [
-      "pron"
-    ],
-    "english": [
-      {
-        "gloss": "we",
-        "weight": 1.0
-      },
-      {
-        "gloss": "us",
-        "weight": 1.0
-      }
-    ],
-    "phonetic": {
-      "approx": "we",
-      "syllables": [
-        "ma"
-      ]
-    },
-    "examples": [
-      {
-        "zamgrh": "Ma ganna barg.",
-        "english": "We will eat."
-      }
-    ],
-    "usage": {
-      "tone": [
-        "neutral"
-      ]
-    },
-    "source": "observed_variant",
-    "confidence": 0.95
-  },
-  {
     "word": "ma!g",
     "pos": [
       "verb"
@@ -1077,9 +1044,42 @@
     "confidence": 0.9
   },
   {
+    "word": "na",
+    "pos": [
+      "aux",
+      "interj"
+    ],
+    "english": [
+      {
+        "gloss": "no",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "nah",
+      "syllables": [
+        "nah"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "Na!  Zambahz maz nah barg zambahz!",
+        "english": "No!  Zombies must not eat zombies!"
+      }
+    ],
+    "usage": {
+      "tone": [
+        "neutral",
+        "refusal"
+      ]
+    },
+    "source": "canon",
+    "confidence": 1.0,
+    "notes": "May also be used to say 'don't' "
+  },
+  {
     "word": "nah",
     "pos": [
-      "adv",
       "aux",
       "interj"
     ],
@@ -1087,10 +1087,6 @@
       {
         "gloss": "not",
         "weight": 1.0
-      },
-      {
-        "gloss": "no",
-        "weight": 0.9
       }
     ],
     "phonetic": {
@@ -1103,10 +1099,6 @@
       {
         "zamgrh": "Mah nah ganna barg.",
         "english": "I will not eat."
-      },
-      {
-        "zamgrh": "Nah!",
-        "english": "No!"
       }
     ],
     "usage": {
@@ -1116,7 +1108,8 @@
       ]
     },
     "source": "canon",
-    "confidence": 1.0
+    "confidence": 1.0,
+    "notes": "May also be used to say 'doesn't'"
   },
   {
     "word": "nahaarh",
@@ -1163,10 +1156,6 @@
     "english": [
       {
         "gloss": "eat",
-        "weight": 1.0
-      },
-      {
-        "gloss": "food",
         "weight": 1.0
       }
     ],
@@ -1234,10 +1223,6 @@
       {
         "gloss": "room",
         "weight": 1.0
-      },
-      {
-        "gloss": "place",
-        "weight": 0.8
       }
     ],
     "phonetic": {
