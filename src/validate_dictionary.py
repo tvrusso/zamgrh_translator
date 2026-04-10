@@ -2,6 +2,7 @@ import json
 import sys
 from pathlib import Path
 from collections import Counter
+import hashlib
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "zamgrh_dictionary.json"
 
@@ -22,6 +23,10 @@ ALLOWED_POS = {
 REQUIRED_TOP_LEVEL_FIELDS = {"word", "pos", "english"}
 
 ALLOWED_ZAMGRH_CHARS = set("zamgrhnb!")
+
+ALLOWED_REVIEWS = {
+    "semantic_consistency",
+}
 
 def load_dictionary(path: Path):
     try:
@@ -132,14 +137,25 @@ def validate_entry(entry, index, seen_words, errors, warnings):
                         f"Word '{normalized_word}': english[{i}] 'weight' must be numeric."
                     )
 
-        # Optional: warn if multiple glosses but no weights
+        # Optional: warn if multiple glosses but unreviewed
         if len(english) > 1:
             glosses = [g.get("gloss", "").lower() for g in english]
-            # naive heuristic: very different lengths / forms
+
             if len(set(glosses)) > 1:
-                warnings.append(
-                    f"Word '{normalized_word}': multiple glosses present — verify semantic consistency ({glosses})"
-                )
+                current_hash = compute_semantic_hash(entry)
+                valid, state = check_review(entry, "semantic_consistency", compute_semantic_hash)
+
+                if not valid:
+                    if state == "stale":
+                        warnings.append(
+                            f"Word '{normalized_word}': semantic review is stale — entry changed since approval ({glosses}) "
+                            f"[expected hash: {current_hash}]"
+                        )
+                    else:
+                        warnings.append(
+                            f"Word '{normalized_word}': multiple glosses present — verify semantic consistency ({glosses}) "
+                            f"[review hash: {current_hash}]"
+                        )
 
     synonyms = entry.get("synonyms")
     if synonyms is not None:
@@ -187,6 +203,21 @@ def validate_entry(entry, index, seen_words, errors, warnings):
         warnings.append(
             f"Word '{normalized_word}': missing 'source' field (recommended)."
         )
+
+    reviews = entry.get("reviews")
+    if reviews is not None:
+        if not isinstance(reviews, dict):
+            errors.append(f"Word '{normalized_word}': 'reviews' must be an object.")
+        else:
+            for key, value in reviews.items():
+                if key not in ALLOWED_REVIEWS:
+                    warnings.append(
+                        f"Word '{normalized_word}': unknown review type '{key}'."
+                    )
+                if not isinstance(value, dict):
+                    errors.append(
+                        f"Word '{normalized_word}': review '{key}' must be an object."
+                    )
 
 def check_duplicates(words, errors):
     counts = Counter(words)
@@ -255,6 +286,52 @@ def check_invalid_characters(words, errors):
             errors.append(
                 f"Word '{word}' contains invalid Zamgrh characters: {sorted(invalid_chars)}"
             )
+
+def compute_semantic_hash(entry):
+    """
+    Hash only fields relevant to semantic consistency:
+    - word
+    - pos
+    - english glosses
+    """
+    subset = {
+        "word": entry.get("word"),
+        "pos": entry.get("pos"),
+        "english": [
+            {"gloss": g.get("gloss")}
+            for g in entry.get("english", [])
+        ],
+    }
+    normalized = json.dumps(subset, sort_keys=True)
+    return hashlib.sha256(normalized.encode()).hexdigest()
+
+def check_review(entry, review_type, compute_hash_fn):
+    reviews = entry.get("reviews", {})
+    review = reviews.get(review_type)
+
+    if not isinstance(reviews, dict):
+        return False, "missing"
+
+    if review is None:
+        return False, "missing"
+
+    if not isinstance(review, dict):
+        return False, "invalid"
+
+    if review.get("status") != "approved":
+        return False, "missing"
+
+    expected_hash = review.get("hash")
+    if not expected_hash:
+        return False, "invalid"
+
+    current_hash = compute_hash_fn(entry)
+
+    if expected_hash != current_hash:
+        return False, "stale"
+
+    return True, "valid"
+
 
 def main():
     data = load_dictionary(DATA_PATH)

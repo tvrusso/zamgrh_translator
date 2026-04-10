@@ -216,7 +216,16 @@
       ]
     },
     "source": "group_standard",
-    "confidence": 0.9
+    "confidence": 0.9,
+    "reviews": {
+      "semantic_consistency": {
+        "status": "approved",
+        "reviewer": "IBDead2U",
+        "date": "2026-04-10",
+        "hash": "d69dea95cb27ba44c63baf5c57f093922098c9fabe75989e8d02b413be40b108",
+        "notes": "'shoot' and 'gunshot' are arguably related, so we're accepting the two glosses"
+      }
+    }
   },
   {
     "word": "bangbangman",
@@ -288,7 +297,16 @@
       ]
     },
     "source": "group_standard",
-    "confidence": 0.85
+    "confidence": 0.85,
+    "reviews": {
+      "semantic_consistency": {
+        "status": "approved",
+        "reviewer": "IBDead2U",
+        "date": "2026-04-10",
+        "hash": "df17d0df7cf69c9aaef4cb572b8f3160e54d70bb39fe098a2e3f56af3f900aa3",
+        "notes": "'eat' and 'devour' are semantically consistent"
+      }
+    }
   },
   {
     "word": "barragah",
@@ -493,7 +511,16 @@
       ]
     },
     "source": "group_standard",
-    "confidence": 0.9
+    "confidence": 0.9,
+    "reviews": {
+      "semantic_consistency": {
+        "status": "approved",
+        "reviewer": "IBDead2U",
+        "date": "2026-04-10",
+        "hash": "f7dea2d55741b337e47878cc0275778411a3333b05a3bbd2a0e9fee64042e030",
+        "notes": "'speak' and 'gab' are synonyms"
+      }
+    }
   },
   {
     "word": "gah",
@@ -601,7 +628,16 @@
       ]
     },
     "source": "group_standard",
-    "confidence": 0.9
+    "confidence": 0.9,
+    "reviews": {
+      "semantic_consistency": {
+        "status": "approved",
+        "reviewer": "IBDead2U",
+        "date": "2026-04-10",
+        "hash": "03c2404896615c2aa902b791e4c4131210ca4f0cfdfaa35f709f08d1f8bed0f5",
+        "notes": "while 'gang' and 'group' have somewhat different tones, they are consistent."
+      }
+    }
   },
   {
     "word": "ganna",
@@ -640,7 +676,16 @@
       ]
     },
     "source": "canon",
-    "confidence": 0.9
+    "confidence": 0.9,
+    "reviews": {
+      "semantic_consistency": {
+        "status": "approved",
+        "reviewer": "IBDead2U",
+        "date": "2026-04-10",
+        "hash": "fbfd4bd53a9f99efeb877ed361ea3d4b445fa839714aef59148d682fead1eef7",
+        "notes": "'will' and 'going to' are acceptably close to symantically consistent, though might need pipeline help"
+      }
+    }
   },
   {
     "word": "grahm",
@@ -871,7 +916,16 @@
       ]
     },
     "source": "canon",
-    "confidence": 0.9
+    "confidence": 0.9,
+    "reviews": {
+      "semantic_consistency": {
+        "status": "approved",
+        "reviewer": "IBDead2U",
+        "date": "2026-04-10",
+        "hash": "580902c0d01a1d9e07539190b1b08ec54bb25084162013284cf7443e6ea5a68c",
+        "notes": "the two glosses are related, even though the tense is different"
+      }
+    }
   },
   {
     "word": "m!z",
@@ -973,7 +1027,16 @@
       ]
     },
     "source": "canon",
-    "confidence": 1.0
+    "confidence": 1.0,
+    "reviews": {
+      "semantic_consistency": {
+        "status": "approved",
+        "reviewer": "IBDead2U",
+        "date": "2026-04-10",
+        "hash": "5eacb2137e5dbc1d0d4aa6b23092c276176450ed8b8132b536a4db57416df85f",
+        "notes": "while the three glosses are different pronoun cases, they are related and acceptable for now"
+      }
+    }
   },
   {
     "word": "maz",
@@ -1145,7 +1208,15 @@
       ]
     },
     "source": "canon",
-    "confidence": 0.9
+    "confidence": 0.9,
+    "reviews": {
+      "semantic_consistency": {
+        "status": "approved",
+        "reviewer": "IBDead2U",
+        "date": "2026-04-10",
+        "hash": "cfeaf0e1638eddeb7dba0655436f4078fcb270371a58d11739f8de23b98c2f68"
+      }
+    }
   },
   {
     "word": "nam",
@@ -1278,7 +1349,16 @@
       ]
     },
     "source": "canon",
-    "confidence": 0.9
+    "confidence": 0.9,
+    "reviews": {
+      "semantic_consistency": {
+        "status": "approved",
+        "reviewer": "IBDead2U",
+        "date": "2026-04-10",
+        "hash": "a344d5936177f7c4df69ac3490a199bc265cb11c21fdd0e10a05147440b2d34a",
+        "notes": "'run' and 'go' are related, if not synonymous"
+      }
+    }
   },
   {
     "word": "razbarh",

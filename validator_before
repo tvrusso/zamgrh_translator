@@ -1,0 +1,11 @@
+VALIDATION PASSED WITH WARNINGS
+----------------------------------------
+WARNING: Word 'bang': multiple glosses present — verify semantic consistency (['shoot', 'gunshot'])
+WARNING: Word 'barg': multiple glosses present — verify semantic consistency (['eat', 'devour'])
+WARNING: Word 'gab': multiple glosses present — verify semantic consistency (['speak', 'gab'])
+WARNING: Word 'gang': multiple glosses present — verify semantic consistency (['group', 'gang'])
+WARNING: Word 'ganna': multiple glosses present — verify semantic consistency (['going to', 'will'])
+WARNING: Word 'haz': multiple glosses present — verify semantic consistency (['have', 'has'])
+WARNING: Word 'mah': multiple glosses present — verify semantic consistency (['i', 'me', 'my'])
+WARNING: Word 'nahaarh': multiple glosses present — verify semantic consistency (['away', 'not here'])
+WARNING: Word 'ran': multiple glosses present — verify semantic consistency (['go', 'run'])
