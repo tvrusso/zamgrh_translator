@@ -274,6 +274,76 @@ def check_duplicate_glosses(gloss_map, synonym_map, warnings):
                 f"Gloss '{gloss}' appears in many entries (possible duplication issue): {words_sorted}"
             )
 
+def check_synonym_symmetry(data, warnings):
+    word_to_synonyms = {
+        entry.get("word"): set(entry.get("synonyms", []))
+        for entry in data
+        if isinstance(entry.get("word"), str)
+    }
+
+    for word, syns in word_to_synonyms.items():
+        for s in syns:
+            if s not in word_to_synonyms:
+                continue
+            if word not in word_to_synonyms.get(s, set()):
+                warnings.append(
+                    f"Word '{word}' lists '{s}' as synonym, but not vice versa."
+                )
+
+def check_preferred_conflicts(data, warnings):
+    # Build reverse synonym groups (naive clustering)
+    word_to_entry = {entry.get("word"): entry for entry in data}
+
+    for word, entry in word_to_entry.items():
+        if entry.get("preferred") is True:
+            synonyms = entry.get("synonyms", [])
+            if not synonyms:
+                warnings.append(
+                    f"Word '{word}' is marked as preferred but has no synonyms."
+                    )
+
+    visited = set()
+
+    for word, entry in word_to_entry.items():
+        if word in visited:
+            continue
+
+        group = set()
+        stack = [word]
+
+        # BFS to collect synonym group
+        while stack:
+            w = stack.pop()
+            if w in group:
+                continue
+            group.add(w)
+            visited.add(w)
+
+            syns = word_to_entry.get(w, {}).get("synonyms", [])
+            for s in syns:
+                if s in word_to_entry:
+                    stack.append(s)
+
+        # Check preferred count
+        preferred_words = [
+            w for w in group
+            if word_to_entry.get(w, {}).get("preferred") is True
+        ]
+
+        if len(preferred_words) > 1:
+            warnings.append(
+                f"Synonym group {sorted(group)} has multiple preferred entries: {preferred_words}"
+            )
+
+def check_synonyms_exist(synonym_map, seen_words, warnings):
+    valid_words = set(seen_words)
+    for word, synonyms in synonym_map.items():
+        for s in synonyms:
+            if s not in valid_words:
+                warnings.append(
+                    f"Word '{word}': synonym '{s}' not found in dictionary."
+                )
+
 def check_sort_order(words, warnings):
     sorted_words = sorted(words, key=str.lower)
     if words != sorted_words:
@@ -342,6 +412,7 @@ def main():
     gloss_map = {}
     synonym_map = build_synonym_map(data)
 
+
     for index, entry in enumerate(data, start=1):
         validate_entry(entry, index, seen_words, errors, warnings)
 
@@ -353,10 +424,13 @@ def main():
             if is_nonempty_string(gloss):
                 gloss_map.setdefault(gloss, set()).add(word)
 
+    check_synonyms_exist(synonym_map, seen_words, warnings)
     check_duplicates(seen_words, errors)
     check_invalid_characters(seen_words, errors)
     check_sort_order(seen_words, warnings)
     check_duplicate_glosses(gloss_map, synonym_map, warnings)
+    check_synonym_symmetry(data, warnings)
+    check_preferred_conflicts(data, warnings)
 
     if errors:
         print("VALIDATION FAILED")
