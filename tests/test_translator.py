@@ -596,6 +596,73 @@ TEST_GROUPS = {
 #      ],
 # ...
 PIPELINE_UNIT_TESTS = {
+    ## MISSING:  resolve_hab_ambiguity
+    ## MISSING:  simplify_subject
+    ## MISSING:  fix_posession
+    "fix_pronouns": [
+        ("give I brains", "give me brains"),
+        ("eat I", "eat me"),
+        ("smash I", "smash me"),
+        ("have I brains", "have me brains"),
+        ("I give brains", "I give brains"),
+        ("the I brains", "the I brains"),
+        ("give you brains", "give you brains"),
+    ],
+    ## MISSING:  collaps_repeated_pronouns
+    "fix_determiners": [
+        ("I brains", "my brains"),
+        ("I group", "my group"),
+        ("I gang", "my gang"),
+        ("I eat brains", "I eat brains"),
+        ("I will eat brains", "I will eat brains"),
+        ("I zombie eat brains", "I zombie eat brains"),
+        ("give I brains", "give my brains"),
+    ],
+    "fix_prepositions": [
+        ("to I", "to me"),
+        ("go to I", "go to me"),
+        ("give brains to I", "give brains to me"),
+        ("I go", "I go"),
+        ("to you", "to you"),
+    ],
+    "insert_copula": [
+        ("zombie bad", "zombie is bad"),
+        ("zombies bad", "zombies are bad"),
+        ("human nice", "human is nice"),
+        ("brains nice", "brains are nice"),
+        ("zombie is bad", "zombie is bad"),
+        ("zombie eat bad", "zombie eat bad"),
+        ("[flargh] bad", "flargh bad"),
+    ],
+    "insert_articles": [
+        ("eat brain", "eat a brain"),
+        ("eat brains", "eat brains"),
+        ("give brain", "give a brain"),
+        ("go to human", "go to a human"),
+        ("go to humans", "go to humans"),
+        ("eat the brain", "eat the brain"),
+        ("zombie eat brain", "zombie eat a brain"),
+        ("zombie eat big brain", "zombie eat a big brain"),
+    ],
+    "dedupe_function_words": [
+        ("the the human", "the human"),
+        ("a a brain", "a brain"),
+        ("an an inn", "an inn"),
+        ("is is bad", "is bad"),
+        ("are are bad", "are bad"),
+        ("must must eat", "must eat"),
+        ("will will go", "will go"),
+        ("brains brains", "brains brains"),
+        ("bad bad", "bad bad"),
+    ],
+    "fix_am_progressive": [
+        ("I going to eat brains", "I am going to eat brains"),
+        ("I going to go", "I am going to go"),
+        ("I going fast", "I going fast"),
+        ("you going to eat brains", "you going to eat brains"),
+        ("I am going to eat brains", "I am going to eat brains"),
+        ("zombie going to eat brains", "zombie going to eat brains"),
+    ],
     "fix_verb_agreement": [
         # If already inflected properly, keep it that way
         ("I eat brains", "I eat brains"),
@@ -660,75 +727,6 @@ PIPELINE_UNIT_TESTS = {
         ("The zombie in the house eat brains", "the zombie in the house eats brains"),
     ],
 
-    "fix_pronouns": [
-        ("give I brains", "give me brains"),
-        ("eat I", "eat me"),
-        ("smash I", "smash me"),
-        ("have I brains", "have me brains"),
-        ("I give brains", "I give brains"),
-        ("the I brains", "the I brains"),
-        ("give you brains", "give you brains"),
-    ],
-
-    "fix_determiners": [
-        ("I brains", "my brains"),
-        ("I group", "my group"),
-        ("I gang", "my gang"),
-        ("I eat brains", "I eat brains"),
-        ("I will eat brains", "I will eat brains"),
-        ("I zombie eat brains", "I zombie eat brains"),
-        ("give I brains", "give my brains"),
-    ],
-
-    "fix_prepositions": [
-        ("to I", "to me"),
-        ("go to I", "go to me"),
-        ("give brains to I", "give brains to me"),
-        ("I go", "I go"),
-        ("to you", "to you"),
-    ],
-
-    "insert_copula": [
-        ("zombie bad", "zombie is bad"),
-        ("zombies bad", "zombies are bad"),
-        ("human nice", "human is nice"),
-        ("brains nice", "brains are nice"),
-        ("zombie is bad", "zombie is bad"),
-        ("zombie eat bad", "zombie eat bad"),
-        ("[flargh] bad", "flargh bad"),
-    ],
-
-    "insert_articles": [
-        ("eat brain", "eat a brain"),
-        ("eat brains", "eat brains"),
-        ("give brain", "give a brain"),
-        ("go to human", "go to a human"),
-        ("go to humans", "go to humans"),
-        ("eat the brain", "eat the brain"),
-        ("zombie eat brain", "zombie eat a brain"),
-        ("zombie eat big brain", "zombie eat a big brain"),
-    ],
-
-    "dedupe_function_words": [
-        ("the the human", "the human"),
-        ("a a brain", "a brain"),
-        ("an an inn", "an inn"),
-        ("is is bad", "is bad"),
-        ("are are bad", "are bad"),
-        ("must must eat", "must eat"),
-        ("will will go", "will go"),
-        ("brains brains", "brains brains"),
-        ("bad bad", "bad bad"),
-    ],
-
-    "fix_am_progressive": [
-        ("I going to eat brains", "I am going to eat brains"),
-        ("I going to go", "I am going to go"),
-        ("I going fast", "I going fast"),
-        ("you going to eat brains", "you going to eat brains"),
-        ("I am going to eat brains", "I am going to eat brains"),
-        ("zombie going to eat brains", "zombie going to eat brains"),
-    ],
 }
 
 HELPER_UNIT_TESTS = {
