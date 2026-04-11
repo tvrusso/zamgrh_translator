@@ -27,10 +27,10 @@ def main():
             all_passed = False
 
     if not all_passed:
-        print("\n🚫 Merge blocked: One or more checks failed.")
+        print("\nMerge blocked: One or more checks failed.")
         sys.exit(1)
 
-    print("\n🎉 All checks passed. Safe to merge.")
+    print("\nAll checks passed. Safe to merge.")
 
     try:
         hooks_path = subprocess.check_output(
@@ -38,9 +38,9 @@ def main():
             text=True
         ).strip()
         if hooks_path != "scripts/git-hooks":
-            print("⚠️ WARNING: Git hooks not configured. Run setup_hooks.bat")
+            print("WARNING: Git hooks not configured. Run setup_hooks.bat")
         else:
-            print("✅ Git hooks correctly configured.")
+            print("Git hooks correctly configured.")
     except Exception:
         print("⚠️ WARNING: Could not verify git hooks configuration.")
 
