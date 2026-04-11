@@ -42,7 +42,7 @@ def main():
         else:
             print("Git hooks correctly configured.")
     except Exception:
-        print("⚠️ WARNING: Could not verify git hooks configuration.")
+        print("WARNING: Could not verify git hooks configuration.")
 
 if __name__ == "__main__":
     main()
