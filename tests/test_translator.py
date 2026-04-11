@@ -555,7 +555,27 @@ TEST_GROUPS = {
         ("zambah an arh barg", "Zombie and or eats"),
         ("g!b an bra!nz", "Give and brains"),
     ],
-
+    # tests added based on auditor warnings about unused words
+    "dictionary_coverage": [
+        ("bangbangman nah bang mah zambah mah zambah !z n!z",
+         "Headhunter do not shoot me I am nice"),
+        ("Mah zambah nah zrazz zam",
+         "I do not trust them"),
+        ("Mah zambah maz ma!g razbarh zaa za narz",
+         "I must make report to the nurse"),
+        ("Zmazh zah barragah",
+         "Smash the barricade"),
+        ("Harmanz azza barragahz",
+         "Humans at the barricades"),
+    ],
+    # Translations that are especially bad and highlight need for future
+    # work
+    "known_bad": [
+        ("Grahm haarh harman, mah habbah gang maz barg bra!nz",
+         "Come a here human I happy group must eat brains"),
+        ("Na, gaa maz nah bang zambahz, bangbangman",
+         "No you must do not shoot zombies a headhunter"),
+    ],
 
     ## We *could* add these tests in order to guard against breakage
     ## by the agreement refactor, but in fact every one of them is already

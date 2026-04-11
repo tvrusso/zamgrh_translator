@@ -1147,6 +1147,15 @@ def infer_desired_pos(words, i, translated_out):
     return None
 
 
+def select_gloss(entry):
+    english = entry.get("english", [])
+
+    # if there are multiple glosses, find the one with the highest weight
+    if english:
+        return sorted(english, key=lambda x: -x.get("weight", 0))[0]["gloss"]
+
+    return None
+
 def render_gloss_with_features(gloss, features, pos):
     """
     Render a gloss using morphology-derived features.
@@ -1183,7 +1192,7 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=0):
         base, features = normalize_morphology(w, lookup)
         entry = lookup.get(base)
         if entry:
-            gloss = entry["english"][0]["gloss"]
+            gloss = select_gloss(entry)
             pos = set(entry.get("pos", []))
             gloss = render_gloss_with_features(gloss, features, pos)
             out.append(gloss)
