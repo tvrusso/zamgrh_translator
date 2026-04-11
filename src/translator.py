@@ -172,10 +172,10 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
     assert_unknown_token_shape(words, "pipeline input")
 
     PIPELINE = [
-        ("resolve_hab", resolve_hab_ambiguity),
+        ("resolve_hab_ambiguity", resolve_hab_ambiguity),
         ("simplify_subject", simplify_subject),
         ("fix_possession", fix_possession),
-        ("fix_pronouns", fix_object_pronouns),
+        ("fix_object_pronouns", fix_object_pronouns),
         ("collapse_repeated_pronouns", collapse_repeated_pronouns),
         ("fix_determiners", fix_determiners),
         ("fix_prepositions", fix_prepositions),
