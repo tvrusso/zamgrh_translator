@@ -12,14 +12,18 @@ from translator import (
     zamgrh_to_structure,
     get_pos,
     clean,
-    fix_verb_agreement,
+    resolve_hab_ambiguity,
+    simplify_subject,
+    fix_possession,
     fix_object_pronouns,
+    collapse_repeated_pronouns,
     fix_determiners,
     fix_prepositions,
     insert_copula,
     insert_articles,
     dedupe_function_words,
     fix_am_progressive,
+    fix_verb_agreement,
     handle_copula,
     handle_auxiliary,
     handle_main_verb,
@@ -596,9 +600,32 @@ TEST_GROUPS = {
 #      ],
 # ...
 PIPELINE_UNIT_TESTS = {
-    ## MISSING:  resolve_hab_ambiguity
-    ## MISSING:  simplify_subject
-    ## MISSING:  fix_posession
+    "resolve_hab_ambiguity": [
+        ("help me","help me"),
+        ("I help a brain", "I have a brain"),
+        ("help the human", "help the human"),
+        ("zombies help humans", "zombies help humans"),
+        ## BAD  These unit tests indicate problems that must be ultimately
+        ##      be fixed
+        # in these cases, "help" is inappropriately changed to "have"
+        ("I help a human","I have a human"),
+        ("I help a zombie", "I have a zombie"),
+        ("the zombie must help the human", "the zombie must have the human"),
+    ],
+    # Note that "simplify" subject does NOT fix object pronouns and is not
+    # supposed to!
+    "simplify_subject": [
+        ("I zombie", "I"),
+        ("I zombie must", "I must"),
+        ("give a brain to I zombie", "give a brain to I"),
+    ],
+    "fix_possession": [
+        ("I group", "my group"),
+        ("I gang", "my gang"),
+        # "I brain" should not be turned into "my brain" here, that's taken
+        # care of by "fix_determiners"!
+        ("I brain", "I brain"),
+    ],
     "fix_object_pronouns": [
         ("give I brains", "give me brains"),
         ("eat I", "eat me"),
@@ -608,9 +635,14 @@ PIPELINE_UNIT_TESTS = {
         ("the I brains", "the I brains"),
         ("give you brains", "give you brains"),
     ],
-    ## MISSING:  collaps_repeated_pronouns
+    "collapse_repeated_pronouns": [
+        ("I I brain", "I brain"),
+        ("give a brain to me me me","give a brain to me"),
+        ("I I I want my mtv", "I want my mtv"),
+    ],
     "fix_determiners": [
         ("I brains", "my brains"),
+        ("I brain", "my brain"),
         ("I group", "my group"),
         ("I gang", "my gang"),
         ("I eat brains", "I eat brains"),
