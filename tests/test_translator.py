@@ -13,7 +13,7 @@ from translator import (
     get_pos,
     clean,
     fix_verb_agreement,
-    fix_object_pronouns as fix_pronouns,
+    fix_object_pronouns,
     fix_determiners,
     fix_prepositions,
     insert_copula,
@@ -599,7 +599,7 @@ PIPELINE_UNIT_TESTS = {
     ## MISSING:  resolve_hab_ambiguity
     ## MISSING:  simplify_subject
     ## MISSING:  fix_posession
-    "fix_pronouns": [
+    "fix_object_pronouns": [
         ("give I brains", "give me brains"),
         ("eat I", "eat me"),
         ("smash I", "smash me"),
