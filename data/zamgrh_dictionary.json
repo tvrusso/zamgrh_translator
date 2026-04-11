@@ -548,6 +548,7 @@
     "synonyms": [
       "gaa"
     ],
+    "preferred": true,
     "usage": {
       "tone": [
         "neutral"
@@ -635,7 +636,7 @@
         "reviewer": "IBDead2U",
         "date": "2026-04-10",
         "hash": "03c2404896615c2aa902b791e4c4131210ca4f0cfdfaa35f709f08d1f8bed0f5",
-        "notes": "while 'gang' and 'group' have somewhat different tones, they are consistent."
+        "notes": "'group' is neutral; 'gang' carries stronger or informal tone"
       }
     }
   },
@@ -683,7 +684,7 @@
         "reviewer": "IBDead2U",
         "date": "2026-04-10",
         "hash": "fbfd4bd53a9f99efeb877ed361ea3d4b445fa839714aef59148d682fead1eef7",
-        "notes": "'will' and 'going to' are acceptably close to symantically consistent, though might need pipeline help"
+        "notes": "'going to' and 'will' both indicate future; distinction not enforced"
       }
     }
   },
@@ -713,6 +714,7 @@
     "synonyms": [
       "gaam"
     ],
+    "preferred": true,
     "usage": {
       "tone": [
         "neutral"
@@ -923,7 +925,7 @@
         "reviewer": "IBDead2U",
         "date": "2026-04-10",
         "hash": "580902c0d01a1d9e07539190b1b08ec54bb25084162013284cf7443e6ea5a68c",
-        "notes": "the two glosses are related, even though the tense is different"
+        "notes": "Represents both 'have' and 'has'; subject agreement not modeled"
       }
     }
   },
@@ -1214,7 +1216,8 @@
         "status": "approved",
         "reviewer": "IBDead2U",
         "date": "2026-04-10",
-        "hash": "cfeaf0e1638eddeb7dba0655436f4078fcb270371a58d11739f8de23b98c2f68"
+        "hash": "cfeaf0e1638eddeb7dba0655436f4078fcb270371a58d11739f8de23b98c2f68",
+        "notes": "'away' and 'not here' are closely related spatial meanings"
       }
     }
   },
@@ -1356,7 +1359,7 @@
         "reviewer": "IBDead2U",
         "date": "2026-04-10",
         "hash": "a344d5936177f7c4df69ac3490a199bc265cb11c21fdd0e10a05147440b2d34a",
-        "notes": "'run' and 'go' are related, if not synonymous"
+        "notes": "'go' and 'run' are related motion verbs; distinction not currently modeled"
       }
     }
   },
@@ -1406,6 +1409,7 @@
     "synonyms": [
       "zah"
     ],
+    "preferred": true,
     "phonetic": {
       "approx": "zah",
       "syllables": [
