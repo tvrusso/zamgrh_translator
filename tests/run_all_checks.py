@@ -14,9 +14,9 @@ def run_check(name, cmd):
     print(f"\n=== Running: {name} ===")
     result = subprocess.run(cmd)
     if result.returncode != 0:
-        print(f"❌ FAILED: {name}")
+        print(f"FAILED: {name}")
         return False
-    print(f"✅ PASSED: {name}")
+    print(f"PASSED: {name}")
     return True
 
 def main():
