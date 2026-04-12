@@ -45,6 +45,69 @@
     "confidence": 0.9
   },
   {
+    "word": "abbarz",
+    "pos": [
+      "noun"
+    ],
+    "english": [
+      {
+        "gloss": "apples",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "apples",
+      "syllables": [
+        "ab",
+        "barz"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "Hah gaa rh!gh zam abbarz?",
+        "english": "How you like them apples?"
+      }
+    ],
+    "usage": {
+      "tone": [
+        "informal"
+      ]
+    },
+    "source": "corpus",
+    "confidence": 0.8
+  },
+  {
+    "word": "ahb",
+    "pos": [
+      "prep"
+    ],
+    "english": [
+      {
+        "gloss": "of",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "of",
+      "syllables": [
+        "ahb"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "anz ahb rarr",
+        "english": "end of world"
+      }
+    ],
+    "usage": {
+      "tone": [
+        "neutral"
+      ]
+    },
+    "source": "corpus_inferred",
+    "confidence": 0.9
+  },
+  {
     "word": "ahz",
     "pos": [
       "pron"
@@ -76,6 +139,38 @@
     "confidence": 0.9
   },
   {
+    "word": "ambra!z",
+    "pos": [
+      "verb"
+    ],
+    "english": [
+      {
+        "gloss": "embrace",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "embrace",
+      "syllables": [
+        "am",
+        "bra!z"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "ambra!z barhah",
+        "english": "Embrace Barhah"
+      }
+    ],
+    "usage": {
+      "tone": [
+        "imperative"
+      ]
+    },
+    "source": "corpus",
+    "confidence": 0.85
+  },
+  {
     "word": "an",
     "pos": [
       "conj"
@@ -104,6 +199,37 @@
       ]
     },
     "source": "canon",
+    "confidence": 0.9
+  },
+  {
+    "word": "anz",
+    "pos": [
+      "noun"
+    ],
+    "english": [
+      {
+        "gloss": "end",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "end",
+      "syllables": [
+        "anz"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "anz ahb rarr",
+        "english": "end of world"
+      }
+    ],
+    "usage": {
+      "tone": [
+        "neutral"
+      ]
+    },
+    "source": "corpus_inferred",
     "confidence": 0.9
   },
   {
@@ -138,6 +264,38 @@
     "confidence": 0.9
   },
   {
+    "word": "arrh",
+    "pos": [
+      "det",
+      "pron"
+    ],
+    "english": [
+      {
+        "gloss": "all",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "all",
+      "syllables": [
+        "arrh"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "arrh zambahz",
+        "english": "all zombies"
+      }
+    ],
+    "usage": {
+      "tone": [
+        "neutral"
+      ]
+    },
+    "source": "corpus_inferred",
+    "confidence": 0.9
+  },
+  {
     "word": "azza",
     "pos": [
       "prep"
@@ -149,6 +307,37 @@
       }
     ],
     "source": "group_standard"
+  },
+  {
+    "word": "bag",
+    "pos": [
+      "noun"
+    ],
+    "english": [
+      {
+        "gloss": "bag",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "bag",
+      "syllables": [
+        "bag"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "z!z bag",
+        "english": "This bag"
+      }
+    ],
+    "usage": {
+      "tone": [
+        "neutral"
+      ]
+    },
+    "source": "corpus",
+    "confidence": 0.8
   },
   {
     "word": "bah",
@@ -309,6 +498,40 @@
     }
   },
   {
+    "word": "barhah",
+    "pos": [
+      "interj"
+    ],
+    "english": [
+      {
+        "gloss": "barhah",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "bar-hah",
+      "syllables": [
+        "bar",
+        "hah"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "AMBRA!Z BARHAH!",
+        "english": "Embrace Barhah!"
+      }
+    ],
+    "usage": {
+      "tone": [
+        "excited",
+        "chant"
+      ]
+    },
+    "source": "corpus",
+    "confidence": 0.8,
+    "notes": "Treated as a cultural/expressive term; untranslated for now"
+  },
+  {
     "word": "barragah",
     "pos": [
       "noun"
@@ -372,6 +595,68 @@
     },
     "source": "canon",
     "confidence": 1.0
+  },
+  {
+    "word": "brh!ng",
+    "pos": [
+      "verb"
+    ],
+    "english": [
+      {
+        "gloss": "bring",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "bring",
+      "syllables": [
+        "brh!ng"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "Mah gang brh!ng habbahnazz.",
+        "english": "My gang brings happiness."
+      }
+    ],
+    "usage": {
+      "tone": [
+        "neutral"
+      ]
+    },
+    "source": "corpus",
+    "confidence": 0.85
+  },
+  {
+    "word": "g!az",
+    "pos": [
+      "adv"
+    ],
+    "english": [
+      {
+        "gloss": "just",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "just",
+      "syllables": [
+        "g!az"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "g!az g!b bra!nz",
+        "english": "just give brains"
+      }
+    ],
+    "usage": {
+      "tone": [
+        "neutral"
+      ]
+    },
+    "source": "corpus_inferred",
+    "confidence": 0.85
   },
   {
     "word": "g!b",
@@ -472,6 +757,38 @@
     },
     "source": "group_standard",
     "confidence": 0.9
+  },
+  {
+    "word": "gaarh",
+    "pos": [
+      "det",
+      "adj"
+    ],
+    "english": [
+      {
+        "gloss": "all",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "gar",
+      "syllables": [
+        "gaarh"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "Barg arrh gaarh bra!nz.",
+        "english": "Eat all the brains."
+      }
+    ],
+    "usage": {
+      "tone": [
+        "neutral"
+      ]
+    },
+    "source": "corpus",
+    "confidence": 0.8
   },
   {
     "word": "gab",
@@ -689,6 +1006,71 @@
     }
   },
   {
+    "word": "gannarazarh",
+    "pos": [
+      "noun"
+    ],
+    "english": [
+      {
+        "gloss": "generator",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "generator",
+      "syllables": [
+        "gan",
+        "na",
+        "ra",
+        "zarh"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "Mah gang zmazh zah gannarazarh.",
+        "english": "My gang smashes the generator."
+      }
+    ],
+    "usage": {
+      "tone": [
+        "neutral"
+      ]
+    },
+    "source": "corpus",
+    "confidence": 0.75
+  },
+  {
+    "word": "graab",
+    "pos": [
+      "verb"
+    ],
+    "english": [
+      {
+        "gloss": "grab",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "grab",
+      "syllables": [
+        "graab"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "Mah gang graab bra!nz.",
+        "english": "My gang grabs brains."
+      }
+    ],
+    "usage": {
+      "tone": [
+        "aggressive"
+      ]
+    },
+    "source": "corpus",
+    "confidence": 0.85
+  },
+  {
     "word": "grahm",
     "pos": [
       "verb"
@@ -819,6 +1201,39 @@
     "confidence": 0.85
   },
   {
+    "word": "habbahnazz",
+    "pos": [
+      "noun"
+    ],
+    "english": [
+      {
+        "gloss": "happiness",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "happiness",
+      "syllables": [
+        "hab",
+        "bah",
+        "nazz"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "Mah gang g!b habbahnazz.",
+        "english": "My gang gives happiness."
+      }
+    ],
+    "usage": {
+      "tone": [
+        "positive"
+      ]
+    },
+    "source": "corpus",
+    "confidence": 0.85
+  },
+  {
     "word": "harman",
     "pos": [
       "noun"
@@ -850,6 +1265,40 @@
     },
     "source": "canon",
     "confidence": 0.95
+  },
+  {
+    "word": "harmanbargar",
+    "pos": [
+      "noun"
+    ],
+    "english": [
+      {
+        "gloss": "humanburger",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "harman-burger",
+      "syllables": [
+        "har",
+        "man",
+        "bar",
+        "gar"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "Mah ganna nam harmanbargarz.",
+        "english": "I will eat humanburgers."
+      }
+    ],
+    "usage": {
+      "tone": [
+        "dark_humor"
+      ]
+    },
+    "source": "corpus",
+    "confidence": 0.85
   },
   {
     "word": "harrah",
@@ -990,6 +1439,37 @@
     },
     "source": "group_standard",
     "confidence": 0.85
+  },
+  {
+    "word": "mabb",
+    "pos": [
+      "verb"
+    ],
+    "english": [
+      {
+        "gloss": "move",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "mob",
+      "syllables": [
+        "mabb"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "nabazz!h mabb",
+        "english": "Nobody move"
+      }
+    ],
+    "usage": {
+      "tone": [
+        "imperative"
+      ]
+    },
+    "source": "corpus",
+    "confidence": 0.8
   },
   {
     "word": "mah",
@@ -1141,6 +1621,39 @@
     "source": "canon",
     "confidence": 1.0,
     "notes": "May also be used to say 'don't' "
+  },
+  {
+    "word": "nabazz!h",
+    "pos": [
+      "pron"
+    ],
+    "english": [
+      {
+        "gloss": "nobody",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "nobody",
+      "syllables": [
+        "na",
+        "baz",
+        "zh"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "nabazz!h ran",
+        "english": "nobody go"
+      }
+    ],
+    "usage": {
+      "tone": [
+        "neutral"
+      ]
+    },
+    "source": "corpus_inferred",
+    "confidence": 0.9
   },
   {
     "word": "nah",
@@ -1364,6 +1877,37 @@
     }
   },
   {
+    "word": "rarr",
+    "pos": [
+      "noun"
+    ],
+    "english": [
+      {
+        "gloss": "world",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "world",
+      "syllables": [
+        "rarr"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "anz ahb rarr",
+        "english": "end of world"
+      }
+    ],
+    "usage": {
+      "tone": [
+        "neutral"
+      ]
+    },
+    "source": "corpus_inferred",
+    "confidence": 0.9
+  },
+  {
     "word": "razbarh",
     "pos": [
       "verb"
@@ -1394,6 +1938,38 @@
     },
     "source": "group_standard",
     "confidence": 0.8
+  },
+  {
+    "word": "z!z",
+    "pos": [
+      "det",
+      "pron"
+    ],
+    "english": [
+      {
+        "gloss": "this",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "this",
+      "syllables": [
+        "z!z"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "z!z bag",
+        "english": "this bag"
+      }
+    ],
+    "usage": {
+      "tone": [
+        "neutral"
+      ]
+    },
+    "source": "corpus_inferred",
+    "confidence": 0.9
   },
   {
     "word": "za",
@@ -1588,6 +2164,38 @@
       ]
     },
     "source": "group_standard",
+    "confidence": 0.85
+  },
+  {
+    "word": "zgam",
+    "pos": [
+      "noun"
+    ],
+    "english": [
+      {
+        "gloss": "scum",
+        "weight": 1.0
+      }
+    ],
+    "phonetic": {
+      "approx": "zgam",
+      "syllables": [
+        "zgam"
+      ]
+    },
+    "examples": [
+      {
+        "zamgrh": "Harman zgam!",
+        "english": "Human scum!"
+      }
+    ],
+    "usage": {
+      "tone": [
+        "insult",
+        "aggressive"
+      ]
+    },
+    "source": "corpus",
     "confidence": 0.85
   },
   {
