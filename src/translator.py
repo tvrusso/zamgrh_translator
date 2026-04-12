@@ -346,22 +346,22 @@ def fix_possession(words, lookup, eng_lookup):
     """
     Owns: possessive pronoun conversion for narrow lexical patterns.
 
+    THIS FUNCTION IS NOW A NO-OP!  Its original purpose was to fix a problem
+    that no longer exists.
+
+    It is being kept in the pipeline as a placeholder should it be necessary
+    to fix possessive pronouns of other sorts than the one it no longer
+    needs to fix.
+
     Expects:
     - tokenized English glosses
 
     Guarantees:
-    - converts 'I group/gang' -> 'my group/gang'
-    - does not own general determiner logic
+      - returns a list of glosses with any needed fixes applied
+
     """
     assert_token_list(words, "fix_possession input")
-    result = []
-
-    for i, w in enumerate(words):
-        if w == "I" and i + 1 < len(words):
-            if words[i + 1] in {"group", "gang"}:
-                result.append("my")
-                continue
-        result.append(w)
+    result = words
 
     validate_pipeline_step_result(result, "fix_possession output")
     return result

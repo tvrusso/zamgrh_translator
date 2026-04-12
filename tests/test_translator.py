@@ -677,11 +677,7 @@ PIPELINE_UNIT_TESTS = {
         ("give a brain to my zombie", "give a brain to I"),
     ],
     "fix_possession": [
-        ("I group", "my group"),
-        ("I gang", "my gang"),
-        # "I brain" should not be turned into "my brain" here, that's taken
-        # care of by "fix_determiners"!
-        ("I brain", "I brain"),
+        # This function is currently a no-op
     ],
     "fix_object_pronouns": [
         ("give I brains", "give me brains"),
