@@ -559,6 +559,61 @@ TEST_GROUPS = {
         ("zambah an arh barg", "Zombie and or eats"),
         ("g!b an bra!nz", "Give and brains"),
     ],
+    "corpus_expansion": [
+        ("nabazz!h mabb",
+         "Nobody move"),
+        ("g!az g!b arrh zah bra!nz",
+         "Just give all the brains"),
+        ("ambra!z barhah",
+         "Embrace barhah"),
+        ("z!z bag",
+         "This bag"),
+        ("arrh zah bra!nz",
+         "All the brains"),
+    ],
+    "corpus_expansion_2": [
+    (
+        "z!z bag",
+        "This bag"
+    ),
+    (
+        "nabazz!h ran",
+        "Nobody go"
+    ),
+    (
+        "nabazz!h g!az ran",
+        "Nobody just go"
+    ),
+    (
+        "arrh zambahz maz barg bra!nz",
+        "All zombies must eat brains"
+    ),
+    (
+        "g!az g!b bra!nz",
+        "Just give brains"
+    ),
+    (
+        "anz ahb rarr",
+        "End of world"
+    ),
+    (
+        "zah anz ahb zah rarr",
+        "The end of the world"
+    )
+    ],
+    "corpus_expansion_3": [
+        ("mabb", "Move"),
+        ("nabazz!h mabb", "Nobody move"),
+        ("brh!ng", "Bring"),
+        ("graab", "Grab"),
+        ("harmanbargar", "Humanburger"),
+        ("harmanbargarz", "Humanburgers"),
+        ("zgam", "Scum"),
+        ("gaarh", "All"),
+        ("habbahnazz", "Happiness"),
+        ("abbarz", "Apples"),
+        ("gannarazarh", "Generator"),
+    ],
     # tests added based on auditor warnings about unused words
     "dictionary_coverage": [
         ("bangbangman nah bang mah zambah mah zambah !z n!z",
@@ -579,6 +634,8 @@ TEST_GROUPS = {
          "Come a here human I happy group must eat brains"),
         ("Na, gaa maz nah bang zambahz, bangbangman",
          "No you must do not shoot zombies a headhunter"),
+        ("z!z !z zah anz ahb zah rarr",
+         "This are the end of the world"),
     ],
 
     ## We *could* add these tests in order to guard against breakage

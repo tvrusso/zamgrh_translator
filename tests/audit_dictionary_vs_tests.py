@@ -174,7 +174,7 @@ def find_potential_plural_pairs(entries):
             if base in word_map:
                 base_pos = word_map[base].get("pos", [])
                 word_pos = entry.get("pos", [])
-                pairs.add(f"{base} ({fmt_pos(base_pos)}) ↔ {word} ({fmt_pos(word_pos)})")
+                pairs.add(f"{base} ({fmt_pos(base_pos)}) <-> {word} ({fmt_pos(word_pos)})")
 
     return pairs
 
