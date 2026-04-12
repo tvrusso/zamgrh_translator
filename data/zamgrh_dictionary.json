@@ -73,7 +73,7 @@
         "informal"
       ]
     },
-    "source": "corpus",
+    "source": "observed",
     "confidence": 0.8
   },
   {
@@ -104,7 +104,7 @@
         "neutral"
       ]
     },
-    "source": "corpus_inferred",
+    "source": "inferred",
     "confidence": 0.9
   },
   {
@@ -167,7 +167,7 @@
         "imperative"
       ]
     },
-    "source": "corpus",
+    "source": "observed",
     "confidence": 0.85
   },
   {
@@ -229,7 +229,7 @@
         "neutral"
       ]
     },
-    "source": "corpus_inferred",
+    "source": "inferred",
     "confidence": 0.9
   },
   {
@@ -292,7 +292,7 @@
         "neutral"
       ]
     },
-    "source": "corpus_inferred",
+    "source": "inferred",
     "confidence": 0.9
   },
   {
@@ -336,7 +336,7 @@
         "neutral"
       ]
     },
-    "source": "corpus",
+    "source": "observed",
     "confidence": 0.8
   },
   {
@@ -527,7 +527,7 @@
         "chant"
       ]
     },
-    "source": "corpus",
+    "source": "observed",
     "confidence": 0.8,
     "notes": "Treated as a cultural/expressive term; untranslated for now"
   },
@@ -624,7 +624,7 @@
         "neutral"
       ]
     },
-    "source": "corpus",
+    "source": "observed",
     "confidence": 0.85
   },
   {
@@ -655,7 +655,7 @@
         "neutral"
       ]
     },
-    "source": "corpus_inferred",
+    "source": "inferred",
     "confidence": 0.85
   },
   {
@@ -787,7 +787,7 @@
         "neutral"
       ]
     },
-    "source": "corpus",
+    "source": "observed",
     "confidence": 0.8
   },
   {
@@ -1036,7 +1036,7 @@
         "neutral"
       ]
     },
-    "source": "corpus",
+    "source": "observed",
     "confidence": 0.75
   },
   {
@@ -1067,7 +1067,7 @@
         "aggressive"
       ]
     },
-    "source": "corpus",
+    "source": "observed",
     "confidence": 0.85
   },
   {
@@ -1230,7 +1230,7 @@
         "positive"
       ]
     },
-    "source": "corpus",
+    "source": "observed",
     "confidence": 0.85
   },
   {
@@ -1297,7 +1297,7 @@
         "dark_humor"
       ]
     },
-    "source": "corpus",
+    "source": "observed",
     "confidence": 0.85
   },
   {
@@ -1468,7 +1468,7 @@
         "imperative"
       ]
     },
-    "source": "corpus",
+    "source": "observed",
     "confidence": 0.8
   },
   {
@@ -1652,7 +1652,7 @@
         "neutral"
       ]
     },
-    "source": "corpus_inferred",
+    "source": "inferred",
     "confidence": 0.9
   },
   {
@@ -1904,7 +1904,7 @@
         "neutral"
       ]
     },
-    "source": "corpus_inferred",
+    "source": "inferred",
     "confidence": 0.9
   },
   {
@@ -1968,7 +1968,7 @@
         "neutral"
       ]
     },
-    "source": "corpus_inferred",
+    "source": "inferred",
     "confidence": 0.9
   },
   {
@@ -2195,7 +2195,7 @@
         "aggressive"
       ]
     },
-    "source": "corpus",
+    "source": "observed",
     "confidence": 0.85
   },
   {

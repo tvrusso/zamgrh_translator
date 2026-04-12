@@ -28,6 +28,15 @@ ALLOWED_REVIEWS = {
     "semantic_consistency",
 }
 
+ALLOWED_SOURCES = {
+    "canon",
+    "observed",
+    "observed_variant",
+    "normalized",
+    "inferred",
+    "group_standard",
+}
+
 def load_dictionary(path: Path):
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -203,6 +212,11 @@ def validate_entry(entry, index, seen_words, errors, warnings):
         warnings.append(
             f"Word '{normalized_word}': missing 'source' field (recommended)."
         )
+    else:
+        if source not in ALLOWED_SOURCES:
+            errors.append(
+                f"ERROR: Invalid source value '{source}' for word '{entry.get('word')}'."
+            )
 
     reviews = entry.get("reviews")
     if reviews is not None:
