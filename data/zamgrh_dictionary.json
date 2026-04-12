@@ -1479,14 +1479,6 @@
     ],
     "english": [
       {
-        "gloss": "I",
-        "weight": 1.0
-      },
-      {
-        "gloss": "me",
-        "weight": 1.0
-      },
-      {
         "gloss": "my",
         "weight": 1.0
       }
@@ -1499,8 +1491,8 @@
     },
     "examples": [
       {
-        "zamgrh": "Mah zambah.",
-        "english": "I am a zombie."
+        "zamgrh": "Mah bra!nz.",
+        "english": "My brains."
       }
     ],
     "usage": {
@@ -1509,16 +1501,7 @@
       ]
     },
     "source": "canon",
-    "confidence": 1.0,
-    "reviews": {
-      "semantic_consistency": {
-        "status": "approved",
-        "reviewer": "IBDead2U",
-        "date": "2026-04-10",
-        "hash": "5eacb2137e5dbc1d0d4aa6b23092c276176450ed8b8132b536a4db57416df85f",
-        "notes": "while the three glosses are different pronoun cases, they are related and acceptable for now"
-      }
-    }
+    "confidence": 1.0
   },
   {
     "word": "maz",

@@ -209,12 +209,12 @@ STRUCTURE_TESTS = {
             },
         ),
         (
-            "gahz g!b mah bra!nz",
+            "gah g!b mah zambah bra!nz",
             {
                 "subject": "you",
                 "verb": "give",
                 "object": "brains",
-                "plural": True,
+                "plural": False,
                 "negated": False,
                 "imperative": False,
             },
@@ -230,7 +230,7 @@ TEST_GROUPS = {
     ],
     "pronouns": [
         ("g!b gaa bra!nz", "Give you brains"),
-        ("gaa g!b mah bra!nz", "You give me brains"),
+        ("gaa g!b mah zambah bra!nz", "You give me brains"),
         ("gab m!z ahz", "Speak with us"),
     ],
     "morphology": [
@@ -261,11 +261,11 @@ TEST_GROUPS = {
     "MORPHOLOGY_INTERACTIONS": [
         ("harmanz gan ran nahaarh", "Humans will go away"),
         ("zambahz zmazh harmanz", "Zombies smash humans"),
-        ("gahz g!b mah bra!nz", "Yous give me brains"),
+        ("gahz g!b mah zambah bra!nz", "Yous give me brains"),
         ("harmanz zmazh zambahz", "Humans smash zombies"),
         ("zambahz gan ran nahaarh", "Zombies will go away"),
         ("mah zambah maz barg bra!nz", "I must eat brains"),
-        ("nah gahz g!b mah bra!nz", "Do not yous give me brains"),
+        ("nah gahz g!b mah zambah bra!nz", "Do not yous give me brains"),
         ("gahz gan barg bra!nz", "Yous will eat brains"),
     ],
     "MORPHOLOGY_REPETITION": [
@@ -275,7 +275,7 @@ TEST_GROUPS = {
     "gloss_picker": [
         ("mah zambah gan barg bra!nz", "I will eat brains"),
         ("mah gang", "My group"),
-        ("g!b mah bra!nz", "Give me brains"),
+        ("g!b mah zambah bra!nz", "Give me brains"),
         ("mah zambah", "I"),
         ("za harman", "The human"),
     ],
@@ -290,7 +290,7 @@ TEST_GROUPS = {
     ],
     "imperatives": [
         ("g!b bra!nz", "Give brains"),
-        ("g!b mah bra!nz", "Give me brains"),
+        ("g!b mah zambah bra!nz", "Give me brains"),
         ("barg bra!nz", "Eat brains"),
     ],
     "articles_and_plural": [
@@ -322,7 +322,7 @@ TEST_GROUPS = {
     "preposition_and_article_collisions": [
         ("g!b bra!nz zaa harman", "Give brains to a human"),
         ("g!b bra!nz zaa zah harman", "Give brains to the human"),
-        ("gaam zaa mah", "Come to me"),
+        ("gaam zaa mah zambah", "Come to me"),
     ],
     "auxiliary_collisions": [
         ("mah zambah maz hab bra!nz", "I must have brains"),
@@ -389,15 +389,15 @@ TEST_GROUPS = {
         ("mah zambah gan maz barg bra!nz", "I will must eat brains"),
         ("nah maz barg bra!nz", "Do not must eat brains"),
         ("maz nah barg bra!nz", "Must do not eat brains"),
-        ("g!b gaa zaa mah", "Give you to me"),
+        ("g!b gaa zaa mah zambah", "Give you to me"),
         ("gaa zaa gaa", "You to you"),
         ("za zah harman", "The human"),
         ("zah za harman", "The human"),
         ("zambah !z maz", "Zombie is must"),
         ("zambah maz !z", "Zombie must is"),
-        ("bra!nz mah g!b", "Brains I give"),
+        ("bra!nz mah zambah g!b", "Brains I give"),
         ("maz bra!nz barg", "Must brains eat"),
-        ("mah flargh maz barg bra!nz", "I [flargh] must eat brains"),
+        ("mah flargh maz barg bra!nz", "My [flargh] must eat brains"),
         ("flargh maz nah barg", "[flargh] must do not eat"),
         (
             "mah zambah maz barg bra!nz an nah g!b gaa",
@@ -431,7 +431,7 @@ TEST_GROUPS = {
     "weird_but_valid": [
         ("bra!nz maz barg", "Brains must eat"),
         ("maz bra!nz barg", "Must brains eat"),
-        ("bra!nz mah g!b", "Brains I give"),
+        ("bra!nz mah zambah g!b", "Brains I give"),
         ("gahz gahz g!b bra!nz", "Yous yous give brains"),
         ("nah nah g!b bra!nz", "Do not do not give brains"),
         ("zambah !z !z", "Zombie is"),
@@ -439,7 +439,7 @@ TEST_GROUPS = {
     "regression_articles_and_collisions": [
         ("g!b bra!nz zaa harman", "Give brains to a human"),
         ("g!b bra!nz zaa zah harman", "Give brains to the human"),
-        ("gaam zaa mah", "Come to me"),
+        ("gaam zaa mah zambah", "Come to me"),
         ("g!b bra!nz an g!b zarram", "Give brains and give a serum"),
         ("g!b bra!nz arh g!b zarram", "Give brains or give a serum"),
         (
@@ -452,7 +452,7 @@ TEST_GROUPS = {
             "mah zambah maz barg bra!nz an zmazh harman",
             "I must eat brains and smash a human"
         ),
-        ("mah flargh maz barg bra!nz", "I [flargh] must eat brains"),
+        ("mah flargh maz barg bra!nz", "My [flargh] must eat brains"),
         ("flargh maz nah barg", "[flargh] must do not eat"),
         ("zambahz flargh bra!nz", "Zombies [flargh] brains"),
     ],
@@ -538,7 +538,7 @@ TEST_GROUPS = {
     "edge_case_hardening_unknown_mix": [
         ("flargh an zambah barg bra!nz", "[flargh] and zombie eats brains"),
         ("nah flargh ran nahaarh", "Do not [flargh] go away"),
-        ("mah flargh an gaa flargh", "I [flargh] and you [flargh]"),
+        ("mah zambah flargh an gaa flargh", "I [flargh] and you [flargh]"),
         ("g!b flargh zaa harman", "Give [flargh] to a human"),
     ],
 
@@ -631,7 +631,7 @@ TEST_GROUPS = {
     # work
     "known_bad": [
         ("Grahm haarh harman, mah habbah gang maz barg bra!nz",
-         "Come a here human I happy group must eat brains"),
+         "Come a here human my happy group must eat brains"),
         ("Na, gaa maz nah bang zambahz, bangbangman",
          "No you must do not shoot zombies a headhunter"),
         ("z!z !z zah anz ahb zah rarr",
@@ -672,9 +672,9 @@ PIPELINE_UNIT_TESTS = {
     # Note that "simplify" subject does NOT fix object pronouns and is not
     # supposed to!
     "simplify_subject": [
-        ("I zombie", "I"),
-        ("I zombie must", "I must"),
-        ("give a brain to I zombie", "give a brain to I"),
+        ("My zombie", "I"),
+        ("My zombie must", "I must"),
+        ("give a brain to my zombie", "give a brain to I"),
     ],
     "fix_possession": [
         ("I group", "my group"),
@@ -1142,7 +1142,7 @@ def run_tests(verbose=False):
                 print(f"\n--- DEBUG TRACE ---")
                 print(f"[input] {zamgrh}")
                 translator(zamgrh, debug=True)
-                structure = zamgrh_to_structure(zamgrh, lookup)
+                structure = zamgrh_to_structure(zamgrh, lookup, eng_lookup)
                 print(f"[structure] {structure}")
                 print(f"--- END DEBUG TRACE ---")
                 failed += 1
@@ -1161,7 +1161,7 @@ def run_tests(verbose=False):
                 print(f"\n--- DEBUG TRACE ---")
                 print(f"[input] {zamgrh}")
                 translator(zamgrh, debug=True)
-                structure = zamgrh_to_structure(zamgrh, lookup)
+                structure = zamgrh_to_structure(zamgrh, lookup, eng_lookup)
                 print(f"[structure] {structure}")
                 print(f"--- END DEBUG TRACE ---")
                 failed += 1
@@ -1178,6 +1178,7 @@ def run_tests(verbose=False):
 def run_structure_tests(verbose=False):
     data = load_dictionary()
     lookup = build_lookup(data)
+    eng_lookup = build_english_pos_lookup(data)
 
     passed = 0
     failed = 0
@@ -1187,7 +1188,7 @@ def run_structure_tests(verbose=False):
         group_failed=0
         print(f"\n=== STRUCTURE: {group.upper()} ===")
         for zamgrh, expected in cases:
-            result = zamgrh_to_structure(zamgrh, lookup)
+            result = zamgrh_to_structure(zamgrh, lookup, eng_lookup)
 
             if result == expected:
                 if (verbose):

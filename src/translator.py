@@ -331,8 +331,9 @@ def simplify_subject(words, lookup, eng_lookup):
     i = 0
 
     while i < len(words):
-        if i > 0 and words[i] == "zombie" and words[i - 1] == "I":
-            i += 1
+        if i < len(words)-1 and words[i] == "my" and words[i+1] == "zombie":
+            result.append("I")
+            i += 2
             continue
         result.append(words[i])
         i += 1
@@ -1042,7 +1043,7 @@ def collapse_repeated_pronouns(words, lookup, eng_lookup):
     prev = None
 
     for w in words:
-        if w == prev and w in {"I", "me"}:
+        if w == prev and w in {"I", "me", "my"}:
             continue
         result.append(w)
         prev = w
@@ -1166,6 +1167,50 @@ def render_gloss_with_features(gloss, features, pos):
         return gloss + "s"
     return gloss
 
+def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
+    """
+    Look up Zamgrh text words and return a list of corresponding
+    English glosses
+
+    Expects:
+      - raw Zamgrh input string
+      - valid lookup tables
+
+    Guarantees:
+     - Returns a list of token structures
+     - unknown input words are bracketed
+    """
+    assert isinstance(text, str), f"text must be str, got {type(text).__name__}"
+    assert_lookup_shapes(lookup, eng_lookup)
+
+    tokens = []
+    words = text.split()
+
+    for raw in words:
+        w = clean(raw)
+        base, features = normalize_morphology(w, lookup)
+        entry = lookup.get(base)
+
+        if entry:
+            gloss = select_gloss(entry)
+            pos = set(entry.get("pos", []))
+            gloss = render_gloss_with_features(gloss, features, pos)
+        else:
+            gloss = f"[{raw}]"
+            pos = set()
+
+        gloss_words = gloss.split()
+        for gw in gloss_words:
+            tokens.append({
+                "raw": raw,
+                "word": gw,
+                "base": base,
+                "pos": pos,
+                "features": features,
+            })
+
+    return tokens
+
 
 def zamgrh_to_english(text, lookup, eng_lookup, debug=0):
     """
@@ -1184,20 +1229,9 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=0):
     assert_lookup_shapes(lookup, eng_lookup)
 
     is_question = text.strip().endswith("?")
-    words = text.split()
-    out = []
 
-    for raw in words:
-        w = clean(raw)
-        base, features = normalize_morphology(w, lookup)
-        entry = lookup.get(base)
-        if entry:
-            gloss = select_gloss(entry)
-            pos = set(entry.get("pos", []))
-            gloss = render_gloss_with_features(gloss, features, pos)
-            out.append(gloss)
-        else:
-            out.append(f"[{raw}]")
+    tokens = zamgrh_to_gloss_tokens(text, lookup, eng_lookup)
+    out = [t["word"] for t in tokens]
 
     sentence = " ".join(out)
     words = sentence.split()
@@ -1220,7 +1254,28 @@ def is_plural_subject_token(word, features):
     return word in {"we", "they"}
 
 
-def zamgrh_to_structure(text, lookup):
+def normalize_pronoun_subject(tokens):
+    result = []
+    i = 0
+    while i < len(tokens):
+        if (
+            i + 1 < len(tokens)
+            and tokens[i]["word"] == "my"
+            and tokens[i + 1]["word"] == "zombie"
+        ):
+            result.append({
+                **tokens[i],
+                "word": "I",
+                "pos": {"pron"},
+                "features": {},
+            })
+            i += 2
+            continue
+        result.append(tokens[i])
+        i += 1
+    return result
+
+def zamgrh_to_structure(text, lookup, eng_lookup):
     """
     Extract a lightweight structure view from Zamgrh input.
 
@@ -1229,7 +1284,8 @@ def zamgrh_to_structure(text, lookup):
     - mirrors some simplification logic used by the main translator
     """
     assert isinstance(text, str), f"text must be str, got {type(text).__name__}"
-    words = text.split()
+    assert_lookup_shapes(lookup, eng_lookup)
+
     structure = {
         "subject": None,
         "verb": None,
@@ -1239,31 +1295,8 @@ def zamgrh_to_structure(text, lookup):
         "imperative": False,
     }
 
-    tokens = []
-    prev_gloss = None
-
-    for raw in words:
-        w = clean(raw)
-        base, features = normalize_morphology(w, lookup)
-        entry = lookup.get(base)
-        if entry:
-            gloss = entry["english"][0]["gloss"]
-            pos = set(entry.get("pos", []))
-        else:
-            gloss = w
-            pos = set()
-
-        if gloss == "zombie" and prev_gloss == "I":
-            continue
-
-        tokens.append({
-            "raw": raw,
-            "word": gloss,
-            "base": base,
-            "pos": pos,
-            "features": features,
-        })
-        prev_gloss = gloss
+    initial_tokens = zamgrh_to_gloss_tokens(text, lookup, eng_lookup)
+    tokens = normalize_pronoun_subject(initial_tokens)
 
     for t in tokens:
         if t["base"] == "nah":
@@ -1349,7 +1382,7 @@ def main():
 
         print(zamgrh_to_english(text, lookup, eng_lookup, debug))
         if debug:
-            print(zamgrh_to_structure(text, lookup))
+            print(zamgrh_to_structure(text, lookup, eng_lookup))
 
 
 if __name__ == "__main__":
