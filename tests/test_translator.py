@@ -242,7 +242,6 @@ TEST_GROUPS = {
         ("bra!nz", "Brains"),
         ("maz", "Must"),
         ("haz", "Have"),
-        ("gahz", "Yous"),
     ],
     "MORPHOLOGY_SENTENCES": [
         ("zambahz barg bra!nz", "Zombies eat brains"),
@@ -261,16 +260,12 @@ TEST_GROUPS = {
     "MORPHOLOGY_INTERACTIONS": [
         ("harmanz gan ran nahaarh", "Humans will go away"),
         ("zambahz zmazh harmanz", "Zombies smash humans"),
-        ("gahz g!b mah zambah bra!nz", "Yous give me brains"),
         ("harmanz zmazh zambahz", "Humans smash zombies"),
         ("zambahz gan ran nahaarh", "Zombies will go away"),
         ("mah zambah maz barg bra!nz", "I must eat brains"),
-        ("nah gahz g!b mah zambah bra!nz", "Do not yous give me brains"),
-        ("gahz gan barg bra!nz", "Yous will eat brains"),
     ],
     "MORPHOLOGY_REPETITION": [
         ("zambahz zambahz barg bra!nz", "Zombies zombies eat brains"),
-        ("gahz gahz g!b bra!nz", "Yous yous give brains"),
     ],
     "gloss_picker": [
         ("mah zambah gan barg bra!nz", "I will eat brains"),
@@ -352,7 +347,6 @@ TEST_GROUPS = {
     "plural_normalization_edges": [
         ("harmanz", "Humans"),
         ("zambahz", "Zombies"),
-        ("gahz", "Yous"),
     ],
     "empty_and_whitespace": [
         ("", ""),
@@ -432,7 +426,6 @@ TEST_GROUPS = {
         ("bra!nz maz barg", "Brains must eat"),
         ("maz bra!nz barg", "Must brains eat"),
         ("bra!nz mah zambah g!b", "Brains I give"),
-        ("gahz gahz g!b bra!nz", "Yous yous give brains"),
         ("nah nah g!b bra!nz", "Do not do not give brains"),
         ("zambah !z !z", "Zombie is"),
     ],
@@ -486,7 +479,6 @@ TEST_GROUPS = {
         ("ran", "Go"),
         ("nah nah nah", "Do not do not do not"),
         ("nam nam nam", "Eat eat eat"),
-        ("gahz gahz", "Yous yous"),
         ("flargh flargh", "[flargh] [flargh]"),
     ],
 
@@ -638,6 +630,12 @@ TEST_GROUPS = {
          "This are the end of the world"),
         ("G!b mah zambah abbar",
          "Give an me apple"),
+        ("gahz", "Yous"),
+        ("gahz gahz", "Yous yous"),
+        ("gahz g!b mah zambah bra!nz", "Yous give me brains"),
+        ("nah gahz g!b mah zambah bra!nz", "Do not yous give me brains"),
+        ("gahz gan barg bra!nz", "Yous will eat brains"),
+        ("gahz gahz g!b bra!nz", "Yous yous give brains"),
     ],
 
     ## We *could* add these tests in order to guard against breakage
