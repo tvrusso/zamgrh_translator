@@ -759,38 +759,6 @@
     "confidence": 0.9
   },
   {
-    "word": "gaarh",
-    "pos": [
-      "det",
-      "adj"
-    ],
-    "english": [
-      {
-        "gloss": "all",
-        "weight": 1.0
-      }
-    ],
-    "phonetic": {
-      "approx": "gar",
-      "syllables": [
-        "gaarh"
-      ]
-    },
-    "examples": [
-      {
-        "zamgrh": "Barg arrh gaarh bra!nz.",
-        "english": "Eat all the brains."
-      }
-    ],
-    "usage": {
-      "tone": [
-        "neutral"
-      ]
-    },
-    "source": "observed",
-    "confidence": 0.8
-  },
-  {
     "word": "gab",
     "pos": [
       "verb"

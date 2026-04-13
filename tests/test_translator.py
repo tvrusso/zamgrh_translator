@@ -609,7 +609,6 @@ TEST_GROUPS = {
         ("harmanbargar", "Humanburger"),
         ("harmanbargarz", "Humanburgers"),
         ("zgam", "Scum"),
-        ("gaarh", "All"),
         ("habbahnazz", "Happiness"),
         ("abbarz", "Apples"),
         ("gannarazarh", "Generator"),
