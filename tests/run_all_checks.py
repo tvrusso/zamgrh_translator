@@ -3,11 +3,15 @@
 #
 import subprocess
 import sys
+from pathlib import Path
 
+ROOT = Path(__file__).parent.parent
+SRC_DIR = ROOT / "src"
+TEST_DIR = ROOT / "tests"
 CHECKS = [
-    ("Translator tests", ["python", "tests/test_translator.py"]),
-    ("Dictionary validation", ["python", "src/validate_dictionary.py"]),
-    ("Dictionary audit", ["python", "tests/audit_dictionary_vs_tests.py"]),
+    ("Translator tests", ["python", TEST_DIR / "test_translator.py"]),
+    ("Dictionary validation", ["python", SRC_DIR / "validate_dictionary.py"]),
+    ("Dictionary audit", ["python", TEST_DIR / "audit_dictionary_vs_tests.py"]),
 ]
 
 def run_check(name, cmd):
