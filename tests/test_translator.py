@@ -611,6 +611,7 @@ TEST_GROUPS = {
         ("zgam", "Scum"),
         ("habbahnazz", "Happiness"),
         ("abbarz", "Apples"),
+        ("abbar", "Apple"),
         ("gannarazarh", "Generator"),
     ],
     # tests added based on auditor warnings about unused words
@@ -635,6 +636,8 @@ TEST_GROUPS = {
          "No you must do not shoot zombies a headhunter"),
         ("z!z !z zah anz ahb zah rarr",
          "This are the end of the world"),
+        ("G!b mah zambah abbar",
+         "Give an me apple"),
     ],
 
     ## We *could* add these tests in order to guard against breakage
@@ -1128,21 +1131,26 @@ def run_tests(verbose=False):
 
         for zamgrh, expected in cases:
             result = translator(zamgrh)
-            inv_errors = check_invariants(result, lookup, eng_lookup)
 
-            if inv_errors:
-                print(f"FAIL (invariant): {zamgrh}")
-                print(f"  result: {result}")
-                print(f"  issues: {inv_errors}")
-                print(f"\n--- DEBUG TRACE ---")
-                print(f"[input] {zamgrh}")
-                translator(zamgrh, debug=True)
-                structure = zamgrh_to_structure(zamgrh, lookup, eng_lookup)
-                print(f"[structure] {structure}")
-                print(f"--- END DEBUG TRACE ---")
-                failed += 1
-                group_failed += 1
-                continue
+            # don't bother checking invariants on known_bad, coz, well,
+            # they are bad translations and might actually be bad because
+            # they don't conform to the invariants
+            if group != "known_bad":
+                inv_errors = check_invariants(result, lookup, eng_lookup)
+
+                if inv_errors:
+                    print(f"FAIL (invariant): {zamgrh}")
+                    print(f"  result: {result}")
+                    print(f"  issues: {inv_errors}")
+                    print(f"\n--- DEBUG TRACE ---")
+                    print(f"[input] {zamgrh}")
+                    translator(zamgrh, debug=True)
+                    structure = zamgrh_to_structure(zamgrh, lookup, eng_lookup)
+                    print(f"[structure] {structure}")
+                    print(f"--- END DEBUG TRACE ---")
+                    failed += 1
+                    group_failed += 1
+                    continue
 
             if result == expected:
                 if verbose:

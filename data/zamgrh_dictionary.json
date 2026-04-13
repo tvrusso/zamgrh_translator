@@ -45,21 +45,21 @@
     "confidence": 0.9
   },
   {
-    "word": "abbarz",
+    "word": "abbar",
     "pos": [
       "noun"
     ],
     "english": [
       {
-        "gloss": "apples",
+        "gloss": "apple",
         "weight": 1.0
       }
     ],
     "phonetic": {
-      "approx": "apples",
+      "approx": "apple",
       "syllables": [
         "ab",
-        "barz"
+        "bar"
       ]
     },
     "examples": [
