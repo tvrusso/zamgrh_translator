@@ -395,7 +395,7 @@
     },
     "examples": [
       {
-        "zamgrh": "Nah bang bang mah zambah.",
+        "zamgrh": "Nah bang mah zambah.",
         "english": "Do not shoot me."
       }
     ],
@@ -437,7 +437,7 @@
     },
     "examples": [
       {
-        "zamgrh": "Bangbangman nah bang bang mah zambah.",
+        "zamgrh": "Bangbangman nah bang mah zambah.",
         "english": "Headhunter, do not shoot me."
       }
     ],
@@ -472,7 +472,7 @@
     },
     "examples": [
       {
-        "zamgrh": "Ma ganna barg harmanz!",
+        "zamgrh": "Mah gang ganna barg harmanz!",
         "english": "We will devour humans!"
       }
     ],
@@ -781,7 +781,7 @@
     },
     "examples": [
       {
-        "zamgrh": "Mah gab.",
+        "zamgrh": "Mah zambah gab.",
         "english": "I speak."
       },
       {
@@ -949,7 +949,7 @@
     },
     "examples": [
       {
-        "zamgrh": "Mah ganna nam.",
+        "zamgrh": "Mah zambah ganna nam.",
         "english": "I will eat."
       }
     ],
@@ -1123,7 +1123,7 @@
     },
     "examples": [
       {
-        "zamgrh": "Hab mah!",
+        "zamgrh": "Hab mah zambah!",
         "english": "Help me."
       }
     ],
@@ -1221,7 +1221,7 @@
     },
     "examples": [
       {
-        "zamgrh": "Mah ganna barg harman.",
+        "zamgrh": "Mah zambah ganna barg harman.",
         "english": "I will eat a human."
       }
     ],
@@ -1740,7 +1740,7 @@
     },
     "examples": [
       {
-        "zamgrh": "Narz azz!z !n hazb!gar.",
+        "zamgrh": "Narz !z !n hazb!gar.",
         "english": "Nurse is in the hospital."
       }
     ],
@@ -1771,7 +1771,7 @@
     },
     "examples": [
       {
-        "zamgrh": "Mah azz!z !n raam.",
+        "zamgrh": "Mah zambah !z !n raam.",
         "english": "I am in the room."
       }
     ],
@@ -2105,7 +2105,7 @@
     },
     "examples": [
       {
-        "zamgrh": "Mah maz hab bra!n zarram!",
+        "zamgrh": "Mah zambah maz hab bra!n zarram!",
         "english": "I must have brain serum!"
       }
     ],
