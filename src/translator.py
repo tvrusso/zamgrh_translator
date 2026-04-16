@@ -815,6 +815,10 @@ def normalize_morphology(word, lookup):
     if word in lookup:
         return word, {}
 
+    if word.endswith("!ng") and len(word) > 3:
+        base = word[:-3]
+        return base, {"form": "ing"}
+
     if word.endswith("z") and len(word) > 1:
         base = word[:-1]
         entry = lookup.get(base)
@@ -1165,6 +1169,8 @@ def render_gloss_with_features(gloss, features, pos):
         if gloss == "you" and "pron" in pos:
             return "yous"
         return gloss + "s"
+    if features.get("form") == "ing":
+        return gloss + "ing"
     return gloss
 
 def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
@@ -1206,7 +1212,7 @@ def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
                 "word": gw,
                 "base": base,
                 "pos": pos,
-                "features": features,
+                "features": dict(features),
             })
 
     return tokens
