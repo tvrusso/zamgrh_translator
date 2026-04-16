@@ -242,12 +242,17 @@ TEST_GROUPS = {
         ("bra!nz", "Brains"),
         ("maz", "Must"),
         ("haz", "Have"),
+        ("barg!ng", "Eating"),
+        ("bang!ng", "Shooting"),
     ],
     "MORPHOLOGY_SENTENCES": [
         ("zambahz barg bra!nz", "Zombies eat brains"),
         ("harmanz barg bra!nz", "Humans eat brains"),
         ("zambah barg bra!n", "Zombie eats a brain"),
         ("harman barg bra!nz", "Human eats brains"),
+        ("Barg!ng bra!nz", "Eating brains"),
+        ("Zah zambah !z brh!ng!ng barhah", "The zombie is bringing barhah"),
+        ("Zah barg!ng zambah !z habbah", "The eating zombie is happy"),
     ],
     "MORPHOLOGY_GUARDRAILS": [
         ("maz", "Must"),
@@ -636,6 +641,7 @@ TEST_GROUPS = {
         ("nah gahz g!b mah zambah bra!nz", "Do not yous give me brains"),
         ("gahz gan barg bra!nz", "Yous will eat brains"),
         ("gahz gahz g!b bra!nz", "Yous yous give brains"),
+        ("ambra!z!ng", "Embraceing"), # note incorrect special case!
     ],
 
     ## We *could* add these tests in order to guard against breakage
