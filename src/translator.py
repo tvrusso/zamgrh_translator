@@ -809,7 +809,8 @@ def normalize_morphology(word, lookup):
 
     Guarantees:
     - returns (base_word, features_dict)
-    - currently supports narrow plural-z normalization only
+    - currently supports only narrow plural-z normalization and recognition
+      of "!ng" as a suffix representing "ing" in English.
     """
     assert isinstance(word, str), f"word must be str, got {type(word).__name__}"
     if word in lookup:
