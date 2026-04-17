@@ -803,35 +803,57 @@ def dedupe_function_words(words, lookup, eng_lookup):
     return result
 
 
+# Define currently permitted features
+ALLOWED_FEATURES = {
+    "number": {"plural"}, # singular is implicit
+    "form": {"ing"},
+}
+
+def validate_features(features: dict) -> None:
+    for key, value in features.items():
+        assert key in ALLOWED_FEATURES, f"Unknown feature: {key}"
+        assert value in ALLOWED_FEATURES[key], f"Invalid value for {key}: {value}"
+
 def normalize_morphology(word, lookup):
     """
     Owns: minimal morphology normalization.
 
     Guarantees:
     - returns (base_word, features_dict)
-    - currently supports only narrow plural-z normalization and recognition
-      of "!ng" as a suffix representing "ing" in English.
+    - currently supports only
+       - narrow plural-z normalization
+       - recognition of "!ng" as a suffix representing "ing" in English.
+    - features contains only recognized keys and values
+    - function is no-op by default
+    - transformations dependent only on lookup
+    - POS is never changed -- function emits features based on lookup
+
     """
     assert isinstance(word, str), f"word must be str, got {type(word).__name__}"
+    retword = word
+    features = {}
+
     if word in lookup:
-        return word, {}
-
-    if word.endswith("!ng") and len(word) > 3:
+        retword = word
+        features = {}
+    elif word.endswith("!ng") and len(word) > 3:
         base = word[:-3]
-        return base, {"form": "ing"}
-
-    if word.endswith("z") and len(word) > 1:
-        base = word[:-1]
         entry = lookup.get(base)
         if entry:
-            pos = set(entry.get("pos", []))
-            if "noun" in pos:
-                return base, {"number": "plural", "pos_family": "noun"}
-            if "pron" in pos:
-                return base, {"number": "plural", "pos_family": "pron"}
-            return base, {}
+            retword = base
+            features = {"form": "ing"}
+    elif word.endswith("z") and len(word) > 1:
+        base = word[:-1]
+        entry = lookup.get(base)
+        if entry and any(p in {"noun", "pron"} for p in entry.get("pos", [])):
+            retword = base
+            features = {"number": "plural"}
+        else:
+            retword = base
+            features = {}
 
-    return word, {}
+    validate_features(features)
+    return retword, features
 
 def apply_plural(word, features):
     if not word:
