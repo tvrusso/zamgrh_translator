@@ -244,6 +244,9 @@ TEST_GROUPS = {
         ("haz", "Have"),
         ("barg!ng", "Eating"),
         ("bang!ng", "Shooting"),
+        ("maz", "Must"),
+        ("haz", "Have"),
+        ("abbarz", "Apples"),
     ],
     "MORPHOLOGY_SENTENCES": [
         ("zambahz barg bra!nz", "Zombies eat brains"),
@@ -352,6 +355,8 @@ TEST_GROUPS = {
     "plural_normalization_edges": [
         ("harmanz", "Humans"),
         ("zambahz", "Zombies"),
+        ("anz", "End"),
+        ("an", "And"),
     ],
     "empty_and_whitespace": [
         ("", ""),
@@ -635,12 +640,12 @@ TEST_GROUPS = {
          "This are the end of the world"),
         ("G!b mah zambah abbar",
          "Give an me apple"),
-        ("gahz", "Yous"),
-        ("gahz gahz", "Yous yous"),
-        ("gahz g!b mah zambah bra!nz", "Yous give me brains"),
-        ("nah gahz g!b mah zambah bra!nz", "Do not yous give me brains"),
-        ("gahz gan barg bra!nz", "Yous will eat brains"),
-        ("gahz gahz g!b bra!nz", "Yous yous give brains"),
+        ("gahz", "You"),
+        ("gahz gahz", "You you"),
+        ("gahz g!b mah zambah bra!nz", "You give me brains"),
+        ("nah gahz g!b mah zambah bra!nz", "Do not you give me brains"),
+        ("gahz gan barg bra!nz", "You will eat brains"),
+        ("gahz gahz g!b bra!nz", "You you give brains"),
         ("ambra!z!ng", "Embraceing"), # note incorrect special case!
     ],
 
@@ -650,7 +655,7 @@ TEST_GROUPS = {
     # "agreement_refactor_lock": [
     #    ("mah zambah barg bra!nz", "I eat brains"),
     #    ("gaa g!b mah bra!nz", "You give me brains"),
-    #    ("gahz g!b mah bra!nz", "Yous give me brains"),
+    #    ("gahz g!b mah bra!nz", "you give me brains"),
     #    ("zambah barg bra!nz", "Zombie eats brains"),
     #    ("zambahz barg bra!nz", "Zombies eat brains"),
     #    ("harmanz bah", "Humans are bad"),

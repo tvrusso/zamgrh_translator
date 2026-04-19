@@ -820,37 +820,39 @@ def normalize_morphology(word, lookup):
 
     Guarantees:
     - returns (base_word, features_dict)
-    - currently supports only
-       - narrow plural-z normalization
-       - recognition of "!ng" as a suffix representing "ing" in English.
+    - currently supports only:
+      - narrow plural-z normalization
+      - recognition of "!ng" as a suffix representing "ing" in English
     - features contains only recognized keys and values
     - function is no-op by default
-    - transformations dependent only on lookup
-    - POS is never changed -- function emits features based on lookup
-
+    - transformations depend only on lookup
+    - POS is never changed; function emits features based on lookup
     """
     assert isinstance(word, str), f"word must be str, got {type(word).__name__}"
+
     retword = word
     features = {}
 
     if word in lookup:
         retword = word
         features = {}
+
     elif word.endswith("!ng") and len(word) > 3:
         base = word[:-3]
         entry = lookup.get(base)
         if entry:
             retword = base
             features = {"form": "ing"}
+
     elif word.endswith("z") and len(word) > 1:
         base = word[:-1]
         entry = lookup.get(base)
-        if entry and any(p in {"noun", "pron"} for p in entry.get("pos", [])):
+        if entry:
             retword = base
-            features = {"number": "plural"}
-        else:
-            retword = base
-            features = {}
+            if any(p in {"noun", "pron"} for p in entry.get("pos", [])):
+                features = {"number": "plural"}
+            else:
+                features = {}
 
     validate_features(features)
     return retword, features
