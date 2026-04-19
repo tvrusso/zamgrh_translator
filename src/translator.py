@@ -1190,7 +1190,7 @@ def render_gloss_with_features(gloss, features, pos):
     """
     if features.get("number") == "plural":
         if gloss == "you" and "pron" in pos:
-            return "yous"
+            return "you"
         return gloss + "s"
     if features.get("form") == "ing":
         return gloss + "ing"
