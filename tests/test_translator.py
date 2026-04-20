@@ -242,6 +242,7 @@ TEST_GROUPS = {
         ("bra!nz", "Brains"),
         ("barg!ng", "Eating"),
         ("bang!ng", "Shooting"),
+        ("gahz", "You"),
     ],
     "MORPHOLOGY_SENTENCES": [
         ("zambahz barg bra!nz", "Zombies eat brains"),
@@ -263,12 +264,15 @@ TEST_GROUPS = {
     "MORPHOLOGY_INTERACTIONS": [
         ("harmanz gan ran nahaarh", "Humans will go away"),
         ("zambahz zmazh harmanz", "Zombies smash humans"),
+        ("gahz g!b mah zambah bra!nz", "You give me brains"),
         ("harmanz zmazh zambahz", "Humans smash zombies"),
         ("zambahz gan ran nahaarh", "Zombies will go away"),
         ("mah zambah maz barg bra!nz", "I must eat brains"),
+        ("gahz gan barg bra!nz", "You will eat brains"),
     ],
     "MORPHOLOGY_REPETITION": [
         ("zambahz zambahz barg bra!nz", "Zombies zombies eat brains"),
+        ("gahz gahz g!b bra!nz", "You you give brains"),
     ],
     "gloss_picker": [
         ("mah zambah gan barg bra!nz", "I will eat brains"),
@@ -432,6 +436,7 @@ TEST_GROUPS = {
         ("g!b", "Give"),
         ("ran", "Go"),
         ("nah nah nah", "Do not do not do not"),
+        ("gahz gahz", "You you"),
         ("flargh flargh", "[flargh] [flargh]"),
     ],
 
@@ -577,12 +582,7 @@ TEST_GROUPS = {
          "This are the end of the world"),
         ("G!b mah zambah abbar",
          "Give an me apple"),
-        ("gahz", "You"),
-        ("gahz gahz", "You you"),
-        ("gahz g!b mah zambah bra!nz", "You give me brains"),
         ("nah gahz g!b mah zambah bra!nz", "Do not you give me brains"),
-        ("gahz gan barg bra!nz", "You will eat brains"),
-        ("gahz gahz g!b bra!nz", "You you give brains"),
         ("ambra!z!ng", "Embraceing"), # note incorrect special case!
     ],
 
