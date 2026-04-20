@@ -30,6 +30,7 @@ from translator import (
     detect_subject,
     detect_auxiliary,
     inflect_verb,
+    normalize_morphology,
 )
 
 # ---------------------------
@@ -290,6 +291,7 @@ TEST_GROUPS = {
         ("Harmanz azza barragahz", "Humans at the barricades"),
         ("Mah zambah nah zrazz zam", "I do not trust them"),
         ("Zmazh zah barragah", "Smash the barricade"),
+        ("abbarz barg", "Apples eat"),
         ("g!b bra!nz an g!b zarram", "Give brains and give a serum"),
         ("g!b bra!nz arh g!b zarram", "Give brains or give a serum"),
         ("g!b bra!nz zaa harman", "Give brains to a human"),
@@ -868,6 +870,27 @@ HELPER_UNIT_TESTS = {
     ],
 }
 
+MORPHOLOGY_UNIT_TESTS = [
+    # base case
+    ("zambah", ("zambah", {})),
+
+    # plural (known word)
+    ("zambahz", ("zambah", {"number": "plural"})),
+
+    # plural (unknown word — critical for Story 5)
+    ("flarghz", ("flargh", {"number": "plural"})),
+
+    # gerund
+    ("barg!ng", ("barg", {"form": "ing"})),
+
+    # combined (future-proofing)
+    # ("flargh!ng", ("flargh", {"form": "ing"})),
+
+    # guardrails
+    ("anz", ("anz", {})),  # NOT plural
+    ("maz", ("maz", {})),  # NOT plural
+]
+
 # Invariant tests
 def check_invariants(sentence: str, lookup, eng_lookup) -> list[str]:
     issues = []
@@ -979,7 +1002,7 @@ def run_tests(verbose=False):
     print("\n---")
     print(f"Passed: {passed}")
     print(f"Failed: {failed}")
-    return failed == 0
+    return failed == 0, passed, failed
 
 def run_structure_tests(verbose=False):
     data = load_dictionary()
@@ -1013,7 +1036,7 @@ def run_structure_tests(verbose=False):
     print("\n---")
     print(f"Structure Passed: {passed}")
     print(f"Structure Failed: {failed}")
-    return failed == 0
+    return failed == 0, passed, failed
 
 def run_pipeline_unit_tests(verbose=False):
     data = load_dictionary()
@@ -1059,7 +1082,7 @@ def run_pipeline_unit_tests(verbose=False):
     print("\n---")
     print(f"Unit tests Passed: {passed}")
     print(f"Unit tests Failed: {failed}")
-    return failed == 0
+    return failed == 0, passed, failed
 
 def run_pipeline_helper_unit_tests(verbose=False):
     data = load_dictionary()
@@ -1102,7 +1125,7 @@ def run_pipeline_helper_unit_tests(verbose=False):
     print("\n---")
     print(f"Helper Passed: {passed}")
     print(f"Helper Failed: {failed}")
-    return failed == 0
+    return failed == 0, passed, failed
 
 def build_result_stub(context):
     result = []
@@ -1113,6 +1136,33 @@ def build_result_stub(context):
         result.append(context["prev"])
 
     return result
+
+def run_morphology_unit_tests(verbose=False):
+    data = load_dictionary()
+    lookup = build_lookup(data)
+    passed = 0
+    failed = 0
+
+    print("\n=== MORPHOLOGY UNIT TESTS ===")
+
+    for inp, expected in MORPHOLOGY_UNIT_TESTS:
+        result = normalize_morphology(inp, lookup)
+
+        if result == expected:
+            if verbose:
+                print(f"PASS: {inp} -> {result}")
+            passed += 1
+        else:
+            print(f"FAIL: {inp}")
+            print(f"  expected: {expected}")
+            print(f"  got:      {result}")
+            failed += 1
+
+    print("\n---")
+    print(f"Morphology Passed: {passed}")
+    print(f"Morphology Failed: {failed}")
+
+    return failed == 0, passed, failed
 
 def check_duplicates():
     seen = {}
@@ -1210,10 +1260,11 @@ if __name__ == "__main__":
     if ("--verbose" in command_line_args):
         verbose=True
 
-    success_translation = run_tests(verbose)
-    success_structure = run_structure_tests(verbose)
-    success_pipeline_helper_unit = run_pipeline_helper_unit_tests(verbose)
-    success_pipeline_unit = run_pipeline_unit_tests(verbose)
+    success_translation, trans_passed, trans_failed = run_tests(verbose)
+    success_structure, struct_passed, struct_failed = run_structure_tests(verbose)
+    success_pipeline_helper_unit, phelp_passed, phelp_failed = run_pipeline_helper_unit_tests(verbose)
+    success_pipeline_unit, pipeline_unit_passed, pipeline_unit_failed = run_pipeline_unit_tests(verbose)
+    success_morphology_unit, morph_passed, morph_failed = run_morphology_unit_tests(verbose)
 
     # These lines are here to remind us that if we do a major restructure
     # of TEST_GROUPS, we can uncomment these and make sure that no tests got
@@ -1235,19 +1286,33 @@ if __name__ == "__main__":
         print(f"==========WARNING: duplicate tests in test suite ====")
 
     if (not success_pipeline_helper_unit):
-        print(f"One or more pipeline helper unit tests failed!")
+        print(f"{phelp_failed} pipeline helper unit tests failed!")
+    else:
+        print(f"Ran and passed {phelp_passed} pipeline helper unit tests")
 
     if (not success_pipeline_unit):
-        print(f"One or more pipeline unit tests failed!")
+        print(f"{pipeline_unit_failed} pipeline unit tests failed!")
+    else:
+        print(f"Ran and passed {pipeline_unit_passed} pipeline unit tests")
 
     if (not success_structure):
-        print(f"One or more structure tests failed!")
+        print(f"{struct_failed} structure tests failed!")
+    else:
+        print(f"Ran and passed {struct_passed} structure tests")
 
     if (not success_translation):
-        print(f"One or more translation tests failed!")
+        print(f"{trans_failed} translation tests failed!")
+    else:
+        print(f"Ran and passed {trans_passed} translation tests")
 
-    if (success_translation and success_structure and success_pipeline_unit):
+    if (not success_morphology_unit):
+        print(f"{morph_failed} morphology tests failed!")
+    else:
+        print(f"Ran and passed {morph_passed} morphology tests")
+
+    if (success_translation and success_structure and success_pipeline_unit
+        and success_pipeline_helper_unit and success_morphology_unit):
         print(f"All test types passed.")
 
 
-    sys.exit(0 if (success_translation and success_structure and success_pipeline_unit) else 1)
+    sys.exit(0 if (success_translation and success_structure and success_pipeline_unit and success_pipeline_helper_unit and success_morphology_unit) else 1)

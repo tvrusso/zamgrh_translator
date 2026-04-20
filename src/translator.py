@@ -814,6 +814,13 @@ def validate_features(features: dict) -> None:
         assert key in ALLOWED_FEATURES, f"Unknown feature: {key}"
         assert value in ALLOWED_FEATURES[key], f"Invalid value for {key}: {value}"
 
+def is_safe_plural_candidate(word, base):
+    # Reject very short words (prevents anz → an)
+    if len(base) < 3:
+        return False
+
+    return True
+
 def normalize_morphology(word, lookup):
     """
     Owns: minimal morphology normalization.
@@ -853,6 +860,11 @@ def normalize_morphology(word, lookup):
                 features = {"number": "plural"}
             else:
                 features = {}
+        elif is_safe_plural_candidate(word, base):
+            retword = base
+            features = {"number": "plural"}
+        else:
+            features = {}
 
     validate_features(features)
     return retword, features
