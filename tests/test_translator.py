@@ -240,13 +240,8 @@ TEST_GROUPS = {
         ("harmanz", "Humans"),
         ("bra!n", "Brain"),
         ("bra!nz", "Brains"),
-        ("maz", "Must"),
-        ("haz", "Have"),
         ("barg!ng", "Eating"),
         ("bang!ng", "Shooting"),
-        ("maz", "Must"),
-        ("haz", "Have"),
-        ("abbarz", "Apples"),
     ],
     "MORPHOLOGY_SENTENCES": [
         ("zambahz barg bra!nz", "Zombies eat brains"),
@@ -293,12 +288,9 @@ TEST_GROUPS = {
     ],
     "imperatives": [
         ("g!b bra!nz", "Give brains"),
-        ("g!b mah zambah bra!nz", "Give me brains"),
         ("barg bra!nz", "Eat brains"),
     ],
     "articles_and_plural": [
-        ("zambahz barg bra!nz", "Zombies eat brains"),
-        ("zambah barg bra!n", "Zombie eats a brain"),
     ],
     "agreement": [
         ("zambah bargz bra!nz", "Zombie eats brains"),
@@ -315,7 +307,6 @@ TEST_GROUPS = {
     "edge_cases": [
         ("", ""),
         ("nah", "Do not"),
-        ("bra!nz", "Brains"),
     ],
     "duplicate_grammar_triggers": [
         ("zambah !z bah", "Zombie is bad"),
@@ -329,7 +320,6 @@ TEST_GROUPS = {
     ],
     "auxiliary_collisions": [
         ("mah zambah maz hab bra!nz", "I must have brains"),
-        ("mah zambah gan barg bra!nz", "I will eat brains"),
         ("mah zambah haz barg bra!nz", "I have eat brains"),
     ],
     "copula_vs_lexical_is": [
@@ -353,13 +343,10 @@ TEST_GROUPS = {
         ("nah nah nah g!b bra!nz", "Do not do not do not give brains"),
     ],
     "plural_normalization_edges": [
-        ("harmanz", "Humans"),
-        ("zambahz", "Zombies"),
         ("anz", "End"),
         ("an", "And"),
     ],
     "empty_and_whitespace": [
-        ("", ""),
         ("   ", ""),
     ],
     "long_sentences": [
@@ -379,9 +366,7 @@ TEST_GROUPS = {
         ("nah?", "Do not?"),
     ],
     "dictionary_integrity": [
-        ("zambah", "Zombie"),
         ("barg", "Eat"),
-        ("bra!nz", "Brains"),
     ],
     "stress_tests": [
         ("zambah maz maz barg bra!nz", "Zombie must eat brains"),
@@ -391,7 +376,6 @@ TEST_GROUPS = {
     "stress_pipeline_interactions": [
         ("mah zambah maz gan barg bra!nz", "I must will eat brains"),
         ("mah zambah gan maz barg bra!nz", "I will must eat brains"),
-        ("nah maz barg bra!nz", "Do not must eat brains"),
         ("maz nah barg bra!nz", "Must do not eat brains"),
         ("g!b gaa zaa mah zambah", "Give you to me"),
         ("gaa zaa gaa", "You to you"),
@@ -412,52 +396,18 @@ TEST_GROUPS = {
         ("mah mah bra!nz", "My brains"),
     ],
     "decision_tests": [
-        ("mah zambah gan barg bra!nz", "I will eat brains"),
-        ("mah zambah maz barg bra!nz", "I must eat brains"),
-        ("mah zambah maz gan barg bra!nz", "I must will eat brains"),
         ("gaa g!b gaa bra!nz", "You give you brains"),
-        ("za harman", "The human"),
         ("zah harman", "The human"),
         ("zambah barg bra!nz", "Zombie eats brains"),
-        ("zambahz barg bra!nz", "Zombies eat brains"),
-        ("nah maz barg bra!nz", "Do not must eat brains"),
-        ("maz nah barg bra!nz", "Must do not eat brains"),
     ],
 
     "regression_agreement_and_copula": [
-        ("mah zambah ganna barg bra!nz", "I am going to eat brains"),
-        ("zambah !z bah", "Zombie is bad"),
-        ("zambahz !z bah", "Zombies are bad"),
-        ("harman bah", "Human is bad"),
-        ("harmanz bah", "Humans are bad"),
-        ("zambah bargz bra!nz", "Zombie eats brains"),
     ],
     "weird_but_valid": [
-        ("bra!nz maz barg", "Brains must eat"),
-        ("maz bra!nz barg", "Must brains eat"),
-        ("bra!nz mah zambah g!b", "Brains I give"),
-        ("nah nah g!b bra!nz", "Do not do not give brains"),
-        ("zambah !z !z", "Zombie is"),
     ],
     "regression_articles_and_collisions": [
-        ("g!b bra!nz zaa harman", "Give brains to a human"),
-        ("g!b bra!nz zaa zah harman", "Give brains to the human"),
-        ("gaam zaa mah zambah", "Come to me"),
-        ("g!b bra!nz an g!b zarram", "Give brains and give a serum"),
-        ("g!b bra!nz arh g!b zarram", "Give brains or give a serum"),
-        (
-            "nah g!b bra!nz arh zambahz zmazh gaa an harman ran nahaarh",
-            "Do not give brains or zombies smash you and a human goes away"
-        ),
     ],
     "regression_pipeline_interactions": [
-        (
-            "mah zambah maz barg bra!nz an zmazh harman",
-            "I must eat brains and smash a human"
-        ),
-        ("mah flargh maz barg bra!nz", "My [flargh] must eat brains"),
-        ("flargh maz nah barg", "[flargh] must do not eat"),
-        ("zambahz flargh bra!nz", "Zombies [flargh] brains"),
     ],
     "torture_tests": [
         (
@@ -471,11 +421,6 @@ TEST_GROUPS = {
     ],
 
     "edge_case_hardening_minimal": [
-        ("", ""),
-        ("   ", ""),
-        ("zambah", "Zombie"),
-        ("bra!nz", "Brains"),
-        ("nah", "Do not"),
         ("flargh", "[flargh]"),
         ("nah nah", "Do not do not"),
         ("maz maz", "Must"),
@@ -485,10 +430,8 @@ TEST_GROUPS = {
 
     "edge_case_hardening_single_word_and_repetition": [
         ("g!b", "Give"),
-        ("barg", "Eat"),
         ("ran", "Go"),
         ("nah nah nah", "Do not do not do not"),
-        ("nam nam nam", "Eat eat eat"),
         ("flargh flargh", "[flargh] [flargh]"),
     ],
 
@@ -550,7 +493,6 @@ TEST_GROUPS = {
         ("nah maz gan barg bra!nz", "Do not must will eat brains"),
         ("maz nah gan barg bra!nz", "Must do not will eat brains"),
         ("zambah !z !z bah", "Zombie is bad"),
-        ("mah mah bra!nz", "My brains"),
     ],
 
     "edge_case_hardening_predictable_malformed": [
@@ -574,10 +516,6 @@ TEST_GROUPS = {
          "All the brains"),
     ],
     "corpus_expansion_2": [
-    (
-        "z!z bag",
-        "This bag"
-    ),
     (
         "nabazz!h ran",
         "Nobody go"
@@ -605,7 +543,6 @@ TEST_GROUPS = {
     ],
     "corpus_expansion_3": [
         ("mabb", "Move"),
-        ("nabazz!h mabb", "Nobody move"),
         ("brh!ng", "Bring"),
         ("graab", "Grab"),
         ("harmanbargar", "Humanburger"),
@@ -649,17 +586,6 @@ TEST_GROUPS = {
         ("ambra!z!ng", "Embraceing"), # note incorrect special case!
     ],
 
-    ## We *could* add these tests in order to guard against breakage
-    ## by the agreement refactor, but in fact every one of them is already
-    ## tested by tests in a different block and these would be redundant
-    # "agreement_refactor_lock": [
-    #    ("mah zambah barg bra!nz", "I eat brains"),
-    #    ("gaa g!b mah bra!nz", "You give me brains"),
-    #    ("gahz g!b mah bra!nz", "you give me brains"),
-    #    ("zambah barg bra!nz", "Zombie eats brains"),
-    #    ("zambahz barg bra!nz", "Zombies eat brains"),
-    #    ("harmanz bah", "Humans are bad"),
-    #    ("harman bah", "Human is bad"),
 }
 # Format for pipeline unit tests:
 # "function_name" : [
@@ -1320,6 +1246,18 @@ def build_result_stub(context):
 
     return result
 
+def check_duplicates():
+    seen = {}
+    duplicates = []
+
+    for group, tests in TEST_GROUPS.items():
+        for t in tests:
+            if t in seen:
+                duplicates.append((t, seen[t], group))
+            else:
+                seen[t] = group
+    return duplicates
+
 if __name__ == "__main__":
     verbose = False
     command_line_args = sys.argv
@@ -1330,6 +1268,13 @@ if __name__ == "__main__":
     success_structure = run_structure_tests(verbose)
     success_pipeline_helper_unit = run_pipeline_helper_unit_tests(verbose)
     success_pipeline_unit = run_pipeline_unit_tests(verbose)
+
+    duplicates = check_duplicates()
+    if len(duplicates) > 0:
+        print(f"==========WARNING: duplicate tests in test suite ====")
+        for dup, first_group, dup_group in duplicates:
+            print(f"{dup} -> first: {first_group}, duplicate: {dup_group}")
+        print(f"==========WARNING: duplicate tests in test suite ====")
 
     if (not success_pipeline_helper_unit):
         print(f"One or more pipeline helper unit tests failed!")
@@ -1345,5 +1290,6 @@ if __name__ == "__main__":
 
     if (success_translation and success_structure and success_pipeline_unit):
         print(f"All test types passed.")
+
 
     sys.exit(0 if (success_translation and success_structure and success_pipeline_unit) else 1)
