@@ -409,6 +409,7 @@ TEST_GROUPS = {
     # =========================
     "stress": [
         ("bra!nz maz barg", "Brains must eat"),
+        ("flarghz barg!ng bra!nz", "[flarghz] eating brains"),
         ("mah zambah gan maz barg bra!nz", "I will must eat brains"),
         ("mah zambah ganna barg bra!nz an g!b gaa zaa harman",
          "I am going to eat brains and give you to a human"),
