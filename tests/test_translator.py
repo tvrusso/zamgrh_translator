@@ -883,31 +883,31 @@ MORPHOLOGY_UNIT_TESTS = [
     ("zambah", ("zambah", {})),
 
     # plural (known word)
-    ("zambahz", ("zambah", {"number": "plural"})),
+    ("zambahz", ("zambah", {"form": ["s"]})),
 
     # known word not noun or pronoun so not plural
     ("bargz", ("barg",{})),
 
     # plural (unknown word — critical for Story 5)
-    ("flarghz", ("flargh", {"number": "plural"})),
+    ("flarghz", ("flargh", {"form": ["s"]})),
 
     # gerund
-    ("barg!ng", ("barg", {"form": "ing"})),
+    ("barg!ng", ("barg", {"form": ["ing"]})),
 
     # combined (future-proofing)
-    # ("flargh!ng", ("flargh", {"form": "ing"})),
+    # ("flargh!ng", ("flargh", {"form": ["ing"]})),
 
     # guardrails
     ("anz", ("anz", {})),  # NOT plural
     ("haz", ("haz", {})),  # NOT plural
     ("maz", ("maz", {})),  # NOT plural
-    ("hazzz", ("hazz",{"number": "plural"})),
+    ("hazzz", ("hazz",{"form": ["s"]})),
     ("flargh!ng", ("flargh!ng", {})),   # unknown word, not recognized as "ing"
 
     # stacking !ng and -z
-    ("barg!ngz", ("barg", {"form":"ing", "number": "plural"})),
+    ("barg!ngz", ("barg", {"form":["s", "ing"]})),
     # current behavior, no "ing" recognized for unknown words
-    ("flargh!ngz", ("flargh!ng", {"number": "plural"})),
+    ("flargh!ngz", ("flargh!ng", {"form": ["s"]})),
 
     # --- safety boundaries ---
     ("abz", ("abz", {})),     # base too short → not plural
@@ -917,7 +917,7 @@ MORPHOLOGY_UNIT_TESTS = [
     ("flargh", ("flargh", {})),
 
     # --- robustness ---
-    ("flarghzz", ("flarghz", {"number": "plural"})),  # no double-strip
+    ("flarghzz", ("flarghz", {"form": ["s"]})),  # no double-strip
 ]
 
 # Invariant tests

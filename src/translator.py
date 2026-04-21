@@ -805,14 +805,8 @@ def dedupe_function_words(words, lookup, eng_lookup):
 
 # Define currently permitted features
 ALLOWED_FEATURES = {
-    "number": {"plural"}, # singular is implicit
-    "form": {"ing"},
+    "form": ["ing","s"],
 }
-
-def validate_features(features: dict) -> None:
-    for key, value in features.items():
-        assert key in ALLOWED_FEATURES, f"Unknown feature: {key}"
-        assert value in ALLOWED_FEATURES[key], f"Invalid value for {key}: {value}"
 
 def is_safe_plural_candidate(word, base):
     # Reject very short words (prevents anz → an)
@@ -820,6 +814,25 @@ def is_safe_plural_candidate(word, base):
         return False
 
     return True
+
+def validate_features(features: dict) -> None:
+    for key, value in features.items():
+        assert key in ALLOWED_FEATURES, f"Unknown feature: {key}"
+        assert type(value) == type(ALLOWED_FEATURES[key]), f"Invalid type for {key}: {value}"
+        if isinstance(ALLOWED_FEATURES[key],list):
+            assert all(v in ALLOWED_FEATURES[key] for v in value), f"invalid value in {value} for {key}"
+
+def set_feature_s_suffix(features: dict):
+    features.setdefault("form",[]).append("s")
+
+def has_s_suffix(features: dict):
+    return "form" in features and "s" in features["form"]
+
+def set_feature_ing_suffix(features: dict):
+    features.setdefault("form",[]).append("ing")
+
+def has_ing_suffix(features: dict):
+    return "form" in features and "ing" in features["form"]
 
 def normalize_morphology(word, lookup):
     """
@@ -856,7 +869,7 @@ def normalize_morphology(word, lookup):
                 break
 
             # handle plural
-            if ("number" not in features
+            if (not has_s_suffix(features)
                 and retword.endswith("z")
                 and len(retword) > 1):
                 base = retword[:-1]
@@ -868,7 +881,7 @@ def normalize_morphology(word, lookup):
                 if entry:
                     retword = base
                     if any(p in {"noun", "pron"} for p in entry.get("pos", [])):
-                        features["number"] = "plural"
+                        set_feature_s_suffix(features)
                         changed = True
                         stripped_once = True
                         continue
@@ -877,20 +890,20 @@ def normalize_morphology(word, lookup):
                     if stripped_once:
                         continue
                     retword = base
-                    features["number"] = "plural"
+                    set_feature_s_suffix(features)
                     changed = True
                     stripped_once = True
                     continue
 
             # handle "!ng" suffix
-            if ("form" not in features
+            if (not has_ing_suffix(features)
                 and retword.endswith("!ng")
                 and len(retword) > 3):
                 base = retword[:-3]
                 entry = lookup.get(base)
                 if entry and "verb" in entry.get("pos",[]):
                     retword = base
-                    features["form"] = "ing"
+                    set_feature_ing_suffix(features)
                     changed = True
                     continue
 
@@ -900,7 +913,7 @@ def normalize_morphology(word, lookup):
 def apply_plural(word, features):
     if not word:
         return word
-    if features.get("number") != "plural":
+    if not has_s_suffix(features):
         return word
     if word.endswith("s"):
         return word
@@ -1230,11 +1243,11 @@ def render_gloss_with_features(gloss, features, pos):
     """
     Render a gloss using morphology-derived features.
     """
-    if features.get("number") == "plural":
+    if has_s_suffix(features):
         if gloss == "you" and "pron" in pos:
             return "you"
         return gloss + "s"
-    if features.get("form") == "ing":
+    if has_ing_suffix(features):
         return gloss + "ing"
     return gloss
 
@@ -1322,7 +1335,7 @@ def is_plural_subject_token(word, features):
     """
     Detect whether a subject token should be treated as plural.
     """
-    if features.get("number") == "plural":
+    if has_s_suffix(features):
         return True
     return word in {"we", "they"}
 
@@ -1390,14 +1403,14 @@ def zamgrh_to_structure(text, lookup, eng_lookup):
             has_explicit_subject = True
             if t["word"] in {"we", "they"}:
                 structure["plural"] = True
-            elif t["word"] == "you" and t["features"].get("number") == "plural":
+            elif t["word"] == "you" and has_s_suffix(t["features"]):
                 structure["plural"] = True
             break
 
         if "noun" in t["pos"]:
             structure["subject"] = apply_plural(t["word"],t["features"])
             has_explicit_subject = True
-            if t["features"].get("number") == "plural":
+            if has_s_suffix(t["features"]):
                 structure["plural"] = True
             break
 
