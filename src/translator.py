@@ -853,18 +853,23 @@ def normalize_morphology(word, lookup):
 
     elif word.endswith("z") and len(word) > 1:
         base = word[:-1]
-        entry = lookup.get(base)
-        if entry:
-            retword = base
-            if any(p in {"noun", "pron"} for p in entry.get("pos", [])):
+        # Don't stack the morphology, guard against "!ngz"
+        if base.endswith("!ng"):
+            retword = word
+            features = {}
+        else:
+            entry = lookup.get(base)
+            if entry:
+                retword = base
+                if any(p in {"noun", "pron"} for p in entry.get("pos", [])):
+                    features = {"number": "plural"}
+                else:
+                    features = {}
+            elif is_safe_plural_candidate(word, base):
+                retword = base
                 features = {"number": "plural"}
             else:
                 features = {}
-        elif is_safe_plural_candidate(word, base):
-            retword = base
-            features = {"number": "plural"}
-        else:
-            features = {}
 
     validate_features(features)
     return retword, features

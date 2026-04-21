@@ -232,6 +232,7 @@ TEST_GROUPS = {
         ("anz", "End"),
         ("bang!ng", "Shooting"),
         ("barg", "Eat"),
+        ("bargz", "Eat"),
         ("barg!ng", "Eating"),
         ("bra!n", "Brain"),
         ("bra!nz", "Brains"),
@@ -304,6 +305,7 @@ TEST_GROUPS = {
         ("harmanz gan ran nahaarh", "Humans will go away"),
         ("harmanz zmazh zambahz", "Humans smash zombies"),
         ("mah gang", "My group"),
+        ("mah zambah bargz", "I eat"),
         ("mah zambah gan barg bra!nz", "I will eat brains"),
         ("mah zambah ganna barg bra!nz", "I am going to eat brains"),
         ("mah zambah haz barg bra!nz", "I have eat brains"),
@@ -334,6 +336,8 @@ TEST_GROUPS = {
         ("bangbangman nah bang mah zambah mah zambah !z n!z",
          "Headhunter do not shoot me I am nice"),
         ("barg zambah bra!nz", "Eat zombie brains"),
+        ("bargz zambah", "Eat a zombie"),
+        ("bargz bargz", "Eat eat"),
         ("bra!nz bra!nz", "Brains brains"),
         ("bra!nz bra!nz bra!nz", "Brains brains brains"),
         ("bra!nz mah zambah g!b", "Brains I give"),
@@ -877,6 +881,9 @@ MORPHOLOGY_UNIT_TESTS = [
     # plural (known word)
     ("zambahz", ("zambah", {"number": "plural"})),
 
+    # known word not noun or pronoun so not plural
+    ("bargz", ("barg",{})),
+
     # plural (unknown word — critical for Story 5)
     ("flarghz", ("flargh", {"number": "plural"})),
 
@@ -888,7 +895,22 @@ MORPHOLOGY_UNIT_TESTS = [
 
     # guardrails
     ("anz", ("anz", {})),  # NOT plural
+    ("haz", ("haz", {})),  # NOT plural
     ("maz", ("maz", {})),  # NOT plural
+
+    # No stacked morphology rules, if we have "!ngz" skip both -!ing and
+    # -z suffix handling
+    ("barg!ngz", ("barg!ngz", {})),  # current behavior: no rule applies
+
+    # --- safety boundaries ---
+    ("abz", ("abz", {})),     # base too short → not plural
+    ("z", ("z", {})),         # single char ignored
+
+    # --- unknown baseline ---
+    ("flargh", ("flargh", {})),
+
+    # --- robustness ---
+    ("flarghzz", ("flarghz", {"number": "plural"})),  # no double-strip
 ]
 
 # Invariant tests
