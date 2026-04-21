@@ -1243,13 +1243,19 @@ def render_gloss_with_features(gloss, features, pos):
     """
     Render a gloss using morphology-derived features.
     """
-    if has_s_suffix(features):
+    if has_ing_suffix(features) and has_s_suffix(features):
+        retval = gloss + "ings"
+    elif has_s_suffix(features):
         if gloss == "you" and "pron" in pos:
-            return "you"
-        return gloss + "s"
-    if has_ing_suffix(features):
-        return gloss + "ing"
-    return gloss
+            retval = "you"
+        else:
+            retval = gloss + "s"
+    elif has_ing_suffix(features):
+        retval = gloss + "ing"
+    else:
+        retval = gloss
+
+    return retval
 
 def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
     """

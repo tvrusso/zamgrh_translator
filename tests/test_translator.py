@@ -234,6 +234,7 @@ TEST_GROUPS = {
         ("barg", "Eat"),
         ("bargz", "Eat"),
         ("barg!ng", "Eating"),
+        ("barg!ngz", "Eatings"),
         ("bra!n", "Brain"),
         ("bra!nz", "Brains"),
         ("bra!nz.", "Brains"),
