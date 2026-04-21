@@ -901,9 +901,12 @@ MORPHOLOGY_UNIT_TESTS = [
     ("haz", ("haz", {})),  # NOT plural
     ("maz", ("maz", {})),  # NOT plural
     ("hazzz", ("hazz",{"number": "plural"})),
+    ("flargh!ng", ("flargh!ng", {})),   # unknown word, not recognized as "ing"
 
     # stacking !ng and -z
-    ("barg!ngz", ("barg", {"form":"ing", "number": "plural"})),  # current behavior: no rule applies
+    ("barg!ngz", ("barg", {"form":"ing", "number": "plural"})),
+    # current behavior, no "ing" recognized for unknown words
+    ("flargh!ngz", ("flargh!ng", {"number": "plural"})),
 
     # --- safety boundaries ---
     ("abz", ("abz", {})),     # base too short → not plural

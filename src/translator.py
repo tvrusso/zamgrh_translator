@@ -888,7 +888,7 @@ def normalize_morphology(word, lookup):
                 and len(retword) > 3):
                 base = retword[:-3]
                 entry = lookup.get(base)
-                if entry:
+                if entry and "verb" in entry.get("pos",[]):
                     retword = base
                     features["form"] = "ing"
                     changed = True
