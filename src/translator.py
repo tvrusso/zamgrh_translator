@@ -805,14 +805,8 @@ def dedupe_function_words(words, lookup, eng_lookup):
 
 # Define currently permitted features
 ALLOWED_FEATURES = {
-    "number": {"plural"}, # singular is implicit
-    "form": {"ing"},
+    "form": ["ing","s"],
 }
-
-def validate_features(features: dict) -> None:
-    for key, value in features.items():
-        assert key in ALLOWED_FEATURES, f"Unknown feature: {key}"
-        assert value in ALLOWED_FEATURES[key], f"Invalid value for {key}: {value}"
 
 def is_safe_plural_candidate(word, base):
     # Reject very short words (prevents anz → an)
@@ -821,17 +815,24 @@ def is_safe_plural_candidate(word, base):
 
     return True
 
+def validate_features(features: dict) -> None:
+    for key, value in features.items():
+        assert key in ALLOWED_FEATURES, f"Unknown feature: {key}"
+        assert type(value) == type(ALLOWED_FEATURES[key]), f"Invalid type for {key}: {value}"
+        if isinstance(ALLOWED_FEATURES[key],list):
+            assert all(v in ALLOWED_FEATURES[key] for v in value), f"invalid value in {value} for {key}"
+
 def set_feature_s_suffix(features: dict):
-    features["number"] = "plural"
+    features.setdefault("form",[]).append("s")
 
 def has_s_suffix(features: dict):
-    return "number" in features and features["number"] == "plural"
+    return "form" in features and "s" in features["form"]
 
 def set_feature_ing_suffix(features: dict):
-    features["form"] = "ing"
+    features.setdefault("form",[]).append("ing")
 
 def has_ing_suffix(features: dict):
-    return "form" in features and features["form"] == "ing"
+    return "form" in features and "ing" in features["form"]
 
 def normalize_morphology(word, lookup):
     """
@@ -895,7 +896,7 @@ def normalize_morphology(word, lookup):
                     continue
 
             # handle "!ng" suffix
-            if ("form" not in features
+            if (not has_ing_suffix(features)
                 and retword.endswith("!ng")
                 and len(retword) > 3):
                 base = retword[:-3]
