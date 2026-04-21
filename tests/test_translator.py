@@ -900,10 +900,10 @@ MORPHOLOGY_UNIT_TESTS = [
     ("anz", ("anz", {})),  # NOT plural
     ("haz", ("haz", {})),  # NOT plural
     ("maz", ("maz", {})),  # NOT plural
+    ("hazzz", ("hazz",{"number": "plural"})),
 
-    # No stacked morphology rules, if we have "!ngz" skip both -!ing and
-    # -z suffix handling
-    ("barg!ngz", ("barg!ngz", {})),  # current behavior: no rule applies
+    # stacking !ng and -z
+    ("barg!ngz", ("barg", {"form":"ing", "number": "plural"})),  # current behavior: no rule applies
 
     # --- safety boundaries ---
     ("abz", ("abz", {})),     # base too short → not plural

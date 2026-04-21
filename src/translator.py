@@ -845,32 +845,54 @@ def normalize_morphology(word, lookup):
         retword = word
         features = {}
 
-    elif word.endswith("!ng") and len(word) > 3:
-        base = word[:-3]
-        entry = lookup.get(base)
-        if entry:
-            retword = base
-            features = {"form": "ing"}
+    else:
+        changed = True
+        stripped_once = False
 
-    elif word.endswith("z") and len(word) > 1:
-        base = word[:-1]
-        # Don't stack the morphology, guard against "!ngz"
-        if base.endswith("!ng"):
-            retword = word
-            features = {}
-        else:
-            entry = lookup.get(base)
-            if entry:
-                retword = base
-                if any(p in {"noun", "pron"} for p in entry.get("pos", [])):
-                    features = {"number": "plural"}
-                else:
-                    features = {}
-            elif is_safe_plural_candidate(word, base):
-                retword = base
-                features = {"number": "plural"}
-            else:
-                features = {}
+        while changed:
+            changed = False
+
+            if retword in lookup:
+                break
+
+            # handle plural
+            if ("number" not in features
+                and retword.endswith("z")
+                and len(retword) > 1):
+                base = retword[:-1]
+                entry = lookup.get(base)
+
+                if stripped_once and not entry:
+                    continue
+
+                if entry:
+                    retword = base
+                    if any(p in {"noun", "pron"} for p in entry.get("pos", [])):
+                        features["number"] = "plural"
+                        changed = True
+                        stripped_once = True
+                        continue
+                elif (retword == word
+                      and is_safe_plural_candidate(retword, base)):
+                    if stripped_once:
+                        continue
+                    retword = base
+                    features["number"] = "plural"
+                    changed = True
+                    stripped_once = True
+                    continue
+
+            # handle "!ng" suffix
+            if ("form" not in features
+                and retword.endswith("!ng")
+                and len(retword) > 3):
+                base = retword[:-3]
+                entry = lookup.get(base)
+                if entry:
+                    retword = base
+                    features["form"] = "ing"
+                    changed = True
+                    continue
 
     validate_features(features)
     return retword, features
