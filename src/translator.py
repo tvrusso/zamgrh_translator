@@ -834,6 +834,7 @@ def normalize_morphology(word, lookup):
     - function is no-op by default
     - transformations depend only on lookup
     - POS is never changed; function emits features based on lookup
+
     """
     assert isinstance(word, str), f"word must be str, got {type(word).__name__}"
 
@@ -1227,6 +1228,8 @@ def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
     Guarantees:
      - Returns a list of token structures
      - unknown input words are bracketed
+    - Morphology may normalize unknown tokens internally, but surface form is
+      preserved during gloss rendering.
     """
     assert isinstance(text, str), f"text must be str, got {type(text).__name__}"
     assert_lookup_shapes(lookup, eng_lookup)
