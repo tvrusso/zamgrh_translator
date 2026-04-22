@@ -104,7 +104,32 @@ def validate_pipeline_step_result(words, label):
     assert_unknown_word_shape(words, label)
 
 # translation pipeline
-def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
+def build_tokens_from_words(words, eng_lookup):
+    """
+    Build a minimal token structure from a list of words.
+
+    This is a fallback shim used when real Zamgrh-derived tokens
+    are not available. It does NOT perform morphology.
+
+    Guarantees:
+    - len(tokens) == len(words)
+    - tokens[i]["word"] == words[i]
+    - features is always an empty dict
+    - pos is best-effort from lookup (if available)
+    """
+    tokens = []
+    for w in words:
+        pos = eng_lookup.get(w.lower(), set())
+        tokens.append({
+            "raw": w,
+            "word": w,
+            "base": w,
+            "pos": set(pos),
+            "features": {},
+        })
+    return tokens
+
+def apply_grammar_pipeline(words, lookup, eng_lookup, tokens=None, debug=False):
     """
     Apply the English grammar cleanup pipeline.
 
@@ -144,6 +169,15 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
     assert_lookup_shapes(lookup, eng_lookup)
     assert_unknown_word_shape(words, "pipeline input")
 
+    # tokens must align 1:1 with words.
+    # If not provided, a shim is constructed.
+    # Real Zamgrh-derived tokens are not yet passed here due to
+    # known multi-word gloss alignment issues.
+    if tokens is None:
+        tokens = build_tokens_from_words(words, eng_lookup)
+
+    assert len(tokens) == len(words), "tokens must align with words"
+
     PIPELINE = [
         ("resolve_hab_ambiguity", resolve_hab_ambiguity),
         ("simplify_subject", simplify_subject),
@@ -169,7 +203,7 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
 
     for name, step in PIPELINE:
         before = list(words)
-        words = step(words, lookup, eng_lookup)
+        words = step(words, lookup, eng_lookup, tokens=tokens)
 
         validate_pipeline_step_result(words, f"{name} output")
 
@@ -225,7 +259,7 @@ def question_postprocess(text, structure, original_text):
     return text if text.endswith("?") else text + "?"
 
 
-def fix_am_progressive(words, lookup, eng_lookup):
+def fix_am_progressive(words, lookup, eng_lookup, tokens=None):
     """
     Owns: narrow repair of 'I going to' -> 'I am going to'.
 
@@ -255,7 +289,7 @@ def fix_am_progressive(words, lookup, eng_lookup):
     return result
 
 
-def resolve_hab_ambiguity(words, lookup, eng_lookup):
+def resolve_hab_ambiguity(words, lookup, eng_lookup, tokens=None):
     """
     Owns: lexical ambiguity cleanup for specific known collisions.
 
@@ -288,7 +322,7 @@ def resolve_hab_ambiguity(words, lookup, eng_lookup):
     return result
 
 
-def simplify_subject(words, lookup, eng_lookup):
+def simplify_subject(words, lookup, eng_lookup, tokens=None):
     """
     Owns: Zamgrh-specific redundant subject cleanup.
 
@@ -315,7 +349,7 @@ def simplify_subject(words, lookup, eng_lookup):
     return result
 
 
-def fix_possession(words, lookup, eng_lookup):
+def fix_possession(words, lookup, eng_lookup, tokens=None):
     """
     Owns: possessive pronoun conversion for narrow lexical patterns.
 
@@ -340,7 +374,7 @@ def fix_possession(words, lookup, eng_lookup):
     return result
 
 
-def fix_object_pronouns(words, lookup, eng_lookup):
+def fix_object_pronouns(words, lookup, eng_lookup, tokens=None):
     """
     Owns: object pronoun case after selected verbs.
 
@@ -364,13 +398,7 @@ def fix_object_pronouns(words, lookup, eng_lookup):
     validate_pipeline_step_result(result, "fix_object_pronouns output")
     return result
 
-fix_pronouns = fix_object_pronouns
-
-# Alias used by tests / pipeline naming conventions.
-fix_pronouns = fix_object_pronouns
-
-
-def insert_copula(words, lookup, eng_lookup):
+def insert_copula(words, lookup, eng_lookup, tokens=None):
     """
     Owns: local missing-copula insertion.
 
@@ -408,7 +436,7 @@ def insert_copula(words, lookup, eng_lookup):
     return result
 
 
-def fix_prepositions(words, lookup, eng_lookup):
+def fix_prepositions(words, lookup, eng_lookup, tokens=None):
     """
     Owns: pronoun case after prepositions.
 
@@ -432,7 +460,7 @@ def fix_prepositions(words, lookup, eng_lookup):
     return result
 
 
-def fix_verb_agreement(words, lookup, eng_lookup):
+def fix_verb_agreement(words, lookup, eng_lookup, tokens=None):
     """
     Owns: final verb and copula agreement normalization.
 
@@ -754,7 +782,7 @@ def inflect_verb(context):
     return word, (word != context["word"])
 
 
-def dedupe_function_words(words, lookup, eng_lookup):
+def dedupe_function_words(words, lookup, eng_lookup, tokens=None):
     """
     Owns: duplicate collapsible function-word cleanup.
 
@@ -930,7 +958,7 @@ def get_pos(word, lookup, eng_lookup):
     return set()
 
 
-def insert_articles(words, lookup, eng_lookup):
+def insert_articles(words, lookup, eng_lookup, tokens=None):
     """
     Owns: local article insertion for object-like noun phrases.
 
@@ -1037,7 +1065,7 @@ def insert_articles(words, lookup, eng_lookup):
     validate_pipeline_step_result(result, "insert_articles output")
     return result
 
-def fix_determiners(words, lookup, eng_lookup):
+def fix_determiners(words, lookup, eng_lookup, tokens=None):
     """
     Owns: determiner / possessive interpretation for local noun phrases.
 
@@ -1085,7 +1113,7 @@ def fix_determiners(words, lookup, eng_lookup):
     return result
 
 
-def collapse_repeated_pronouns(words, lookup, eng_lookup):
+def collapse_repeated_pronouns(words, lookup, eng_lookup, tokens=None):
     """
     Owns: cleanup of repeated adjacent pronouns.
 

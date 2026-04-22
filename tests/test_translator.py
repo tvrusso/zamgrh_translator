@@ -31,6 +31,7 @@ from translator import (
     detect_auxiliary,
     inflect_verb,
     normalize_morphology,
+    build_tokens_from_words,
 )
 
 # ---------------------------
@@ -1284,6 +1285,13 @@ def compare_test_sets(old_groups: dict, new_groups: dict):
         for t in sorted(added):
             print(t)
 
+def assert_build_tokens():
+    data = load_dictionary()
+    eng_lookup = build_english_pos_lookup(data)
+    words = ["I", "eat", "brains"]
+    tokens = build_tokens_from_words(words, eng_lookup)
+    return len(tokens) == len(words), all(t["word"] == w for t, w in zip(tokens, words))
+
 if __name__ == "__main__":
     verbose = False
     command_line_args = sys.argv
@@ -1344,5 +1352,13 @@ if __name__ == "__main__":
         and success_pipeline_helper_unit and success_morphology_unit):
         print(f"All test types passed.")
 
+    success_token_build, success_token_list = assert_build_tokens()
 
-    sys.exit(0 if (success_translation and success_structure and success_pipeline_unit and success_pipeline_helper_unit and success_morphology_unit) else 1)
+    if not success_token_build:
+        print(f"build_tokens_from_words produced incorrectly sized token list")
+    if not success_token_list:
+        print(f"build_tokens_from_words did not produce a list of tokens matching words")
+    sys.exit(0 if (success_translation and success_structure
+                   and success_pipeline_unit and success_pipeline_helper_unit
+                   and success_morphology_unit and success_token_build
+                   and success_token_list) else 1)
