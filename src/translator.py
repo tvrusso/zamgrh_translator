@@ -41,33 +41,6 @@ COLLAPSIBLE_WORDS = {
 
 
 # ---------------------------
-# Validation helpers
-# ---------------------------
-
-def assert_token_list(words, label="words"):
-    assert isinstance(words, list), f"{label} must be a list, got {type(words).__name__}"
-    assert all(isinstance(w, str) for w in words), f"{label} must contain only strings"
-    assert all(w is not None for w in words), f"{label} must not contain None"
-    assert all(w != "" for w in words), f"{label} must not contain empty-string tokens"
-
-
-def assert_lookup_shapes(lookup, eng_lookup):
-    assert isinstance(lookup, dict), f"lookup must be dict, got {type(lookup).__name__}"
-    assert isinstance(eng_lookup, dict), f"eng_lookup must be dict, got {type(eng_lookup).__name__}"
-
-
-def assert_unknown_token_shape(words, label="words"):
-    for w in words:
-        if w.startswith("["):
-            assert w.endswith("]"), f"{label} contains malformed unknown token: {w}"
-
-
-def validate_pipeline_step_result(words, label):
-    assert_token_list(words, label)
-    assert_unknown_token_shape(words, label)
-
-
-# ---------------------------
 # Dictionary loading
 # ---------------------------
 
@@ -108,11 +81,11 @@ COLLAPSIBLE_WORDS = {
 # Validation helpers
 # ---------------------------
 
-def assert_token_list(words, label="words"):
+def assert_word_list(words, label="words"):
     assert isinstance(words, list), f"{label} must be a list, got {type(words).__name__}"
     assert all(isinstance(w, str) for w in words), f"{label} must contain only strings"
     assert all(w is not None for w in words), f"{label} must not contain None"
-    assert all(w != "" for w in words), f"{label} must not contain empty-string tokens"
+    assert all(w != "" for w in words), f"{label} must not contain empty-string words"
 
 
 def assert_lookup_shapes(lookup, eng_lookup):
@@ -120,15 +93,15 @@ def assert_lookup_shapes(lookup, eng_lookup):
     assert isinstance(eng_lookup, dict), f"eng_lookup must be dict, got {type(eng_lookup).__name__}"
 
 
-def assert_unknown_token_shape(words, label="words"):
+def assert_unknown_word_shape(words, label="words"):
     for w in words:
         if w.startswith("["):
-            assert w.endswith("]"), f"{label} contains malformed unknown token: {w}"
+            assert w.endswith("]"), f"{label} contains malformed unknown word: {w}"
 
 
 def validate_pipeline_step_result(words, label):
-    assert_token_list(words, label)
-    assert_unknown_token_shape(words, label)
+    assert_word_list(words, label)
+    assert_unknown_word_shape(words, label)
 
 # translation pipeline
 def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
@@ -167,9 +140,9 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
     - 1: show only steps that changed the token stream
     - 2: show every step, including unchanged ones
     """
-    assert_token_list(words, "pipeline input")
+    assert_word_list(words, "pipeline input")
     assert_lookup_shapes(lookup, eng_lookup)
-    assert_unknown_token_shape(words, "pipeline input")
+    assert_unknown_word_shape(words, "pipeline input")
 
     PIPELINE = [
         ("resolve_hab_ambiguity", resolve_hab_ambiguity),
@@ -186,13 +159,13 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
         ("fix_verb_agreement", fix_verb_agreement),
     ]
 
-    def render(tokens):
-        return " ".join(tokens) if tokens else "<empty>"
+    def render(words):
+        return " ".join(words) if words else "<empty>"
 
     if debug:
         print("\n=== DEBUG: GRAMMAR PIPELINE ===")
         print(f"[INPUT]")
-        print(f"  tokens: {render(words)}")
+        print(f"  words: {render(words)}")
 
     for name, step in PIPELINE:
         before = list(words)
@@ -211,7 +184,7 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, debug=False):
 
     if debug:
         print("\n[FINAL]")
-        print(f"  tokens: {render(words)}")
+        print(f"  words: {render(words)}")
         print("=== END DEBUG ===")
 
     return words
@@ -263,7 +236,7 @@ def fix_am_progressive(words, lookup, eng_lookup):
     - inserts 'am' only for the specific 'I going to' pattern
     - does not attempt general tense/aspect handling
     """
-    assert_token_list(words, "fix_am_progressive input")
+    assert_word_list(words, "fix_am_progressive input")
     result = []
     i = 0
 
@@ -293,7 +266,7 @@ def resolve_hab_ambiguity(words, lookup, eng_lookup):
     - rewrites 'help' -> 'have' only in known local contexts
     - does not reorder tokens or infer broader syntax
     """
-    assert_token_list(words, "resolve_hab_ambiguity input")
+    assert_word_list(words, "resolve_hab_ambiguity input")
     result = []
     i = 0
 
@@ -326,7 +299,7 @@ def simplify_subject(words, lookup, eng_lookup):
     - removes redundant 'zombie' after 'I'
     - does not otherwise rewrite clause structure
     """
-    assert_token_list(words, "simplify_subject input")
+    assert_word_list(words, "simplify_subject input")
     result = []
     i = 0
 
@@ -360,7 +333,7 @@ def fix_possession(words, lookup, eng_lookup):
       - returns a list of glosses with any needed fixes applied
 
     """
-    assert_token_list(words, "fix_possession input")
+    assert_word_list(words, "fix_possession input")
     result = words
 
     validate_pipeline_step_result(result, "fix_possession output")
@@ -378,7 +351,7 @@ def fix_object_pronouns(words, lookup, eng_lookup):
     - converts 'verb I' -> 'verb me' for known verbs
     - does not own possessive or prepositional pronoun case
     """
-    assert_token_list(words, "fix_object_pronouns input")
+    assert_word_list(words, "fix_object_pronouns input")
     verbs = {"give", "help", "shoot", "eat", "smash", "have"}
     result = []
 
@@ -408,7 +381,7 @@ def insert_copula(words, lookup, eng_lookup):
     - inserts 'is/are' between noun + adjective when no earlier verb was seen
     - does not handle full clause repair or late agreement decisions
     """
-    assert_token_list(words, "insert_copula input")
+    assert_word_list(words, "insert_copula input")
     result = []
     seen_verb = False
 
@@ -446,7 +419,7 @@ def fix_prepositions(words, lookup, eng_lookup):
     - converts 'to I' -> 'to me'
     - does not own possessive determiner conversion
     """
-    assert_token_list(words, "fix_prepositions input")
+    assert_word_list(words, "fix_prepositions input")
     result = []
 
     for i, w in enumerate(words):
@@ -471,7 +444,7 @@ def fix_verb_agreement(words, lookup, eng_lookup):
     - does not reorder tokens
     - uses helper functions to keep ownership localized
     """
-    assert_token_list(words, "fix_verb_agreement input")
+    assert_word_list(words, "fix_verb_agreement input")
     result = []
 
     for w in words:
@@ -510,7 +483,7 @@ def build_context(current_word, result, lookup, eng_lookup):
     - result_so_far preserves left-to-right emitted token history
     """
     assert isinstance(current_word, str), f"current_word must be str, got {type(current_word).__name__}"
-    assert_token_list(result, "build_context.result")
+    assert_word_list(result, "build_context.result")
     pos = get_pos(current_word, lookup, eng_lookup)
     prev = result[-1] if result else None
     prev_pos = get_pos(prev, lookup, eng_lookup) if prev else set()
@@ -789,7 +762,7 @@ def dedupe_function_words(words, lookup, eng_lookup):
     - removes only adjacent duplicates for selected function words
     - does not collapse content-word repetition
     """
-    assert_token_list(words, "dedupe_function_words input")
+    assert_word_list(words, "dedupe_function_words input")
     result = []
     prev = None
 
@@ -976,7 +949,7 @@ def insert_articles(words, lookup, eng_lookup):
     - fully understand multi-clause boundaries
     - perform deep noun-phrase analysis
     """
-    assert_token_list(words, "insert_articles input")
+    assert_word_list(words, "insert_articles input")
 
     result = []
     seen_verb = False
@@ -1075,7 +1048,7 @@ def fix_determiners(words, lookup, eng_lookup):
     - converts 'I noun' -> 'my noun' in clearly possessive environments
     - does not override clear subject uses of 'I'
     """
-    assert_token_list(words, "fix_determiners input")
+    assert_word_list(words, "fix_determiners input")
     result = []
 
     for i, w in enumerate(words):
@@ -1120,7 +1093,7 @@ def collapse_repeated_pronouns(words, lookup, eng_lookup):
     - collapses repeated 'I' / 'me'
     - leaves non-pronoun repetition alone
     """
-    assert_token_list(words, "collapse_repeated_pronouns input")
+    assert_word_list(words, "collapse_repeated_pronouns input")
     result = []
     prev = None
 
@@ -1140,7 +1113,7 @@ def collapse_repeated_pronouns(words, lookup, eng_lookup):
 
 def clean(word):
     """
-    Clean a raw token while preserving internal ! markers used by Zamgrh words.
+    Clean a raw word while preserving internal ! markers used by Zamgrh words.
     """
     assert isinstance(word, str), f"word must be str, got {type(word).__name__}"
     word = word.lower()
@@ -1155,7 +1128,7 @@ def grammar_postprocess(text, debug=False):
 
     Guarantees:
     - expands 'not' -> 'do not'
-    - capitalizes the first output token if present
+    - capitalizes the first output word if present
     """
     assert isinstance(text, str), f"text must be str, got {type(text).__name__}"
     words = text.split()
@@ -1337,9 +1310,9 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=0):
     return sentence
 
 
-def is_plural_subject_token(word, features):
+def is_plural_subject_word(word, features):
     """
-    Detect whether a subject token should be treated as plural.
+    Detect whether a subject word should be treated as plural.
     """
     if has_s_suffix(features):
         return True
