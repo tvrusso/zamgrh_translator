@@ -258,6 +258,12 @@ def question_postprocess(text, structure, original_text):
 
     return text if text.endswith("?") else text + "?"
 
+def is_going_to_sequence(words, i):
+    if i + 2 < len(words) and words[i+1] == "going" and words[i+2] == "to":
+        return 2
+    if i + 1 < len(words) and words[i+1] == "going to":
+        return 1
+    return 0
 
 def fix_am_progressive(words, lookup, eng_lookup, tokens=None):
     """
@@ -276,8 +282,9 @@ def fix_am_progressive(words, lookup, eng_lookup, tokens=None):
 
     while i < len(words):
         w = words[i]
-        if w == "I" and i + 2 < len(words):
-            if words[i + 1] == "going" and words[i + 2] == "to":
+        if w == "I":
+            span = is_going_to_sequence(words, i)
+            if span:
                 result.append("I")
                 result.append("am")
                 i += 1
@@ -1292,15 +1299,13 @@ def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
             gloss = f"[{raw}]"
             pos = set()
 
-        gloss_words = gloss.split()
-        for gw in gloss_words:
-            tokens.append({
-                "raw": raw,
-                "word": gw,
-                "base": base,
-                "pos": pos,
-                "features": dict(features),
-            })
+        tokens.append({
+            "raw": raw,
+            "word": gloss,
+            "base": base,
+            "pos": pos,
+            "features": dict(features),
+        })
 
     return tokens
 
@@ -1324,11 +1329,9 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=0):
     is_question = text.strip().endswith("?")
 
     tokens = zamgrh_to_gloss_tokens(text, lookup, eng_lookup)
-    out = [t["word"] for t in tokens]
+    words = [t["word"] for t in tokens]
 
-    sentence = " ".join(out)
-    words = sentence.split()
-    words = apply_grammar_pipeline(words, lookup, eng_lookup, debug=debug)
+    words = apply_grammar_pipeline(words, lookup, eng_lookup, tokens=tokens, debug=debug)
     sentence = " ".join(words)
     sentence = grammar_postprocess(sentence, debug=debug)
 
