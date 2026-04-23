@@ -709,15 +709,12 @@ def handle_copula_late(context):
     previous_word = context.get("prev")
     subject_token = context.get("context_subject_token")
 
-    # 1. Strong local rule
     if previous_word == "I":
         return "am", True
 
-    # 2. Morphology (Story B)
     if subject_token and has_s_suffix(subject_token["features"]):
         return "are", True
 
-    # 3. Fallback to legacy logic
     has_subject, is_third_person = detect_subject(context)
     if not has_subject:
         return word, False
