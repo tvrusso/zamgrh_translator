@@ -264,6 +264,7 @@ TEST_GROUPS = {
     "grammar": [
         ("!z raam azza !nn?", "Is a room at the inn?"),
         ("barg bra!nz", "Eat brains"),
+        ("barg!ng bra!nz !z n!z","Eating brains is nice"),
         ("flarghz foo !z bah", "[flarghz] [foo] are bad"),
         ("g!b bra!nz", "Give brains"),
         ("g!b gaa bra!nz", "Give you brains"),

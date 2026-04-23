@@ -619,6 +619,19 @@ def find_subject_head(context):
 
         if "noun" in pos:
             candidate = word
+
+            # check if this noun is governed by a gerund
+            if idx - 1 >= 0:
+                prev_word = words[idx - 1]
+                prev_token = find_token_for_word(prev_word, tokens)
+                prev_pos = get_pos(prev_word, lookup, eng_lookup)
+                prev_pos = apply_ing_override(prev_word, prev_token, prev_pos)
+
+                if "verb" in prev_pos:
+                    if (prev_token and has_ing_suffix(prev_token["features"])) or prev_word.endswith("ing"):
+                        candidate = prev_word  # promote gerund
+            idx -= 1
+            continue
         elif word in SUBJECT_PRONOUNS:
             if candidate is None:
                 candidate = word
