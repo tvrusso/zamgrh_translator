@@ -554,6 +554,23 @@ def build_context(current_word, result, lookup, eng_lookup, tokens=None):
 
     return the_context
 
+def apply_ing_override(word, token, pos):
+    """
+    return "verb" as the pos if we've got a word that has an "ing" suffix
+    that was either:
+      - recognized as a verb with suffix already
+      - unrecognized and has "ing" at the end
+    Otherwise return the pos passed in
+    """
+    is_ing = ((token and has_ing_suffix(token["features"]))
+              or (len(pos) == 0 and word.endswith("ing")))
+
+    if is_ing:
+        retpos = {"verb"}
+    else:
+        retpos = pos
+    return retpos
+
 def find_subject_head(context):
     """
     Owns: local subject-head discovery for agreement.
@@ -570,26 +587,22 @@ def find_subject_head(context):
     eng_lookup = context["eng_lookup"]
     idx = len(words) - 1
     candidate = None
+    tokens = context.get("context_tokens")
 
     while idx >= 0:
         word = words[idx]
         pos = get_pos(word, lookup, eng_lookup)
 
-        if len(pos) == 0 and word.endswith("ing"):
-            pos = {"verb"}
+        token = find_token_for_word(word, tokens)
+        pos = apply_ing_override(word, token, pos)
 
         if "aux" in pos:
             return None
 
         if "verb" in pos:
-            token = find_token_for_word(word, context.get("context_tokens"))
-
-            # Prefer morphology if available
-            if token and has_ing_suffix(token["features"]):
-                idx -= 1
-                continue
-
-            if word.endswith("ing"):
+            is_ing = ((token and has_ing_suffix(token["features"]))
+                      or word.endswith("ing"))
+            if is_ing:
                 idx -= 1
                 continue
             break
@@ -627,6 +640,7 @@ def has_compound_subject(context):
     words = context["result_so_far"]
     lookup = context["lookup"]
     eng_lookup = context["eng_lookup"]
+    tokens = context.get("context_tokens")
     idx = len(words) - 1
     seen_noun = False
     seen_and = False
@@ -638,8 +652,8 @@ def has_compound_subject(context):
         if "verb" in pos or "aux" in pos:
             break
 
-        if len(pos) == 0 and word.endswith("ing"):
-            pos = {"verb"}
+        token = find_token_for_word(word, tokens)
+        pos = apply_ing_override(word, token, pos)
 
         if "noun" in pos:
             if seen_and:
