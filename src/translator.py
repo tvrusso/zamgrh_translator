@@ -582,10 +582,23 @@ def find_subject_head(context):
             return None
 
         if "verb" in pos:
+            token = find_token_for_word(word, context.get("context_tokens"))
+
+            # Prefer morphology if available
+            if token and has_ing_suffix(token["features"]):
+                idx -= 1
+                continue
+
             if word.endswith("ing"):
                 idx -= 1
                 continue
             break
+
+        # Treat leftmost unknown with no POS as potential candidate
+        if len(pos) == 0:
+            candidate = word
+            idx -= 1
+            continue
 
         if pos & SKIP_POS:
             idx -= 1
@@ -596,6 +609,7 @@ def find_subject_head(context):
         elif word in SUBJECT_PRONOUNS:
             if candidate is None:
                 candidate = word
+            break
 
         idx -= 1
 
@@ -654,12 +668,19 @@ def handle_copula(context):
     """
     current_word = context["word"]
     previous_word = context["prev"]
-
+    subject_word = context.get("context_subject_word")
+    subject_token = context.get("context_subject_token")
     prev_token = context.get("context_previous_token")
 
     if current_word in {"is", "are", "am"}:
         if previous_word == "I":
             return "am", True
+
+        if subject_word == "I":
+            return "am", True
+
+        if subject_token and has_s_suffix(subject_token["features"]):
+            return "are", True
 
         if prev_token and has_s_suffix(prev_token["features"]):
             return "are", True
@@ -685,21 +706,26 @@ def handle_copula_late(context):
     if word not in {"is", "are", "am"}:
         return word, False
 
+    previous_word = context.get("prev")
+    subject_token = context.get("context_subject_token")
+
+    # 1. Strong local rule
+    if previous_word == "I":
+        return "am", True
+
+    # 2. Morphology (Story B)
+    if subject_token and has_s_suffix(subject_token["features"]):
+        return "are", True
+
+    # 3. Fallback to legacy logic
     has_subject, is_third_person = detect_subject(context)
     if not has_subject:
         return word, False
 
-    subject = find_subject_head(context)
-
-    if subject == "I":
-        new_word = "am"
-    elif is_third_person:
-        new_word = "is"
+    if is_third_person:
+        return "is", word != "is"
     else:
-        new_word = "are"
-
-    return new_word, (new_word != word)
-
+        return "are", word != "are"
 
 def handle_auxiliary(context):
     """

@@ -32,6 +32,8 @@ from translator import (
     inflect_verb,
     normalize_morphology,
     build_tokens_from_words,
+    find_subject_head,
+    find_token_for_word,
 )
 
 # ---------------------------
@@ -262,6 +264,7 @@ TEST_GROUPS = {
     "grammar": [
         ("!z raam azza !nn?", "Is a room at the inn?"),
         ("barg bra!nz", "Eat brains"),
+        ("flarghz foo !z bah", "[flarghz] [foo] are bad"),
         ("g!b bra!nz", "Give brains"),
         ("g!b gaa bra!nz", "Give you brains"),
         ("gaa g!b mah zambah bra!nz", "You give me brains"),
@@ -1138,7 +1141,24 @@ def run_pipeline_helper_unit_tests(verbose=False):
             context.setdefault("lookup", lookup)
             context.setdefault("eng_lookup", eng_lookup)
             context.setdefault("result_so_far", build_result_stub(context))
-
+            context.setdefault(
+                "context_subject_word",
+                find_subject_head(context)
+            )
+            context.setdefault(
+                "context_subject_token",
+                find_token_for_word(
+                    context.get("context_subject_word"),
+                    context.get("context_tokens")
+                )
+            )
+            context.setdefault(
+                "context_previous_token",
+                find_token_for_word(
+                    context.get("prev"),
+                    context.get("context_tokens")
+                )
+            )
             result = func(context)
 
             if result == expected:
@@ -1158,6 +1178,7 @@ def run_pipeline_helper_unit_tests(verbose=False):
     print(f"Helper Passed: {passed}")
     print(f"Helper Failed: {failed}")
     return failed == 0, passed, failed
+
 
 def build_result_stub(context):
     result = []
