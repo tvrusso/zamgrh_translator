@@ -565,14 +565,14 @@ def find_subject_head(context):
     - returns best-effort local subject candidate or None
     - stops scanning at verb/aux boundaries
     """
-    tokens = context["result_so_far"]
+    words = context["result_so_far"]
     lookup = context["lookup"]
     eng_lookup = context["eng_lookup"]
-    idx = len(tokens) - 1
+    idx = len(words) - 1
     candidate = None
 
     while idx >= 0:
-        word = tokens[idx]
+        word = words[idx]
         pos = get_pos(word, lookup, eng_lookup)
 
         if len(pos) == 0 and word.endswith("ing"):
@@ -610,15 +610,15 @@ def has_compound_subject(context):
     - returns True only for simple local compound-subject pattern
     - does not perform full clause parsing
     """
-    tokens = context["result_so_far"]
+    words = context["result_so_far"]
     lookup = context["lookup"]
     eng_lookup = context["eng_lookup"]
-    idx = len(tokens) - 1
+    idx = len(words) - 1
     seen_noun = False
     seen_and = False
 
     while idx >= 0:
-        word = tokens[idx]
+        word = words[idx]
         pos = get_pos(word, lookup, eng_lookup)
 
         if "verb" in pos or "aux" in pos:
