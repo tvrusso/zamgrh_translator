@@ -286,7 +286,8 @@ TEST_GROUPS = {
         ("zambahz !z bah", "Zombies are bad"),
         ("zambahz barg bra!nz", "Zombies eat brains"),
         ("zambahz maz barg bra!nz", "Zombies must eat brains"),
-        ("zambahz zmazh barragahz", "Zombies smash barricades")
+        ("zambahz zmazh barragahz", "Zombies smash barricades"),
+        ("z!z !z zah anz ahb zah rarr", "This is the end of the world")
     ],
     # =========================
     # INTERACTIONS (multi-feature)
@@ -464,7 +465,7 @@ TEST_GROUPS = {
          "No you must do not shoot zombies a headhunter"),
         ("ambra!z!ng", "Embraceing"),
         ("nah gahz g!b mah zambah bra!nz", "Do not you give me brains"),
-        ("z!z !z zah anz ahb zah rarr", "This are the end of the world")]
+    ]
  }
 
 # Format for pipeline unit tests:
