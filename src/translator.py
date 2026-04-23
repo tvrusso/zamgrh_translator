@@ -483,7 +483,7 @@ def fix_verb_agreement(words, lookup, eng_lookup, tokens=None):
     result = []
 
     for w in words:
-        context = build_context(w, result, lookup, eng_lookup)
+        context = build_context(w, result, lookup, eng_lookup, tokens)
         w, changed_word = handle_copula(context)
         result_word = w
 
@@ -509,7 +509,7 @@ def fix_verb_agreement(words, lookup, eng_lookup, tokens=None):
 # Utility functions for pipeline
 # ---------------------------
 
-def build_context(current_word, result, lookup, eng_lookup):
+def build_context(current_word, result, lookup, eng_lookup, tokens=None):
     """
     Build a context object for agreement helpers.
 
@@ -525,7 +525,17 @@ def build_context(current_word, result, lookup, eng_lookup):
     prev2 = result[-2] if len(result) > 1 else None
     prev2_pos = get_pos(prev2, lookup, eng_lookup) if prev2 else set()
 
-    return {
+    # find_subject_head does not need the full context, just these bits
+    subject_word = find_subject_head({
+        "result_so_far": result,
+        "lookup": lookup,
+        "eng_lookup": eng_lookup,
+    })
+    subject_token = find_token_for_word(subject_word, tokens)
+    current_token = find_token_for_word(current_word, tokens)
+    prev_token = find_token_for_word(prev, tokens)
+
+    the_context = {
         "word": current_word,
         "pos": pos,
         "prev": prev,
@@ -535,8 +545,14 @@ def build_context(current_word, result, lookup, eng_lookup):
         "result_so_far": result,
         "lookup": lookup,
         "eng_lookup": eng_lookup,
+        "context_tokens": tokens,
+        "context_current_token": current_token,
+        "context_previous_token": prev_token,
+        "context_subject_token": subject_token,
+        "context_subject_word": subject_word,
     }
 
+    return the_context
 
 def find_subject_head(context):
     """
@@ -639,16 +655,23 @@ def handle_copula(context):
     current_word = context["word"]
     previous_word = context["prev"]
 
+    prev_token = context.get("context_previous_token")
+
     if current_word in {"is", "are", "am"}:
         if previous_word == "I":
             return "am", True
-        elif previous_word and (previous_word.endswith("s") or previous_word in {"you", "we", "they"}):
+
+        if prev_token and has_s_suffix(prev_token["features"]):
             return "are", True
-        else:
-            return "is", True
+
+        # fallback to old logic
+        has_subject, is_third_person = detect_subject(context)
+        if has_subject and not is_third_person:
+            return "are", True
+
+        return "is", True
 
     return current_word, False
-
 
 def handle_copula_late(context):
     """
@@ -732,9 +755,20 @@ def detect_subject(context):
     if not subject:
         return False, False
 
-    is_third_person = classify_subject(subject)
+    is_third_person = classify_subject_with_context(subject, context)
     return True, is_third_person
 
+def classify_subject_with_context(word, context):
+    """
+    Enhanced subject classification using morphology when available.
+    Falls back to classify_subject.
+    """
+    token = context.get("context_subject_token")
+
+    if token and has_s_suffix(token["features"]):
+        return False  # plural → not 3rd person singular
+
+    return classify_subject(word)
 
 def classify_subject(word):
     """
@@ -1309,6 +1343,13 @@ def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
 
     return tokens
 
+def find_token_for_word(word, tokens):
+    if not tokens or not word:
+        return None
+    for t in tokens:
+        if t["word"] == word:
+            return t
+    return None
 
 def zamgrh_to_english(text, lookup, eng_lookup, debug=0):
     """
