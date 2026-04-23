@@ -628,8 +628,24 @@ def find_subject_head(context):
                 prev_pos = apply_ing_override(prev_word, prev_token, prev_pos)
 
                 if "verb" in prev_pos:
-                    if (prev_token and has_ing_suffix(prev_token["features"])) or prev_word.endswith("ing"):
-                        candidate = prev_word  # promote gerund
+                    is_ing = (
+                        (prev_token and has_ing_suffix(prev_token["features"]))
+                        or prev_word.endswith("ing")
+                    )
+                    if is_ing:
+                        # NEW: check if this is part of a larger noun phrase
+                        if idx - 2 >= 0:
+                            prev2_word = words[idx - 2]
+                            prev2_pos = get_pos(prev2_word, lookup, eng_lookup)
+
+                            if ("noun" in prev2_pos) or (prev2_word in DETERMINERS):
+                                # it's a modifier (e.g., "the eating zombies")
+                                pass
+                            else:
+                                candidate = prev_word  # promote gerund
+                        else:
+                            # start of sentence → safe to promote
+                            candidate = prev_word
             idx -= 1
             continue
         elif word in SUBJECT_PRONOUNS:

@@ -280,6 +280,7 @@ TEST_GROUPS = {
         ("nah nah g!b bra!nz", "Do not do not give brains"),
         ("nah ran nahaarh", "Do not go away"),
         ("za harman", "The human"),
+        ("zah barg!ng zambahz !z habbah","The eating zombies are happy"),
         ("zambah !z !z", "Zombie is"),
         ("zambah !z bah", "Zombie is bad"),
         ("zambah !z n!z", "Zombie is nice"),
