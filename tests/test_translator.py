@@ -281,6 +281,7 @@ TEST_GROUPS = {
         ("nah ran nahaarh", "Do not go away"),
         ("za harman", "The human"),
         ("zah barg!ng zambahz !z habbah","The eating zombies are happy"),
+        ("zah zambah barg!ng bra!nz !z habbah", "The zombie eating brains is happy"),
         ("zambah !z !z", "Zombie is"),
         ("zambah !z bah", "Zombie is bad"),
         ("zambah !z n!z", "Zombie is nice"),
@@ -290,6 +291,7 @@ TEST_GROUPS = {
         ("zambah n!z", "Zombie is nice"),
         ("zambahz !z bah", "Zombies are bad"),
         ("zambahz barg bra!nz", "Zombies eat brains"),
+        ("zambahz barg!ng bra!nz !z habbah", "Zombies eating brains are happy"),
         ("zambahz maz barg bra!nz", "Zombies must eat brains"),
         ("zambahz zmazh barragahz", "Zombies smash barricades"),
         ("z!z !z zah anz ahb zah rarr", "This is the end of the world")
