@@ -415,8 +415,7 @@ def has_future_verb(words, start_idx, lookup, eng_lookup):
 def choose_copula(prev, prev_token):
     if prev == "I":
         return "am"
-    if ((prev_token and has_s_suffix(prev_token["features"]))
-        or (prev and prev.endswith("s"))):
+    if has_plural_form(prev, prev_token):
         return "are"
     return "is"
 
@@ -623,8 +622,7 @@ def find_subject_head(context):
             return None
 
         if "verb" in pos:
-            is_ing = ((token and has_ing_suffix(token["features"]))
-                      or word.endswith("ing"))
+            is_ing = has_ing_form(word, token)
             if is_ing:
                 idx -= 1
                 continue
@@ -651,10 +649,7 @@ def find_subject_head(context):
                 prev_pos = apply_ing_override(prev_word, prev_token, prev_pos)
 
                 if "verb" in prev_pos:
-                    is_ing = (
-                        (prev_token and has_ing_suffix(prev_token["features"]))
-                        or prev_word.endswith("ing")
-                    )
+                    is_ing = has_ing_form(prev_word, prev_token)
                     if is_ing:
                         # NEW: check if this is part of a larger noun phrase
                         if idx - 2 >= 0:
@@ -959,11 +954,37 @@ def set_feature_s_suffix(features: dict):
 def has_s_suffix(features: dict):
     return "form" in features and "s" in features["form"]
 
+def has_plural_form(word, token: dict):
+    """
+    Return true if morphology has identified an "s" suffix OR there is no
+    token associated with this word and the word ends in "s"
+
+    Use "has_s_suffix" for strict observance of morphology, only use this
+    when the fallback rule is needed.
+    """
+    return ((token and "form" in token["features"]
+             and "s" in token["features"]["form"])
+            or
+            (word and word.endswith("s")))
+
 def set_feature_ing_suffix(features: dict):
     features.setdefault("form",[]).append("ing")
 
 def has_ing_suffix(features: dict):
     return "form" in features and "ing" in features["form"]
+
+def has_ing_form(word, token: dict):
+    """
+    Return true if morphology has identified an "ing" suffix OR there is no
+    token associated with this word and the word ends in "ing"
+
+    Use "has_ing_suffix" for strict observance of morphology, only use this
+    when the fallback rule is needed.
+    """
+    return ((token and "form" in token["features"]
+             and "ing" in token["features"]["form"])
+            or
+            (word and word.endswith("ing")))
 
 def normalize_morphology(word, lookup):
     """
