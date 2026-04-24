@@ -405,6 +405,21 @@ def fix_object_pronouns(words, lookup, eng_lookup, tokens=None):
     validate_pipeline_step_result(result, "fix_object_pronouns output")
     return result
 
+def has_future_verb(words, start_idx, lookup, eng_lookup):
+    for w in words[start_idx + 1:]:
+        pos = get_pos(w, lookup, eng_lookup)
+        if "verb" in pos or "aux" in pos:
+            return True
+    return False
+
+def choose_copula(prev, prev_token):
+    if prev == "I":
+        return "am"
+    if ((prev_token and has_s_suffix(prev_token["features"]))
+        or (prev and prev.endswith("s"))):
+        return "are"
+    return "is"
+
 def insert_copula(words, lookup, eng_lookup, tokens=None):
     """
     Owns: local missing-copula insertion.
@@ -428,14 +443,22 @@ def insert_copula(words, lookup, eng_lookup, tokens=None):
         if i > 0:
             prev = result[-1]
             prev_pos = get_pos(prev, lookup, eng_lookup)
+            prev_token = find_token_for_word(prev, tokens)
             is_noun = "noun" in prev_pos
             is_adj = "adj" in pos
             is_unknown = w.startswith("[")
+            token = find_token_for_word(w, tokens)
+            is_ing = token and has_ing_suffix(token["features"])
+            if (not seen_verb and is_ing
+                and not has_future_verb(words, i, lookup, eng_lookup)):
+                if prev:
+                    if "noun" in prev_pos or prev in SUBJECT_PRONOUNS:
+                        # avoid modifier case like "the eating zombies"
+                        if not (prev in DETERMINERS):
+                            result.append(choose_copula(prev,prev_token))
+                            seen_verb = True
             if not seen_verb and is_noun and is_adj and not is_unknown:
-                if prev.endswith("s"):
-                    result.append("are")
-                else:
-                    result.append("is")
+                result.append(choose_copula(prev,prev_token))
 
         result.append(w)
 
