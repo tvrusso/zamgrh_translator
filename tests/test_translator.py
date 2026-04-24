@@ -475,6 +475,7 @@ TEST_GROUPS = {
          "No you must do not shoot zombies a headhunter"),
         ("ambra!z!ng", "Embraceing"),
         ("nah gahz g!b mah zambah bra!nz", "Do not you give me brains"),
+        ("zah flargh!ng zambahz !z habbah", "The [flargh!ng] zombies is happy"),
     ]
  }
 
@@ -638,6 +639,7 @@ PIPELINE_UNIT_TESTS = {
         # gerund/verb confusion blockers
         ("The zombie eating brains eat more", "the zombie eating brains eats more"),
         ("The zombie in the house eat brains", "the zombie in the house eats brains"),
+        ("Eating brains is nice", "eating brains is nice"),
     ],
 
 }

@@ -584,8 +584,7 @@ def apply_ing_override(word, token, pos):
       - unrecognized and has "ing" at the end
     Otherwise return the pos passed in
     """
-    is_ing = ((token and has_ing_form(token["features"]))
-              or (len(pos) == 0 and word.endswith("ing")))
+    is_ing = (token and has_ing_form(token["features"]))
 
     if is_ing:
         retpos = {"verb"}
