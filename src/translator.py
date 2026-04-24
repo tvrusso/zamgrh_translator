@@ -415,7 +415,7 @@ def has_future_verb(words, start_idx, lookup, eng_lookup):
 def choose_copula(prev, prev_token):
     if prev == "I":
         return "am"
-    if has_plural_form(prev, prev_token):
+    if has_s_suffix(prev, prev_token):
         return "are"
     return "is"
 
@@ -447,7 +447,7 @@ def insert_copula(words, lookup, eng_lookup, tokens=None):
             is_adj = "adj" in pos
             is_unknown = w.startswith("[")
             token = find_token_for_word(w, tokens)
-            is_ing = token and has_ing_suffix(token["features"])
+            is_ing = token and has_ing_form(token["features"])
             if (not seen_verb and is_ing
                 and not has_future_verb(words, i, lookup, eng_lookup)):
                 if prev:
@@ -584,7 +584,7 @@ def apply_ing_override(word, token, pos):
       - unrecognized and has "ing" at the end
     Otherwise return the pos passed in
     """
-    is_ing = ((token and has_ing_suffix(token["features"]))
+    is_ing = ((token and has_ing_form(token["features"]))
               or (len(pos) == 0 and word.endswith("ing")))
 
     if is_ing:
@@ -622,7 +622,7 @@ def find_subject_head(context):
             return None
 
         if "verb" in pos:
-            is_ing = has_ing_form(word, token)
+            is_ing = has_ing_suffix(word, token)
             if is_ing:
                 idx -= 1
                 continue
@@ -649,7 +649,7 @@ def find_subject_head(context):
                 prev_pos = apply_ing_override(prev_word, prev_token, prev_pos)
 
                 if "verb" in prev_pos:
-                    is_ing = has_ing_form(prev_word, prev_token)
+                    is_ing = has_ing_suffix(prev_word, prev_token)
                     if is_ing:
                         # NEW: check if this is part of a larger noun phrase
                         if idx - 2 >= 0:
@@ -740,10 +740,10 @@ def handle_copula(context):
         if subject_word == "I":
             return "am", True
 
-        if subject_token and has_s_suffix(subject_token["features"]):
+        if subject_token and has_s_form(subject_token["features"]):
             return "are", True
 
-        if prev_token and has_s_suffix(prev_token["features"]):
+        if prev_token and has_s_form(prev_token["features"]):
             return "are", True
 
         # fallback to old logic
@@ -773,7 +773,7 @@ def handle_copula_late(context):
     if previous_word == "I":
         return "am", True
 
-    if subject_token and has_s_suffix(subject_token["features"]):
+    if subject_token and has_s_form(subject_token["features"]):
         return "are", True
 
     has_subject, is_third_person = detect_subject(context)
@@ -849,7 +849,7 @@ def classify_subject_with_context(word, context):
     """
     token = context.get("context_subject_token")
 
-    if token and has_s_suffix(token["features"]):
+    if token and has_s_form(token["features"]):
         return False  # plural → not 3rd person singular
 
     return classify_subject(word)
@@ -951,15 +951,15 @@ def validate_features(features: dict) -> None:
 def set_feature_s_suffix(features: dict):
     features.setdefault("form",[]).append("s")
 
-def has_s_suffix(features: dict):
+def has_s_form(features: dict):
     return "form" in features and "s" in features["form"]
 
-def has_plural_form(word, token: dict):
+def has_s_suffix(word, token: dict):
     """
     Return true if morphology has identified an "s" suffix OR there is no
     token associated with this word and the word ends in "s"
 
-    Use "has_s_suffix" for strict observance of morphology, only use this
+    Use "has_s_form" for strict observance of morphology, only use this
     when the fallback rule is needed.
     """
     return ((token and "form" in token["features"]
@@ -970,15 +970,15 @@ def has_plural_form(word, token: dict):
 def set_feature_ing_suffix(features: dict):
     features.setdefault("form",[]).append("ing")
 
-def has_ing_suffix(features: dict):
+def has_ing_form(features: dict):
     return "form" in features and "ing" in features["form"]
 
-def has_ing_form(word, token: dict):
+def has_ing_suffix(word, token: dict):
     """
     Return true if morphology has identified an "ing" suffix OR there is no
     token associated with this word and the word ends in "ing"
 
-    Use "has_ing_suffix" for strict observance of morphology, only use this
+    Use "has_ing_form" for strict observance of morphology, only use this
     when the fallback rule is needed.
     """
     return ((token and "form" in token["features"]
@@ -1021,7 +1021,7 @@ def normalize_morphology(word, lookup):
                 break
 
             # handle plural
-            if (not has_s_suffix(features)
+            if (not has_s_form(features)
                 and retword.endswith("z")
                 and len(retword) > 1):
                 base = retword[:-1]
@@ -1048,7 +1048,7 @@ def normalize_morphology(word, lookup):
                     continue
 
             # handle "!ng" suffix
-            if (not has_ing_suffix(features)
+            if (not has_ing_form(features)
                 and retword.endswith("!ng")
                 and len(retword) > 3):
                 base = retword[:-3]
@@ -1065,7 +1065,7 @@ def normalize_morphology(word, lookup):
 def apply_plural(word, features):
     if not word:
         return word
-    if not has_s_suffix(features):
+    if not has_s_form(features):
         return word
     if word.endswith("s"):
         return word
@@ -1395,14 +1395,14 @@ def render_gloss_with_features(gloss, features, pos):
     """
     Render a gloss using morphology-derived features.
     """
-    if has_ing_suffix(features) and has_s_suffix(features):
+    if has_ing_form(features) and has_s_form(features):
         retval = gloss + "ings"
-    elif has_s_suffix(features):
+    elif has_s_form(features):
         if gloss == "you" and "pron" in pos:
             retval = "you"
         else:
             retval = gloss + "s"
-    elif has_ing_suffix(features):
+    elif has_ing_form(features):
         retval = gloss + "ing"
     else:
         retval = gloss
@@ -1496,7 +1496,7 @@ def is_plural_subject_word(word, features):
     """
     Detect whether a subject word should be treated as plural.
     """
-    if has_s_suffix(features):
+    if has_s_form(features):
         return True
     return word in {"we", "they"}
 
@@ -1564,14 +1564,14 @@ def zamgrh_to_structure(text, lookup, eng_lookup):
             has_explicit_subject = True
             if t["word"] in {"we", "they"}:
                 structure["plural"] = True
-            elif t["word"] == "you" and has_s_suffix(t["features"]):
+            elif t["word"] == "you" and has_s_form(t["features"]):
                 structure["plural"] = True
             break
 
         if "noun" in t["pos"]:
             structure["subject"] = apply_plural(t["word"],t["features"])
             has_explicit_subject = True
-            if has_s_suffix(t["features"]):
+            if has_s_form(t["features"]):
                 structure["plural"] = True
             break
 
