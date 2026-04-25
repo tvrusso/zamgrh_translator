@@ -640,6 +640,9 @@ PIPELINE_UNIT_TESTS = {
         ("The zombie eating brains eat more", "the zombie eating brains eats more"),
         ("The zombie in the house eat brains", "the zombie in the house eats brains"),
         ("Eating brains is nice", "eating brains is nice"),
+        # test of POS guard in classify_subject_with_context
+        ("Runs is good", "runs is good"),
+        ("Is runs good", "is runs good"),
     ],
 
 }
