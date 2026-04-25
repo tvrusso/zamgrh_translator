@@ -178,7 +178,6 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, tokens=None, debug=False):
     # tokens must align 1:1 with words on input, though the pipeline
     # in its current form might change that.  This is temporary technical
     # debt.
-    # If not provided, a shim is constructed.
     # Real Zamgrh-derived tokens are not yet passed here due to
     # known multi-word gloss alignment issues.
 
