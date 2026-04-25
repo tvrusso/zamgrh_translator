@@ -921,8 +921,12 @@ def classify_subject_with_context(word, context):
     """
     token = context.get("context_subject_token")
 
-    if token and has_s_form(token["features"]):
-        return False  # plural → not 3rd person singular
+    if token:
+        if has_s_form(token["features"]):
+            return False  # plural → not 3rd person singular
+        pos = token.get("pos", set())
+        if "noun" not in pos:
+            return classify_subject(word)
 
     return classify_subject(word)
 
