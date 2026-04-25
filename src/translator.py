@@ -168,12 +168,6 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, tokens=None, debug=False):
     - 1: show only steps that changed the token stream
     - 2: show every step, including unchanged ones
 
-    TOKEN CONTRACT (Updated)
-    ------------------------
-    - tokens must align 1:1 with words at all times
-    - if tokens are not provided, a shim is constructed
-    - tokens are rebuilt after each step to maintain alignment
-    - this ensures downstream steps always receive valid tokens
     """
 
     # --- Input validation ---
