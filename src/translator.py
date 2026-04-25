@@ -928,11 +928,11 @@ def classify_subject_with_context(word, context):
             return False  # plural → not 3rd person singular
         pos = token.get("pos", set())
         if "noun" not in pos:
-            return classify_subject(word)
+            return classify_subject(word, token)
 
     return classify_subject(word)
 
-def classify_subject(word):
+def classify_subject(word, token=None):
     """
     Classify whether a subject should trigger third-person singular agreement.
     """
@@ -940,7 +940,7 @@ def classify_subject(word):
         return True
     if word in {"I", "you", "we", "they"}:
         return False
-    if word.endswith("s"):
+    if not token and  word.endswith("s"):
         return False
     return True
 
@@ -966,8 +966,12 @@ def inflect_verb(context):
     word = context["word"]
     is_third_person = context.get("is_third_person")
 
+    token = context.get("context_current_token")
+    features = token["features"] if token else {}
+    has_s = has_s_suffix(word, token)
+
     if is_third_person:
-        if not word.endswith("s"):
+        if not has_s:
             if word.endswith("y"):
                 word = word[:-1] + "ies"
             elif word.endswith(("s", "sh", "ch", "x", "z", "o")):
@@ -975,12 +979,13 @@ def inflect_verb(context):
             else:
                 word = word + "s"
     else:
-        if word.endswith("ies"):
-            word = word[:-3] + "y"
-        elif word.endswith("es") and word[:-2].endswith(("s", "sh", "ch", "x", "z", "o")):
-            word = word[:-2]
-        elif word.endswith("s"):
-            word = word[:-1]
+        if has_s:
+            if word.endswith("ies"):
+                word = word[:-3] + "y"
+            elif word.endswith("es") and word[:-2].endswith(("s", "sh", "ch", "x", "z", "o")):
+                word = word[:-2]
+            elif word.endswith("s"):
+                word = word[:-1]
 
     return word, (word != context["word"])
 
