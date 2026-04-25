@@ -883,6 +883,54 @@ HELPER_UNIT_TESTS = {
             {"word": "eat", "is_third_person": True, "has_subject": False, "has_aux": False},
             ("eats", True)
         ),
+        # token forces plural
+        (
+            {
+                "word": "eat",
+                "is_third_person": False,
+                "context_current_token": {
+                    "features": {"form": ["s"]},
+                    "pos": {"verb"}
+                }
+            },
+            ("eat", False)
+        ),
+        # token forces singular
+        (
+            {
+                "word": "eats",
+                "is_third_person": True,
+                "context_current_token": {
+                    "features": {"form": []},  # no plural marker
+                    "pos": {"verb"}
+                }
+            },
+            ("eats", False)  # already correct, but confirms no stripping
+        ),
+        # deinflect despite "s"
+        (
+            {
+                "word": "eats",
+                "is_third_person": False,
+                "context_current_token": {
+                    "features": {"form": []},
+                    "pos": {"verb"}
+                }
+            },
+            ("eat", True)
+        ),
+        # given no s on verb, is it correctly inflected as third person?
+        (
+            {
+                "word": "eat",  # no "s"
+                "is_third_person": True,
+                "context_current_token": {
+                    "features": {"form": ["s"]},  # plural → should BLOCK inflection
+                    "pos": {"verb"}
+                }
+            },
+            ("eat", False)
+        ),
     ],
     "detect_auxiliary": [
         (   # he must eat

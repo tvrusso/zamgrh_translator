@@ -928,11 +928,11 @@ def classify_subject_with_context(word, context):
             return False  # plural → not 3rd person singular
         pos = token.get("pos", set())
         if "noun" not in pos:
-            return classify_subject(word)
+            return classify_subject(word, token)
 
     return classify_subject(word)
 
-def classify_subject(word):
+def classify_subject(word, token=None):
     """
     Classify whether a subject should trigger third-person singular agreement.
     """
@@ -940,7 +940,7 @@ def classify_subject(word):
         return True
     if word in {"I", "you", "we", "they"}:
         return False
-    if word.endswith("s"):
+    if not token and  word.endswith("s"):
         return False
     return True
 
@@ -966,8 +966,12 @@ def inflect_verb(context):
     word = context["word"]
     is_third_person = context.get("is_third_person")
 
+    token = context.get("context_current_token")
+    features = token["features"] if token else {}
+    has_s = has_s_suffix(word, token)
+
     if is_third_person:
-        if not word.endswith("s"):
+        if not has_s:
             if word.endswith("y"):
                 word = word[:-1] + "ies"
             elif word.endswith(("s", "sh", "ch", "x", "z", "o")):
@@ -975,12 +979,13 @@ def inflect_verb(context):
             else:
                 word = word + "s"
     else:
-        if word.endswith("ies"):
-            word = word[:-3] + "y"
-        elif word.endswith("es") and word[:-2].endswith(("s", "sh", "ch", "x", "z", "o")):
-            word = word[:-2]
-        elif word.endswith("s"):
-            word = word[:-1]
+        if has_s:
+            if word.endswith("ies"):
+                word = word[:-3] + "y"
+            elif word.endswith("es") and word[:-2].endswith(("s", "sh", "ch", "x", "z", "o")):
+                word = word[:-2]
+            elif word.endswith("s"):
+                word = word[:-1]
 
     return word, (word != context["word"])
 
@@ -1213,7 +1218,10 @@ def insert_articles(words, lookup, eng_lookup, tokens=None):
     consumed_object = False
 
     for i, w in enumerate(words):
-        pos = get_pos(w, lookup, eng_lookup)
+        token = find_token_for_word(w, tokens)
+        token_pos = set(token["pos"]) if token else set()
+        fallback_pos = get_pos(w, lookup, eng_lookup)
+        pos = token_pos | fallback_pos
 
         # --- PRONOUN GUARD ---
         if w in SUBJECT_PRONOUNS:
@@ -1221,7 +1229,8 @@ def insert_articles(words, lookup, eng_lookup, tokens=None):
             continue
 
         is_noun = "noun" in pos
-        is_verb = "verb" in pos or "aux" in pos
+        is_ing = token and has_ing_form(token.get("features", {}))
+        is_verb = ("verb" in pos or "aux" in pos) and not is_ing
         is_pure_noun = (
             is_noun
             and not is_verb
@@ -1250,7 +1259,7 @@ def insert_articles(words, lookup, eng_lookup, tokens=None):
             and i > 0
             and result
             and result[-1] == "to"
-            and not w.endswith("s")
+            and not has_s_suffix(w, token)
             and not next_is_noun
         )
 
@@ -1259,12 +1268,15 @@ def insert_articles(words, lookup, eng_lookup, tokens=None):
             and seen_verb
             and not consumed_object
             and not next_is_noun
-            and not w.endswith("s")
+            and not has_s_suffix(w, token)
         )
 
         if should_article_as_object or should_article_after_to:
             prev = result[-1] if result else None
-            prev_pos = get_pos(prev, lookup, eng_lookup) if prev else set()
+            prev_token = find_token_for_word(prev, tokens)
+            prev_token_pos = set(prev_token["pos"]) if prev_token else set()
+            prev_fallback_pos = get_pos(prev, lookup, eng_lookup) if prev else set()
+            prev_pos = prev_token_pos | prev_fallback_pos
 
             # If the previous token looks like a local modifier, insert the
             # article before that modifier so we get "a big brain" instead of
@@ -1284,7 +1296,7 @@ def insert_articles(words, lookup, eng_lookup, tokens=None):
 
             if prev_is_modifier:
                 result.insert(len(result) - 1, article)
-            elif prev not in DETERMINERS:
+            elif "det" not in prev_pos:
                 result.append(article)
 
             consumed_object = True
