@@ -887,6 +887,8 @@ def handle_main_verb(context):
     context["has_aux"] = detect_auxiliary(context)
 
     if context["has_aux"]:
+        if not context["has_subject"] and context["prev"] == "is":
+            return context["word"], False
         context["is_third_person"] = False
         return inflect_verb(context)
 
