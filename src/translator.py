@@ -117,6 +117,8 @@ def build_tokens_from_words(words, eng_lookup):
     - features is always an empty dict
     - pos is best-effort from lookup (if available)
     """
+    assert_word_list(words, "build_tokens_from_words input")
+
     tokens = []
     for w in words:
         pos = eng_lookup.get(w.lower(), set())
@@ -127,6 +129,7 @@ def build_tokens_from_words(words, eng_lookup):
             "pos": set(pos),
             "features": {},
         })
+
     return tokens
 
 def apply_grammar_pipeline(words, lookup, eng_lookup, tokens=None, debug=False):
@@ -164,20 +167,21 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, tokens=None, debug=False):
     - 0: no debug output
     - 1: show only steps that changed the token stream
     - 2: show every step, including unchanged ones
+
+    TOKEN CONTRACT (Updated)
+    ------------------------
+    - tokens must align 1:1 with words at all times
+    - if tokens are not provided, a shim is constructed
+    - tokens are rebuilt after each step to maintain alignment
+    - this ensures downstream steps always receive valid tokens
     """
+
+    # --- Input validation ---
     assert_word_list(words, "pipeline input")
     assert_lookup_shapes(lookup, eng_lookup)
     assert_unknown_word_shape(words, "pipeline input")
 
-    # tokens must align 1:1 with words.
-    # If not provided, a shim is constructed.
-    # Real Zamgrh-derived tokens are not yet passed here due to
-    # known multi-word gloss alignment issues.
-    if tokens is None:
-        tokens = build_tokens_from_words(words, eng_lookup)
-
-    assert len(tokens) == len(words), "tokens must align with words"
-
+    # --- Define pipeline steps ---
     PIPELINE = [
         ("resolve_hab_ambiguity", resolve_hab_ambiguity),
         ("simplify_subject", simplify_subject),
@@ -193,29 +197,37 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, tokens=None, debug=False):
         ("fix_verb_agreement", fix_verb_agreement),
     ]
 
+    # --- Helper for debug rendering ---
     def render(words):
         return " ".join(words) if words else "<empty>"
 
+    # --- Debug: initial state ---
     if debug:
         print("\n=== DEBUG: GRAMMAR PIPELINE ===")
-        print(f"[INPUT]")
+        print("[INPUT]")
         print(f"  words: {render(words)}")
 
+    # --- Run pipeline ---
     for name, step in PIPELINE:
         before = list(words)
+
+        # Apply step with current words + tokens
         words = step(words, lookup, eng_lookup, tokens=tokens)
 
+        # Validate output integrity
         validate_pipeline_step_result(words, f"{name} output")
+        assert_unknown_word_shape(words, f"{name} output")
 
+        # --- Debug output ---
         changed = before != words
         should_print = (debug >= 2) or (debug >= 1 and changed)
-
         if should_print:
             print(f"\n[STEP] {name}")
             print(f"  input:   {render(before)}")
             print(f"  output:  {render(words)}")
             print(f"  status:  {'CHANGED' if changed else 'unchanged'}")
 
+    # --- Debug: final state ---
     if debug:
         print("\n[FINAL]")
         print(f"  words: {render(words)}")
@@ -405,11 +417,14 @@ def fix_object_pronouns(words, lookup, eng_lookup, tokens=None):
     validate_pipeline_step_result(result, "fix_object_pronouns output")
     return result
 
-def has_future_verb(words, start_idx, lookup, eng_lookup):
+def has_future_verb(words, start_idx, lookup, eng_lookup, tokens=None):
     for w in words[start_idx + 1:]:
-        pos = get_pos(w, lookup, eng_lookup)
+        token = find_token_for_word(w, tokens)
+        pos = set(token["pos"]) if token else get_pos(w, lookup, eng_lookup)
+
         if "verb" in pos or "aux" in pos:
             return True
+
     return False
 
 def choose_copula(prev, prev_token):
@@ -428,42 +443,59 @@ def insert_copula(words, lookup, eng_lookup, tokens=None):
 
     Guarantees:
     - inserts 'is/are' between noun + adjective when no earlier verb was seen
+    - inserts auxiliary before progressive -ing predicates when safe
     - does not handle full clause repair or late agreement decisions
+    - prefers token POS when available, falls back to lookup
     """
     assert_word_list(words, "insert_copula input")
+
     result = []
     seen_verb = False
 
     for i, w in enumerate(words):
-        pos = get_pos(w, lookup, eng_lookup)
-        if "verb" in pos or "aux" in pos:
+        # Token-first POS
+        token = find_token_for_word(w, tokens)
+        pos = set(token["pos"]) if token else get_pos(w, lookup, eng_lookup)
+        is_ing = token and has_ing_form(token["features"])
+
+        if ("verb" in pos or "aux" in pos) and not is_ing:
             seen_verb = True
 
         if i > 0:
             prev = result[-1]
-            prev_pos = get_pos(prev, lookup, eng_lookup)
+
             prev_token = find_token_for_word(prev, tokens)
+            prev_pos = (
+                set(prev_token["pos"])
+                if prev_token
+                else get_pos(prev, lookup, eng_lookup)
+            )
+
             is_noun = "noun" in prev_pos
             is_adj = "adj" in pos
             is_unknown = w.startswith("[")
-            token = find_token_for_word(w, tokens)
             is_ing = token and has_ing_form(token["features"])
-            if (not seen_verb and is_ing
-                and not has_future_verb(words, i, lookup, eng_lookup)):
-                if prev:
-                    if "noun" in prev_pos or prev in SUBJECT_PRONOUNS:
-                        # avoid modifier case like "the eating zombies"
-                        if not (prev in DETERMINERS):
-                            result.append(choose_copula(prev,prev_token))
-                            seen_verb = True
+
+            # Progressive auxiliary insertion (e.g., "I reporting" → "I am reporting")
+            if (
+                not seen_verb
+                and is_ing
+                and not has_future_verb(words, i, lookup, eng_lookup, tokens)
+            ):
+                if "noun" in prev_pos or prev in SUBJECT_PRONOUNS:
+                    # Avoid modifier case like "the eating zombies"
+                    if prev not in DETERMINERS:
+                        result.append(choose_copula(prev, prev_token))
+                        seen_verb = True
+
+            # Noun + adjective copula insertion
             if not seen_verb and is_noun and is_adj and not is_unknown:
-                result.append(choose_copula(prev,prev_token))
+                result.append(choose_copula(prev, prev_token))
 
         result.append(w)
 
     validate_pipeline_step_result(result, "insert_copula output")
     return result
-
 
 def fix_prepositions(words, lookup, eng_lookup, tokens=None):
     """
@@ -517,6 +549,9 @@ def fix_verb_agreement(words, lookup, eng_lookup, tokens=None):
                 w, changed_word = handle_main_verb(context)
                 result_word = w
 
+        
+        # Only update word here; late copula correction depends on subject/prev context,
+        # not current-token morphology.
         # Late copula correction is intentional:
         # fix_verb_agreement is the final authority on agreement.
         context["word"] = result_word
@@ -538,26 +573,51 @@ def build_context(current_word, result, lookup, eng_lookup, tokens=None):
     Guarantees:
     - returns a dict with word/POS/previous-token information
     - result_so_far preserves left-to-right emitted token history
+    - tokens are passed through to subject-head discovery
+    - prefers token POS when available, falls back to lookup POS
     """
-    assert isinstance(current_word, str), f"current_word must be str, got {type(current_word).__name__}"
+    assert isinstance(current_word, str), (
+        f"current_word must be str, got {type(current_word).__name__}"
+    )
     assert_word_list(result, "build_context.result")
-    pos = get_pos(current_word, lookup, eng_lookup)
-    prev = result[-1] if result else None
-    prev_pos = get_pos(prev, lookup, eng_lookup) if prev else set()
-    prev2 = result[-2] if len(result) > 1 else None
-    prev2_pos = get_pos(prev2, lookup, eng_lookup) if prev2 else set()
 
-    # find_subject_head does not need the full context, just these bits
+    current_token = find_token_for_word(current_word, tokens)
+    pos = (
+        set(current_token["pos"])
+        if current_token
+        else get_pos(current_word, lookup, eng_lookup)
+    )
+
+    prev = result[-1] if result else None
+    prev_token = find_token_for_word(prev, tokens)
+    prev_pos = (
+        set(prev_token["pos"])
+        if prev_token
+        else get_pos(prev, lookup, eng_lookup)
+        if prev
+        else set()
+    )
+
+    prev2 = result[-2] if len(result) > 1 else None
+    prev2_token = find_token_for_word(prev2, tokens)
+    prev2_pos = (
+        set(prev2_token["pos"])
+        if prev2_token
+        else get_pos(prev2, lookup, eng_lookup)
+        if prev2
+        else set()
+    )
+
     subject_word = find_subject_head({
         "result_so_far": result,
         "lookup": lookup,
         "eng_lookup": eng_lookup,
+        "context_tokens": tokens,
     })
-    subject_token = find_token_for_word(subject_word, tokens)
-    current_token = find_token_for_word(current_word, tokens)
-    prev_token = find_token_for_word(prev, tokens)
 
-    the_context = {
+    subject_token = find_token_for_word(subject_word, tokens)
+
+    return {
         "word": current_word,
         "pos": pos,
         "prev": prev,
@@ -573,8 +633,6 @@ def build_context(current_word, result, lookup, eng_lookup, tokens=None):
         "context_subject_token": subject_token,
         "context_subject_word": subject_word,
     }
-
-    return the_context
 
 def apply_ing_override(word, token, pos):
     """
@@ -595,34 +653,33 @@ def apply_ing_override(word, token, pos):
 def find_subject_head(context):
     """
     Owns: local subject-head discovery for agreement.
-
     Expects:
     - helper context produced by build_context
-
     Guarantees:
     - returns best-effort local subject candidate or None
     - stops scanning at verb/aux boundaries
+    - prefers token POS when available, falls back to lookup POS
     """
     words = context["result_so_far"]
     lookup = context["lookup"]
     eng_lookup = context["eng_lookup"]
+    tokens = context.get("context_tokens")
+
     idx = len(words) - 1
     candidate = None
-    tokens = context.get("context_tokens")
 
     while idx >= 0:
         word = words[idx]
-        pos = get_pos(word, lookup, eng_lookup)
 
         token = find_token_for_word(word, tokens)
+        pos = set(token["pos"]) if token else get_pos(word, lookup, eng_lookup)
         pos = apply_ing_override(word, token, pos)
 
         if "aux" in pos:
             return None
 
         if "verb" in pos:
-            is_ing = has_ing_suffix(word, token)
-            if is_ing:
+            if has_ing_suffix(word, token):
                 idx -= 1
                 continue
             break
@@ -640,31 +697,40 @@ def find_subject_head(context):
         if "noun" in pos:
             candidate = word
 
-            # check if this noun is governed by a gerund
+            # Check if this noun is governed by a gerund.
             if idx - 1 >= 0:
                 prev_word = words[idx - 1]
                 prev_token = find_token_for_word(prev_word, tokens)
-                prev_pos = get_pos(prev_word, lookup, eng_lookup)
+                prev_pos = (
+                    set(prev_token["pos"])
+                    if prev_token
+                    else get_pos(prev_word, lookup, eng_lookup)
+                )
                 prev_pos = apply_ing_override(prev_word, prev_token, prev_pos)
 
-                if "verb" in prev_pos:
-                    is_ing = has_ing_suffix(prev_word, prev_token)
-                    if is_ing:
-                        # NEW: check if this is part of a larger noun phrase
-                        if idx - 2 >= 0:
-                            prev2_word = words[idx - 2]
-                            prev2_pos = get_pos(prev2_word, lookup, eng_lookup)
+                if "verb" in prev_pos and has_ing_suffix(prev_word, prev_token):
+                    # Check if this is part of a larger noun phrase.
+                    if idx - 2 >= 0:
+                        prev2_word = words[idx - 2]
+                        prev2_token = find_token_for_word(prev2_word, tokens)
+                        prev2_pos = (
+                            set(prev2_token["pos"])
+                            if prev2_token
+                            else get_pos(prev2_word, lookup, eng_lookup)
+                        )
 
-                            if ("noun" in prev2_pos) or (prev2_word in DETERMINERS):
-                                # it's a modifier (e.g., "the eating zombies")
-                                pass
-                            else:
-                                candidate = prev_word  # promote gerund
+                        if ("noun" in prev2_pos) or (prev2_word in DETERMINERS):
+                            # Modifier, e.g. "the eating zombies"
+                            pass
                         else:
-                            # start of sentence → safe to promote
                             candidate = prev_word
+                    else:
+                        # Start of sentence → safe to promote gerund.
+                        candidate = prev_word
+
             idx -= 1
             continue
+
         elif word in SUBJECT_PRONOUNS:
             if candidate is None:
                 candidate = word
@@ -674,7 +740,6 @@ def find_subject_head(context):
 
     return candidate
 
-
 def has_compound_subject(context):
     """
     Owns: narrow detection of noun ... and ... noun compound subjects.
@@ -682,29 +747,32 @@ def has_compound_subject(context):
     Guarantees:
     - returns True only for simple local compound-subject pattern
     - does not perform full clause parsing
+    - prefers token POS when available, falls back to lookup
     """
     words = context["result_so_far"]
     lookup = context["lookup"]
     eng_lookup = context["eng_lookup"]
     tokens = context.get("context_tokens")
+
     idx = len(words) - 1
     seen_noun = False
     seen_and = False
 
     while idx >= 0:
         word = words[idx]
-        pos = get_pos(word, lookup, eng_lookup)
+
+        token = find_token_for_word(word, tokens)
+        pos = set(token["pos"]) if token else get_pos(word, lookup, eng_lookup)
+        pos = apply_ing_override(word, token, pos)
 
         if "verb" in pos or "aux" in pos:
             break
-
-        token = find_token_for_word(word, tokens)
-        pos = apply_ing_override(word, token, pos)
 
         if "noun" in pos:
             if seen_and:
                 return True
             seen_noun = True
+
         elif word == "and":
             if seen_noun:
                 seen_and = True
@@ -712,7 +780,6 @@ def has_compound_subject(context):
         idx -= 1
 
     return False
-
 
 # ---------------------------
 # fix_verb_agreement helper functions
@@ -808,6 +875,10 @@ def handle_main_verb(context):
     - forces base form after auxiliaries
     """
     if "verb" not in context["pos"]:
+        return context["word"], False
+
+    current_token = context.get("context_current_token")
+    if current_token and has_ing_form(current_token["features"]):
         return context["word"], False
 
     context["has_subject"], context["is_third_person"] = detect_subject(context)
