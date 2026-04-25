@@ -1218,7 +1218,10 @@ def insert_articles(words, lookup, eng_lookup, tokens=None):
     consumed_object = False
 
     for i, w in enumerate(words):
-        pos = get_pos(w, lookup, eng_lookup)
+        token = find_token_for_word(w, tokens)
+        token_pos = set(token["pos"]) if token else set()
+        fallback_pos = get_pos(w, lookup, eng_lookup)
+        pos = token_pos | fallback_pos
 
         # --- PRONOUN GUARD ---
         if w in SUBJECT_PRONOUNS:
@@ -1226,7 +1229,8 @@ def insert_articles(words, lookup, eng_lookup, tokens=None):
             continue
 
         is_noun = "noun" in pos
-        is_verb = "verb" in pos or "aux" in pos
+        is_ing = token and has_ing_form(token.get("features", {}))
+        is_verb = ("verb" in pos or "aux" in pos) and not is_ing
         is_pure_noun = (
             is_noun
             and not is_verb
@@ -1255,7 +1259,7 @@ def insert_articles(words, lookup, eng_lookup, tokens=None):
             and i > 0
             and result
             and result[-1] == "to"
-            and not w.endswith("s")
+            and not has_s_suffix(w, token)
             and not next_is_noun
         )
 
@@ -1264,12 +1268,15 @@ def insert_articles(words, lookup, eng_lookup, tokens=None):
             and seen_verb
             and not consumed_object
             and not next_is_noun
-            and not w.endswith("s")
+            and not has_s_suffix(w, token)
         )
 
         if should_article_as_object or should_article_after_to:
             prev = result[-1] if result else None
-            prev_pos = get_pos(prev, lookup, eng_lookup) if prev else set()
+            prev_token = find_token_for_word(prev, tokens)
+            prev_token_pos = set(prev_token["pos"]) if prev_token else set()
+            prev_fallback_pos = get_pos(prev, lookup, eng_lookup) if prev else set()
+            prev_pos = prev_token_pos | prev_fallback_pos
 
             # If the previous token looks like a local modifier, insert the
             # article before that modifier so we get "a big brain" instead of
@@ -1289,7 +1296,7 @@ def insert_articles(words, lookup, eng_lookup, tokens=None):
 
             if prev_is_modifier:
                 result.insert(len(result) - 1, article)
-            elif prev not in DETERMINERS:
+            elif "det" not in prev_pos:
                 result.append(article)
 
             consumed_object = True
