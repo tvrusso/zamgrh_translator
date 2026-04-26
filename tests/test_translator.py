@@ -541,9 +541,17 @@ PIPELINE_UNIT_TESTS = {
     ],
     "insert_copula": [
         ("zombie bad", "zombie is bad"),
-        ("zombies bad", "zombies are bad"),
+        ("zombies bad", "zombies are bad",
+         {
+             "zombies": {"pos": {"noun"}, "features": {"form": ["s"]}}
+         }
+         ),
         ("human nice", "human is nice"),
-        ("brains nice", "brains are nice"),
+        ("brains nice", "brains are nice",
+         {
+             "brains": {"pos": {"noun"}, "features": {"form": ["s"]}}
+         }
+         ),
         ("zombie is bad", "zombie is bad"),
         ("zombie eat bad", "zombie eat bad"),
         ("[flargh] bad", "flargh bad"),
@@ -641,7 +649,7 @@ PIPELINE_UNIT_TESTS = {
         ("The zombie in the house eat brains", "the zombie in the house eats brains"),
         ("Eating brains is nice", "eating brains is nice"),
         # test of POS guard in classify_subject_with_context
-        ("Runs is good", "runs is good"),
+        ("Runs is good", "runs are good"),
         ("Is runs good", "is runs good"),
     ],
 
@@ -764,8 +772,12 @@ HELPER_UNIT_TESTS = {
         (
             {"word":"try","pos":{"verb"},
              "prev":"he","prev_pos":set(),
-             "prev2":None,"prev2_pos":set()},
-            ("tries", True)
+             "prev2":None,"prev2_pos":set(),
+             "token_overrides": {
+                 "try": {"pos": {"verb"}, "features": {"form": []}},
+                 "he": {"pos": {"pronoun"}, "features": {}}
+             }},
+             ("tries", True)
         ),
 
         # --- Inflection rules: es endings ---
@@ -780,7 +792,12 @@ HELPER_UNIT_TESTS = {
         (
             {"word":"tries","pos":{"verb"},
              "prev":"they","prev_pos":set(),
-             "prev2":None,"prev2_pos":set()},
+             "prev2":None,"prev2_pos":set(),
+             "token_overrides": {
+                "tries": {"pos": {"verb"}, "features": {"form": ["s"]}},
+                "they": {"pos": {"pronoun"}, "features": {}}
+             }
+             },
             ("try", True)
         ),
 
@@ -1146,7 +1163,12 @@ def run_pipeline_unit_tests(verbose=False):
         step_passed = 0
         step_failed = 0
 
-        for inp, expected in cases:
+        for case in cases:
+            if len(case) == 2:
+                inp, expected = case
+                overrides = None
+            else:
+                inp, expected, overrides = case
             raw_words = inp.split()
             words = []
             for raw in raw_words:
@@ -1155,7 +1177,12 @@ def run_pipeline_unit_tests(verbose=False):
                     w = "I"
                 words.append(w)
 
-            result = func(words, lookup, eng_lookup)
+            tokens = build_test_tokens(
+                *words,
+                overrides=overrides,
+                eng_lookup=eng_lookup
+            )
+            result = func(words, lookup, eng_lookup, tokens)
             sentence = " ".join(result)
 
             if sentence == expected:
@@ -1179,6 +1206,25 @@ def run_pipeline_unit_tests(verbose=False):
     print(f"Unit tests Failed: {failed}")
     return failed == 0, passed, failed
 
+def build_test_tokens(*words, overrides=None, eng_lookup=None):
+    tokens = build_tokens_from_words(
+        [w for w in words if isinstance(w, str)],
+        eng_lookup
+    )
+    if overrides:
+        for token in tokens:
+            if token["word"] not in overrides:
+                continue
+            override = overrides[token["word"]]
+
+            for key, value in override.items():
+                if key == "features":
+                    token.setdefault("features", {})
+                    token["features"].update(value)
+                else:
+                    token[key] = value
+    return tokens
+
 def run_pipeline_helper_unit_tests(verbose=False):
     data = load_dictionary()
     lookup = build_lookup(data)
@@ -1196,6 +1242,16 @@ def run_pipeline_helper_unit_tests(verbose=False):
         for base_context, expected in cases:
             # augment context
             context = dict(base_context)  # shallow copy
+            overrides = context.pop("token_overrides", None)
+
+            if "context_tokens" not in context:
+                context["context_tokens"] = build_test_tokens(
+                    context.get("prev2"),
+                    context.get("prev"),
+                    context.get("word"),
+                    overrides=overrides,
+                    eng_lookup=eng_lookup
+                )
 
             # ensure required fields exist
             context.setdefault("lookup", lookup)
@@ -1209,6 +1265,13 @@ def run_pipeline_helper_unit_tests(verbose=False):
                 "context_subject_token",
                 find_token_for_word(
                     context.get("context_subject_word"),
+                    context.get("context_tokens")
+                )
+            )
+            context.setdefault(
+                "context_current_token",
+                find_token_for_word(
+                    context.get("word"),
                     context.get("context_tokens")
                 )
             )
