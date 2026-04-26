@@ -876,7 +876,11 @@ def handle_main_verb(context):
     - inflects only verb tokens
     - forces base form after auxiliaries
     """
-    if "verb" not in context["pos"]:
+    token = context["context_current_token"]
+    token_pos = set(token["pos"]) if token else set()
+    fallback_pos = get_pos(context["word"], context["lookup"], context["eng_lookup"])
+    pos = token_pos | fallback_pos
+    if "verb" not in pos:
         return context["word"], False
 
     current_token = context.get("context_current_token")
@@ -923,7 +927,7 @@ def classify_subject_with_context(word, context):
     """
     token = context.get("context_subject_token")
 
-    if token:
+    if token and token.get("features"):
         if has_s_form(token["features"]):
             return False  # plural → not 3rd person singular
         pos = token.get("pos", set())
@@ -940,7 +944,7 @@ def classify_subject(word, token=None):
         return True
     if word in {"I", "you", "we", "they"}:
         return False
-    if not token and  word.endswith("s"):
+    if (not token or not token.get("features")) and  word.endswith("s"):
         return False
     return True
 
