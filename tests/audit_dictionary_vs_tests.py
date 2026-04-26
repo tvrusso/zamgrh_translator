@@ -148,12 +148,22 @@ def audit_english_side_inputs(pipeline_unit_tests, helper_unit_tests, eng_lookup
         missing_eng_pos.setdefault(low, set()).add(context_name)
 
     for step_name, cases in pipeline_unit_tests.items():
-        for inp, _expected in cases:
+        for case in cases:
+            if len(case) == 2:
+                inp, _expected = case
+                overrides = None
+            else:
+                inp, _expected, overrides = case
             for token in tokenize_english_input(inp):
                 maybe_flag(token, f"PIPELINE_UNIT_TESTS.{step_name}")
 
     for helper_name, cases in helper_unit_tests.items():
-        for context, _expected in cases:
+        for case in cases:
+            if len(case) == 2:
+                context, _expected = case
+                overrides = None
+            else:
+                context, _expected, overrides = case
             for key in ("word", "prev", "prev2"):
                 token = context.get(key)
                 if isinstance(token, str):
@@ -317,7 +327,12 @@ def main():
 
     # --- Collect usage from PIPELINE_UNIT_TESTS ---
     for step_name, cases in pipeline_unit_tests.items():
-        for inp, expected in cases:
+        for case in cases:
+            if len(case) == 2:
+                inp, expected = case
+                overrides = None
+            else:
+                inp, expected, overrides = case
             for tok in tokenize_english_input(inp):
                 used_english.add(tok.lower())
             for tok in tokenize_english_input(expected):
@@ -325,7 +340,12 @@ def main():
 
     # --- Collect usage from HELPER_UNIT_TESTS ---
     for helper_name, cases in helper_unit_tests.items():
-        for context, expected in cases:
+        for case in cases:
+            if len(case) == 2:
+                context, expected = case
+                overrides = None
+            else:
+                context, expected, overrides = case
             for key in ("word", "prev", "prev2"):
                 token = context.get(key)
                 if isinstance(token, str):
