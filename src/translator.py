@@ -119,15 +119,41 @@ def build_tokens_from_words(words, eng_lookup):
     """
     assert_word_list(words, "build_tokens_from_words input")
 
+    def infer_features(word):
+        w = word.lower()
+        features = {}
+        form = []
+
+        pos = eng_lookup.get(w.lower(), set())
+
+        if w.endswith("ing") and len(w) >3:
+            base = w[:-3]
+            base_pos=eng_lookup.get(base,set())
+            if "verb" in base_pos:
+                pos = base_pos
+                form.append("ing")
+        elif w.endswith("s") and w not in {"is", "was", "has"} and len(w)>1:
+            base = w[:-1]
+            base_pos=eng_lookup.get(base,set())
+            if "noun" in base_pos:
+                pos = base_pos
+                form.append("s")
+        elif w in {"they", "we", "you"}:
+            form.append("s")
+
+        if form:
+            features["form"] = form
+        return pos,features
+
     tokens = []
     for w in words:
-        pos = eng_lookup.get(w.lower(), set())
+        pos,features = infer_features(w)
         tokens.append({
             "raw": w,
             "word": w,
             "base": w,
             "pos": set(pos),
-            "features": {},
+            "features": features,
         })
 
     return tokens
@@ -592,23 +618,9 @@ def build_context(current_word, result, lookup, eng_lookup, tokens=None):
 
     prev = result[-1] if result else None
     prev_token = find_token_for_word(prev, tokens)
-    prev_pos = (
-        set(prev_token["pos"])
-        if prev_token
-        else get_pos(prev, lookup, eng_lookup)
-        if prev
-        else set()
-    )
 
     prev2 = result[-2] if len(result) > 1 else None
     prev2_token = find_token_for_word(prev2, tokens)
-    prev2_pos = (
-        set(prev2_token["pos"])
-        if prev2_token
-        else get_pos(prev2, lookup, eng_lookup)
-        if prev2
-        else set()
-    )
 
     subject_word = find_subject_head({
         "result_so_far": result,
@@ -623,15 +635,14 @@ def build_context(current_word, result, lookup, eng_lookup, tokens=None):
         "word": current_word,
         "pos": pos,
         "prev": prev,
-        "prev_pos": prev_pos,
         "prev2": prev2,
-        "prev2_pos": prev2_pos,
         "result_so_far": result,
         "lookup": lookup,
         "eng_lookup": eng_lookup,
         "context_tokens": tokens,
         "context_current_token": current_token,
         "context_previous_token": prev_token,
+        "context_previous2_token": prev2_token,
         "context_subject_token": subject_token,
         "context_subject_word": subject_word,
     }
@@ -808,11 +819,19 @@ def handle_copula(context):
         if subject_word == "I":
             return "am", True
 
-        if subject_token and has_s_form(subject_token["features"]):
-            return "are", True
+        if subject_token is not None:
+            features = subject_token.get("features")
+            if has_s_form(features):
+                return "are", True
+            else:
+                return "is", True
 
-        if prev_token and has_s_form(prev_token["features"]):
-            return "are", True
+        if prev_token is not None:
+            features = prev_token.get("features")
+            if has_s_form(features):
+                return "are", True
+            else:
+                return "is", True
 
         # fallback to old logic
         has_subject, is_third_person = detect_subject(context)
@@ -830,6 +849,10 @@ def handle_copula_late(context):
     Guarantees:
     - resolves copula form using detected subject if available
     - leaves token unchanged if no subject is detected
+
+    NOTE:
+    In absence of morphology, we fall back to detect_subject
+    and assume third-person singular unless plural is explicitly marked.
     """
     word = context["word"]
     if word not in {"is", "are", "am"}:
@@ -953,8 +976,11 @@ def detect_auxiliary(context):
     """
     Detect whether a main verb is governed by a nearby auxiliary.
     """
+    prev2_token = context.get("context_previous2_token")
+    prev2_pos = set(prev2_token["pos"]) if prev2_token else set()
+
     return (
-        ("aux" in context["prev2_pos"]) or
+        ("aux" in prev2_pos) or
         (context["prev"] in AUX_WORDS if context["prev"] else False)
     )
 

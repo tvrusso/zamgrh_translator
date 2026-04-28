@@ -25,6 +25,7 @@ from translator import (
     fix_am_progressive,
     fix_verb_agreement,
     handle_copula,
+    handle_copula_late,
     handle_auxiliary,
     handle_main_verb,
     detect_subject,
@@ -658,95 +659,289 @@ PIPELINE_UNIT_TESTS = {
 HELPER_UNIT_TESTS = {
     "handle_copula": [
         ({"word":"is","pos":set(),
-          "prev":"I","prev_pos":set(),
-          "prev2":None,"prev2_pos":set()},
+          "prev":"I",
+          "prev2":None},
          ("am", True)),
         ({"word":"is","pos":set(),
-          "prev":"they","prev_pos":set(),
-          "prev2":None,"prev2_pos":set()},
+          "prev":"they",
+          "prev2":None},
          ("are", True)),
         ({"word":"are","pos":set(),
-          "prev":"he","prev_pos":set(),
-          "prev2":None,"prev2_pos":set()},
+          "prev":"he",
+          "prev2":None},
          ("is", True)),
         ({"word":"eat","pos":set(),
-          "prev":"I","prev_pos":set(),
-          "prev2":None,"prev2_pos":set()},
+          "prev":"I",
+          "prev2":None},
          ("eat", False)),
         ({"word":"is","pos":set(),
-          "prev":"Zombies","prev_pos":set(),
-          "prev2":None,"prev2_pos":set()},
+          "prev":"zombies",
+          "prev2":None},
          ("are", True)),
         ({"word":"are","pos":set(),
-          "prev":"Zombie","prev_pos":set(),
-          "prev2":None,"prev2_pos":set()},
+          "prev":"Zombie",
+          "prev2":None},
          ("is", True)),
+        # known word, but override the "s" ending by clearing features
+        ({"word":"is",
+          "prev":"zombies",
+          "token_overrides": {
+              "zombies": {"pos": {"noun"}, "features": {}}
+          }
+          },
+          ("is", True)),
+        # invalid word, no "s" ending, *does* have "s" form from morphology
+        (
+            {
+                "word": "is",
+                "prev": "zombah",  # unknown word, no 's'
+                "token_overrides": {
+                    "zombah": {"pos": {"noun"}, "features": {"form": ["s"]}}
+                }
+            },
+            ("are", True)
+        ),
+        # invalid word looks plural, does not have "s" form from morphology
+        (
+            {
+                "word": "are",
+                "prev": "zombahs",
+                "token_overrides": {
+                    "zombahs": {"pos": {"noun"}, "features": {"form": []}}
+                }
+            },
+            ("is", True)
+        ),
+        # check that we're handling subject pronouns correctly when
+        # it's not the previous word
+        (
+            {"word": "is",
+             "prev": "not",
+             "prev2": "I",
+             "token_overrides": {
+                 "not": {"pos": {"adv"}, "features": {}}
+                 }
+             },
+            ("am", True)
+        ),
+        (
+            # token says no "s" form, word ends in s, should treat as singular
+            {"word": "is",
+             "prev": "zombies",
+             "token_overrides": {
+                 "zombies": {"pos": {"noun"}, "features": {"form": []}}
+             }},
+            ("is", True)
+        ),
+        (
+            {"word": "are",
+             "prev": "I",
+             "token_overrides": {
+                 "I": {"pos": {"pronoun"}, "features": {"form": ["s"]}}  # nonsense but intentional
+             }},
+            ("am", True)
+        ),
+        # Subject vs. previous token conflict
+        (
+            {
+                "word": "is",
+                "prev": "modifier",
+                "prev2": "zombah",
+                "token_overrides": {
+                    "modifier": {"pos": {"adj"}, "features": {}},
+                    "zombah": {"pos": {"noun"}, "features": {"form": ["s"]}}
+                }
+            },
+            ("are", True)
+        ),
+        # unknown with no morphology
+        (
+            {
+                "word": "is",
+                "prev": "glorb",
+                "token_overrides": {
+                    "glorb": {"pos": {"noun"}, "features": {}}
+                }
+            },
+            ("is", True)
+        ),
+    ],
+    "handle_copula_late": [
+        # earlier pass might pick "is", late should fix to "are"
+        (
+            {
+                "word": "is",
+                "result_so_far": ["zombah"],
+                "token_overrides": {
+                    "zombah": {"pos": {"noun"}, "features": {"form": ["s"]}}
+                }
+            },
+            ("are", True)
+        ),
+        # unknown token with morphology
+        (
+            {
+                "word": "is",
+                "result_so_far": ["glorb"],
+                "token_overrides": {
+                    "glorb": {"pos": {"noun"}, "features": {"form": ["s"]}}
+                }
+            },
+            ("are", True)
+        ),
+        # unknown token without morphology, with plural looking word
+        # this is NOT correctly detected as third person yet, and not
+        # presumed to be singular
+        (
+            {
+                "word": "are",
+                "result_so_far": ["glorbs"],
+                "token_overrides": {
+                    "glorbs": {"pos": {"noun"}, "features": {}}
+                }
+            },
+            ("are", False)
+        ),
+        # unknown token without morphology
+        (
+            {
+                "word": "is",
+                "result_so_far": ["glorb"],
+                "token_overrides": {
+                    "glorb": {"pos": {"noun"}, "features": {}}
+                }
+            },
+            ("is", False)
+        ),
+        # pronoun still wins late
+        (
+            {
+                "word": "are",
+                "result_so_far": ["I"],
+            },
+            ("am", True)
+        ),
+        # "I" subject not adjacent
+        (
+            {
+                "word": "is",
+                "result_so_far": ["I", "not"],
+                "token_overrides": {
+                    "not": {"pos": {"adv"}, "features": {}}
+                }
+            },
+            ("are", True)
+        ),
+        # non-I subject not adjacent
+        (
+            {
+                "word": "is",
+                "result_so_far": ["zombah", "quickly"],
+                "token_overrides": {
+                    "zombah": {"pos": {"noun"}, "features": {"form": ["s"]}},
+                    "quickly": {"pos": {"adv"}, "features": {}}
+                }
+            },
+            ("are", True)
+        ),
+        # no morphology → falls back to detect_subject → singular assumption
+        (
+            {
+                "word": "are",
+                "result_so_far": ["zombah", "quickly"],
+                "token_overrides": {
+                    "zombah": {"pos": {"noun"}, "features": {}},
+                    "quickly": {"pos": {"adv"}, "features": {}}
+                }
+            },
+            ("is", True)
+        ),
+        # NO subject, no change
+        (
+            {
+                "word": "is",
+                "result_so_far": [],
+            },
+            ("is", False)
+        )
     ],
     "handle_auxiliary": [
         ({"word":"must","pos":set(),
-          "prev":None,"prev_pos":set(),
-          "prev2":None,"prev2_pos":set()},
+          "prev":None,
+          "prev2":None},
          ("must",True)),
         # Not a real word, but we're testing that if we say it's an aux
         # then it's treated as an aux
         ({"word":"frobnitz","pos":"aux",
-          "prev":None,"prev_pos":set(),
-          "prev2":None,"prev2_pos":set()},
+          "prev":None,
+          "prev2":None},
          ("frobnitz",True)),
         # We shouldn't handle this in this helper
         ({"word":"frobnitz","pos":"noun",
-          "prev":None,"prev_pos":set(),
-          "prev2":None,"prev2_pos":set()},
+          "prev":None,
+          "prev2":None},
          ("frobnitz",False)),
     ],
     "handle_main_verb": [
         # --- No subject → no change ---
         (
             {"word":"eat","pos":{"verb"},
-             "prev":None,"prev_pos":set(),
-             "prev2":None,"prev2_pos":set()},
+             "prev":None,
+             "prev2":None},
             ("eat", False)
         ),
-
+ 
         # --- Simple pronoun subjects ---
         (
             {"word":"eat","pos":{"verb"},
-             "prev":"he","prev_pos":set(),
-             "prev2":None,"prev2_pos":set()},
+             "prev":"he",
+             "prev2":None},
             ("eats", True)
         ),
         (
             {"word":"eats","pos":{"verb"},
-             "prev":"they","prev_pos":set(),
-             "prev2":None,"prev2_pos":set()},
+             "prev":"they",
+             "prev2":None},
             ("eat", True)
         ),
         (
             {"word":"eat","pos":{"verb"},
-             "prev":"I","prev_pos":set(),
-             "prev2":None,"prev2_pos":set()},
+             "prev":"I",
+             "prev2":None},
             ("eat", False)
         ),
 
         # --- Noun subjects ---
         (
             {"word":"eat","pos":{"verb"},
-             "prev":"Zombie","prev_pos":{"noun"},
-             "prev2":None,"prev2_pos":set()},
+             "prev":"Zombie",
+             "prev2":None,
+             "token_overrides": {
+                 "Zombie": {"pos": {"noun"}, "features": {}}
+                 }
+             },
             ("eats", True)
         ),
         (
             {"word":"eats","pos":{"verb"},
-             "prev":"Zombies","prev_pos":{"noun"},
-             "prev2":None,"prev2_pos":set()},
+             "prev":"Zombies",
+             "prev2":None,
+             "token_overrides": {
+                 "Zombies": {"pos": {"noun"}, "features": {}}
+                 }
+             },
             ("eat", True)
         ),
 
         # --- Verb-like previous blocks subject detection ---
         (
             {"word":"eat","pos":{"verb"},
-             "prev":"must","prev_pos":{"aux"},
-             "prev2":None,"prev2_pos":set()},
+             "prev":"must",
+             "prev2":None,
+             "token_overrides": {
+                 "must": {"pos": {"aux"}, "features": {}}
+             }
+             },
             ("eat", False)
         ),
 
@@ -754,8 +949,12 @@ HELPER_UNIT_TESTS = {
         # "he must eats" -> "eat"
         (
             {"word":"eats","pos":{"verb"},
-             "prev":"must","prev_pos":{"aux"},
-             "prev2":"he","prev2_pos":set()},
+             "prev":"must",
+             "prev2":"he",
+             "token_overrides": {
+                 "must": {"pos": {"aux"}, "features": {}}
+             }
+             },
             ("eat", True) 
         ),
 
@@ -763,16 +962,22 @@ HELPER_UNIT_TESTS = {
         # must eat eats -> eat
         (
             {"word":"eats","pos":{"verb"},
-             "prev":"eat","prev_pos":{"verb"},
-             "prev2":"must","prev2_pos":{"aux"}},
+             "prev":"eat",
+             "prev2":"must",
+             "token_overrides": {
+                 "eats": {"pos": {"verb"}, "features": {"form": ["s"]}},
+                 "eat": {"pos": {"verb"}, "features": {}},
+                 "must": {"pos": {"aux"}, "features": {}}
+             }
+             },
             ("eat", True)
         ),
 
         # --- Inflection rules: y → ies ---
         (
             {"word":"try","pos":{"verb"},
-             "prev":"he","prev_pos":set(),
-             "prev2":None,"prev2_pos":set(),
+             "prev":"he",
+             "prev2":None,
              "token_overrides": {
                  "try": {"pos": {"verb"}, "features": {"form": []}},
                  "he": {"pos": {"pronoun"}, "features": {}}
@@ -783,16 +988,16 @@ HELPER_UNIT_TESTS = {
         # --- Inflection rules: es endings ---
         (
             {"word":"go","pos":{"verb"},
-             "prev":"he","prev_pos":set(),
-             "prev2":None,"prev2_pos":set()},
+             "prev":"he",
+             "prev2":None},
             ("goes", True)
         ),
 
         # --- Reverse inflection (plural subject) ---
         (
             {"word":"tries","pos":{"verb"},
-             "prev":"they","prev_pos":set(),
-             "prev2":None,"prev2_pos":set(),
+             "prev":"they",
+             "prev2":None,
              "token_overrides": {
                 "tries": {"pos": {"verb"}, "features": {"form": ["s"]}},
                 "they": {"pos": {"pronoun"}, "features": {}}
@@ -804,57 +1009,82 @@ HELPER_UNIT_TESTS = {
         # --- Edge: already correct, no change ---
         (
             {"word":"eats","pos":{"verb"},
-             "prev":"he","prev_pos":set(),
-             "prev2":None,"prev2_pos":set()},
+             "prev":"he",
+             "prev2":None},
             ("eats", False)
         ),
 
         # --- Non-verb should be ignored ---
         (
             {"word":"brains","pos":{"noun"},
-             "prev":"he","prev_pos":set(),
-             "prev2":None,"prev2_pos":set()},
+             "prev":"he",
+             "prev2":None},
             ("brains", False)
         ),
     ],
     "detect_subject": [
         # pronouns
         (
-            {"prev": "he", "prev_pos": set(), "word": "eat", "pos": {"verb"}},
+            {"word": "eat", "pos": {"verb"},
+             "prev": "he"
+             },
             (True, True)  # has_subject, is_third_person
         ),
         (
-            {"prev": "they", "prev_pos": set(), "word": "eat", "pos": {"verb"}},
+            {"word": "eat", "pos": {"verb"},
+             "prev": "they"},
             (True, False)
         ),
         (
-            {"prev": "I", "prev_pos": set(), "word": "eat", "pos": {"verb"}},
+            {"word": "eat", "pos": {"verb"},
+             "prev": "I"},
             (True, False)
         ),
 
         # noun subjects
         (
-            {"prev": "zombie", "prev_pos": {"noun"}, "word": "eat", "pos": {"verb"}},
+            {"word": "eat", "pos": {"verb"},
+             "prev": "zombie",
+             "token_overrides": {
+                 "zombie": {"pos": {"noun"}, "features": {}}
+             }
+             },
             (True, True)
         ),
         (
-            {"prev": "zombies", "prev_pos": {"noun"}, "word": "eat", "pos": {"verb"}},
+            {"word": "eat", "pos": {"verb"},
+             "prev": "zombies",
+             "token_overrides": {
+                 "zombies": {"pos": {"noun"}, "features": {}}
+             }
+             },
             (True, False)
         ),
 
         # blocked by verb-like previous word
         (
-            {"prev": "will", "prev_pos": {"aux"}, "word": "eat", "pos": {"verb"}},
+            {"word": "eat", "pos": {"verb"},
+             "prev": "will",
+             "token_overrides": {
+                 "will": {"pos": {"aux"}, "features": {}}
+             }
+             },
             (False, False)
         ),
         (
-            {"prev": "eat", "prev_pos": {"verb"}, "word": "brains", "pos": {"noun"}},
+            {"word": "brains", "pos": {"noun"},
+             "prev": "eat",
+             "token_overrides": {
+                 "eat": {"pos": {"verb"}, "features": {}}
+             }
+             },
             (False, False)
         ),
 
         # no subject
         (
-            {"prev": None, "prev_pos": set(), "word": "eat", "pos": {"verb"}},
+            {"word": "eat", "pos": {"verb"},
+             "prev": None},
             (False, False)
         ),
     ],
@@ -951,11 +1181,11 @@ HELPER_UNIT_TESTS = {
     ],
     "detect_auxiliary": [
         (   # he must eat
-            {"word": "eat", "prev": "must", "prev2": "he", "prev2_pos": set()},
+            {"word": "eat", "prev": "must", "prev2": "he"},
             True
         ),
         (   # zombies will eat
-            {"word": "eat", "prev": "will", "prev2": "zombies", "prev2_pos": set()},
+            {"word": "eat", "prev": "will", "prev2": "zombies"},
             True
         ),
     ],
@@ -1218,11 +1448,7 @@ def build_test_tokens(*words, overrides=None, eng_lookup=None):
             override = overrides[token["word"]]
 
             for key, value in override.items():
-                if key == "features":
-                    token.setdefault("features", {})
-                    token["features"].update(value)
-                else:
-                    token[key] = value
+                token[key] = value
     return tokens
 
 def run_pipeline_helper_unit_tests(verbose=False):
@@ -1243,15 +1469,25 @@ def run_pipeline_helper_unit_tests(verbose=False):
             # augment context
             context = dict(base_context)  # shallow copy
             overrides = context.pop("token_overrides", None)
+            words_for_tokens = []
+
+            # include result_so_far FIRST (critical)
+            words_for_tokens.extend(context.get("result_so_far", []))
+
+            # then prev/prev2/word if not already included
+            for w in (context.get("prev2"), context.get("prev"), context.get("word")):
+                if isinstance(w, str) and w not in words_for_tokens:
+                    words_for_tokens.append(w)
 
             if "context_tokens" not in context:
                 context["context_tokens"] = build_test_tokens(
-                    context.get("prev2"),
-                    context.get("prev"),
-                    context.get("word"),
+                    *words_for_tokens,
                     overrides=overrides,
                     eng_lookup=eng_lookup
                 )
+            if "result_so_far" in context and "prev" not in context:
+                rsf = context["result_so_far"]
+                context["prev"] = rsf[-1] if rsf else None
 
             # ensure required fields exist
             context.setdefault("lookup", lookup)
@@ -1279,6 +1515,13 @@ def run_pipeline_helper_unit_tests(verbose=False):
                 "context_previous_token",
                 find_token_for_word(
                     context.get("prev"),
+                    context.get("context_tokens")
+                )
+            )
+            context.setdefault(
+                "context_previous2_token",
+                find_token_for_word(
+                    context.get("prev2"),
                     context.get("context_tokens")
                 )
             )
