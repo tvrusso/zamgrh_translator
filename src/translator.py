@@ -104,7 +104,7 @@ def validate_pipeline_step_result(words, label):
     assert_unknown_word_shape(words, label)
 
 
-def apply_grammar_pipeline(words, lookup, eng_lookup, tokens=None, debug=False):
+def apply_grammar_pipeline(words, lookup, eng_lookup, tokens, debug=False):
     """
     Apply the English grammar cleanup pipeline.
 
@@ -295,7 +295,7 @@ def is_going_to_sequence(words, i):
         return 1
     return 0
 
-def fix_am_progressive(words, lookup, eng_lookup, tokens=None):
+def fix_am_progressive(words, lookup, eng_lookup, tokens):
     """
     Owns: narrow repair of 'I going to' -> 'I am going to'.
 
@@ -326,7 +326,7 @@ def fix_am_progressive(words, lookup, eng_lookup, tokens=None):
     return result
 
 
-def resolve_hab_ambiguity(words, lookup, eng_lookup, tokens=None):
+def resolve_hab_ambiguity(words, lookup, eng_lookup, tokens):
     """
     Owns: lexical ambiguity cleanup for specific known collisions.
 
@@ -362,7 +362,7 @@ def resolve_hab_ambiguity(words, lookup, eng_lookup, tokens=None):
     return result
 
 
-def simplify_subject(words, lookup, eng_lookup, tokens=None):
+def simplify_subject(words, lookup, eng_lookup, tokens):
     """
     Owns: Zamgrh-specific redundant subject cleanup.
 
@@ -394,7 +394,7 @@ def simplify_subject(words, lookup, eng_lookup, tokens=None):
     return result
 
 
-def fix_possession(words, lookup, eng_lookup, tokens=None):
+def fix_possession(words, lookup, eng_lookup, tokens):
     """
     Owns: possessive pronoun conversion for narrow lexical patterns.
 
@@ -419,7 +419,7 @@ def fix_possession(words, lookup, eng_lookup, tokens=None):
     return result
 
 
-def fix_object_pronouns(words, lookup, eng_lookup, tokens=None):
+def fix_object_pronouns(words, lookup, eng_lookup, tokens):
     """
     Owns: object pronoun case after selected verbs.
 
@@ -443,7 +443,7 @@ def fix_object_pronouns(words, lookup, eng_lookup, tokens=None):
     validate_pipeline_step_result(result, "fix_object_pronouns output")
     return result
 
-def has_future_verb(words, start_idx, lookup, eng_lookup, tokens=None):
+def has_future_verb(words, start_idx, lookup, eng_lookup, tokens):
     for w in words[start_idx + 1:]:
         token = find_token_for_word(w, tokens)
         pos = set(token["pos"]) if token else get_pos(w, lookup, eng_lookup)
@@ -460,7 +460,7 @@ def choose_copula(prev, prev_token):
         return "are"
     return "is"
 
-def insert_copula(words, lookup, eng_lookup, tokens=None):
+def insert_copula(words, lookup, eng_lookup, tokens):
     """
     Owns: local missing-copula insertion.
 
@@ -539,7 +539,7 @@ def insert_copula(words, lookup, eng_lookup, tokens=None):
     validate_pipeline_step_result(result, "insert_copula output")
     return result
 
-def fix_prepositions(words, lookup, eng_lookup, tokens=None):
+def fix_prepositions(words, lookup, eng_lookup, tokens):
     """
     Owns: pronoun case after prepositions.
 
@@ -563,7 +563,7 @@ def fix_prepositions(words, lookup, eng_lookup, tokens=None):
     return result
 
 
-def fix_verb_agreement(words, lookup, eng_lookup, tokens=None):
+def fix_verb_agreement(words, lookup, eng_lookup, tokens):
     """
     Owns: final verb and copula agreement normalization.
 
@@ -617,7 +617,7 @@ def fix_verb_agreement(words, lookup, eng_lookup, tokens=None):
 # Utility functions for pipeline
 # ---------------------------
 
-def build_context(current_word, result, lookup, eng_lookup, tokens=None):
+def build_context(current_word, result, lookup, eng_lookup, tokens):
     """
     Build a context object for agreement helpers.
 
@@ -980,9 +980,9 @@ def classify_subject_with_context(word, context):
         if "noun" not in pos:
             return classify_subject(word, token)
 
-    return classify_subject(word)
+    return classify_subject(word, token)
 
-def classify_subject(word, token=None):
+def classify_subject(word, token):
     """
     Classify whether a subject should trigger third-person singular agreement.
     """
@@ -1043,7 +1043,7 @@ def inflect_verb(context):
     return word, (word != context["word"])
 
 
-def dedupe_function_words(words, lookup, eng_lookup, tokens=None):
+def dedupe_function_words(words, lookup, eng_lookup, tokens):
     """
     Owns: duplicate collapsible function-word cleanup.
 
@@ -1245,7 +1245,7 @@ def get_pos(word, lookup, eng_lookup):
     return set()
 
 
-def insert_articles(words, lookup, eng_lookup, tokens=None):
+def insert_articles(words, lookup, eng_lookup, tokens):
     """
     Owns: local article insertion for object-like noun phrases.
 
@@ -1359,7 +1359,7 @@ def insert_articles(words, lookup, eng_lookup, tokens=None):
     validate_pipeline_step_result(result, "insert_articles output")
     return result
 
-def fix_determiners(words, lookup, eng_lookup, tokens=None):
+def fix_determiners(words, lookup, eng_lookup, tokens):
     """
     Owns: determiner / possessive interpretation for local noun phrases.
 
@@ -1407,7 +1407,7 @@ def fix_determiners(words, lookup, eng_lookup, tokens=None):
     return result
 
 
-def collapse_repeated_pronouns(words, lookup, eng_lookup, tokens=None):
+def collapse_repeated_pronouns(words, lookup, eng_lookup, tokens):
     """
     Owns: cleanup of repeated adjacent pronouns.
 
