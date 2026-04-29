@@ -600,7 +600,8 @@ PIPELINE_UNIT_TESTS = {
         ("Zombies will eat brains", "zombies will eat brains"),
         # You edge cases
         ("You give brains", "you give brains"),
-        ("You gives brains", "you give brains"),
+        ("You gives brains", "you give brains",
+         {"gives": {"pos": {"verb"}}}),
         # plural, non-pronoun noun subjects
         ("Humans eat brains", "humans eat brains"),
         ("Humans eats brains", "humans eat brains"),

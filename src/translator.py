@@ -99,10 +99,31 @@ def assert_unknown_word_shape(words, label="words"):
             assert w.endswith("]"), f"{label} contains malformed unknown word: {w}"
 
 
-def validate_pipeline_step_result(words, label):
+def validate_pipeline_step_result(words, label, tokens):
     assert_word_list(words, label)
     assert_unknown_word_shape(words, label)
+    if tokens is not None:
+        assert isinstance(tokens, list), f"{label}: tokens must be a list"
+        assert len(words) == len(tokens), (
+            f"{label}: word/token length mismatch "
+            f"({len(words)} words vs {len(tokens)} tokens)"
+        )
 
+def make_token(word, *, pos=None, features=None, base=None):
+    return {
+        "raw": word,
+        "word": word,
+        "base": base or word,
+        "pos": set(pos) if pos else set(),
+        "features": features or {},
+    }
+
+def replace_token_word(token, new_word):
+    return {
+        **token,
+        "word": new_word,
+        "base": token.get("base", new_word),
+    }
 
 def apply_grammar_pipeline(words, lookup, eng_lookup, tokens, debug=False):
     """
@@ -229,7 +250,7 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, tokens, debug=False):
         words, tokens = step(words, lookup, eng_lookup, tokens=tokens)
 
         # Validate output integrity
-        validate_pipeline_step_result(words, f"{name} output")
+        validate_pipeline_step_result(words, f"{name} output", tokens)
         assert_unknown_word_shape(words, f"{name} output")
 
         # --- Debug output ---
@@ -308,6 +329,7 @@ def fix_am_progressive(words, lookup, eng_lookup, tokens):
     """
     assert_word_list(words, "fix_am_progressive input")
     result = []
+    result_tokens = []
     i = 0
 
     while i < len(words):
@@ -315,15 +337,18 @@ def fix_am_progressive(words, lookup, eng_lookup, tokens):
         if w == "I":
             span = is_going_to_sequence(words, i)
             if span:
-                result.append("I")
+                result.append(w)
+                result_tokens.append(tokens[i])
                 result.append("am")
+                result_tokens.append(make_token("am", pos={"aux"}))
                 i += 1
                 continue
         result.append(w)
+        result_tokens.append(tokens[i])
         i += 1
 
-    validate_pipeline_step_result(result, "fix_am_progressive output")
-    return result, tokens
+    validate_pipeline_step_result(result, "fix_am_progressive output", result_tokens)
+    return result, result_tokens
 
 
 def resolve_hab_ambiguity(words, lookup, eng_lookup, tokens):
@@ -342,24 +367,24 @@ def resolve_hab_ambiguity(words, lookup, eng_lookup, tokens):
     """
     assert_word_list(words, "resolve_hab_ambiguity input")
     result = []
+    result_tokens = []
     i = 0
 
     while i < len(words):
         w = words[i]
-        if w == "help":
-            if i > 0 and words[i - 1] in {"I", "zombie"}:
+        if w == "help" and i>0:
+            prev = words[i-1]
+            if prev in {"I", "zombie", "must"}:
                 result.append("have")
-                i += 1
-                continue
-            if i > 0 and words[i - 1] == "must":
-                result.append("have")
+                result_tokens.append(replace_token_word(tokens[i],"have"))
                 i += 1
                 continue
         result.append(w)
+        result_tokens.append(tokens[i])
         i += 1
 
-    validate_pipeline_step_result(result, "resolve_hab_ambiguity output")
-    return result, tokens
+    validate_pipeline_step_result(result, "resolve_hab_ambiguity output",result_tokens)
+    return result, result_tokens
 
 
 def simplify_subject(words, lookup, eng_lookup, tokens):
@@ -380,18 +405,21 @@ def simplify_subject(words, lookup, eng_lookup, tokens):
     """
     assert_word_list(words, "simplify_subject input")
     result = []
+    result_tokens = []
     i = 0
 
     while i < len(words):
         if i < len(words)-1 and words[i] == "my" and words[i+1] == "zombie":
             result.append("I")
+            result_tokens.append(make_token("I", pos={"pron"}))
             i += 2
             continue
         result.append(words[i])
+        result_tokens.append(tokens[i])
         i += 1
 
-    validate_pipeline_step_result(result, "simplify_subject output")
-    return result, tokens
+    validate_pipeline_step_result(result, "simplify_subject output", result_tokens)
+    return result, result_tokens
 
 
 def fix_possession(words, lookup, eng_lookup, tokens):
@@ -415,7 +443,7 @@ def fix_possession(words, lookup, eng_lookup, tokens):
     assert_word_list(words, "fix_possession input")
     result = words
 
-    validate_pipeline_step_result(result, "fix_possession output")
+    validate_pipeline_step_result(result, "fix_possession output", tokens)
     return result, tokens
 
 
@@ -433,15 +461,18 @@ def fix_object_pronouns(words, lookup, eng_lookup, tokens):
     assert_word_list(words, "fix_object_pronouns input")
     verbs = {"give", "help", "shoot", "eat", "smash", "have"}
     result = []
+    result_tokens = []
 
     for i, w in enumerate(words):
         if w == "I" and i > 0 and words[i - 1] in verbs:
             result.append("me")
+            result_tokens.append(replace_token_word(tokens[i],"me"))
         else:
             result.append(w)
+            result_tokens.append(tokens[i])
 
-    validate_pipeline_step_result(result, "fix_object_pronouns output")
-    return result, tokens
+    validate_pipeline_step_result(result, "fix_object_pronouns output",result_tokens)
+    return result, result_tokens
 
 def has_future_verb(words, start_idx, lookup, eng_lookup, tokens):
     for w in words[start_idx + 1:]:
@@ -489,11 +520,13 @@ def insert_copula(words, lookup, eng_lookup, tokens):
     assert_word_list(words, "insert_copula input")
 
     result = []
+    result_tokens = []
+
     seen_verb = False
 
     for i, w in enumerate(words):
         # Token-first POS
-        token = find_token_for_word(w, tokens)
+        token = tokens[i]
         pos = set(token["pos"]) if token else get_pos(w, lookup, eng_lookup)
         is_ing = token and has_ing_form(token["features"])
 
@@ -503,7 +536,8 @@ def insert_copula(words, lookup, eng_lookup, tokens):
         if i > 0:
             prev = result[-1]
 
-            prev_token = find_token_for_word(prev, tokens)
+            prev_token = result_tokens[-1] if result_tokens else None
+
             prev_pos = (
                 set(prev_token["pos"])
                 if prev_token
@@ -528,16 +562,19 @@ def insert_copula(words, lookup, eng_lookup, tokens):
                     # Avoid modifier case like "the eating zombies"
                     if prev not in DETERMINERS:
                         result.append(choose_copula(prev, prev_token))
+                        result_tokens.append(make_token(choose_copula(prev, prev_token), pos={"aux"}))
                         seen_verb = True
 
             # Noun + adjective copula insertion
             if not seen_verb and is_noun and is_adj and not is_unknown:
                 result.append(choose_copula(prev, prev_token))
+                result_tokens.append(make_token(choose_copula(prev, prev_token), pos={"aux"}))
 
         result.append(w)
+        result_tokens.append(tokens[i])
 
-    validate_pipeline_step_result(result, "insert_copula output")
-    return result, tokens
+    validate_pipeline_step_result(result, "insert_copula output", result_tokens)
+    return result, result_tokens
 
 def fix_prepositions(words, lookup, eng_lookup, tokens):
     """
@@ -552,15 +589,18 @@ def fix_prepositions(words, lookup, eng_lookup, tokens):
     """
     assert_word_list(words, "fix_prepositions input")
     result = []
+    result_tokens = []
 
     for i, w in enumerate(words):
         if w == "I" and i > 0 and words[i - 1] == "to":
             result.append("me")
+            result_tokens.append(make_token("me", pos={"pron"}))
         else:
             result.append(w)
+            result_tokens.append(tokens[i])
 
-    validate_pipeline_step_result(result, "fix_prepositions output")
-    return result, tokens
+    validate_pipeline_step_result(result, "fix_prepositions output", result_tokens)
+    return result, result_tokens
 
 
 def fix_verb_agreement(words, lookup, eng_lookup, tokens):
@@ -586,9 +626,10 @@ def fix_verb_agreement(words, lookup, eng_lookup, tokens):
     assert_word_list(words, "fix_verb_agreement input")
 
     result = []
+    result_tokens = []
 
-    for w in words:
-        context = build_context(w, result, lookup, eng_lookup, tokens)
+    for i,w in enumerate(words):
+        context = build_context(i, words, result, lookup, eng_lookup, tokens, result_tokens)
         w, changed_word = handle_copula(context)
         result_word = w
 
@@ -607,17 +648,25 @@ def fix_verb_agreement(words, lookup, eng_lookup, tokens):
         # fix_verb_agreement is the final authority on agreement.
         context["word"] = result_word
         result_word, _ = handle_copula_late(context)
-        result.append(result_word)
 
-    validate_pipeline_step_result(result, "fix_verb_agreement output")
-    return result, tokens
+        original_token = tokens[i]
+        if result_word != w:
+            new_token = replace_token_word(original_token, result_word)
+        else:
+            new_token = original_token
+
+        result.append(result_word)
+        result_tokens.append(new_token)
+
+    validate_pipeline_step_result(result, "fix_verb_agreement output", result_tokens)
+    return result, result_tokens
 
 
 # ---------------------------
 # Utility functions for pipeline
 # ---------------------------
 
-def build_context(current_word, result, lookup, eng_lookup, tokens):
+def build_context(idx, words, result, lookup, eng_lookup, tokens, result_tokens):
     """
     Build a context object for agreement helpers.
 
@@ -627,23 +676,18 @@ def build_context(current_word, result, lookup, eng_lookup, tokens):
     - tokens are passed through to subject-head discovery
     - prefers token POS when available, falls back to lookup POS
     """
-    assert isinstance(current_word, str), (
-        f"current_word must be str, got {type(current_word).__name__}"
-    )
+    assert_word_list(words, "build_context.words")
     assert_word_list(result, "build_context.result")
 
-    current_token = find_token_for_word(current_word, tokens)
-    pos = (
-        set(current_token["pos"])
-        if current_token
-        else get_pos(current_word, lookup, eng_lookup)
-    )
+    current_word = words[idx]
+    current_token = tokens[idx]
+    pos = set(current_token["pos"])
 
     prev = result[-1] if result else None
-    prev_token = find_token_for_word(prev, tokens)
+    prev_token = result_tokens[-1] if result_tokens else None
 
     prev2 = result[-2] if len(result) > 1 else None
-    prev2_token = find_token_for_word(prev2, tokens)
+    prev2_token = result_tokens[-2] if len(result_tokens) >1 else None
 
     subject_word = find_subject_head({
         "result_so_far": result,
@@ -652,6 +696,7 @@ def build_context(current_word, result, lookup, eng_lookup, tokens):
         "context_tokens": tokens,
     })
 
+    #temporary fallback
     subject_token = find_token_for_word(subject_word, tokens)
 
     return {
@@ -842,6 +887,7 @@ def handle_copula(context):
         if subject_word == "I":
             return "am", True
 
+        # Token-based logic (preferred)
         if subject_token is not None:
             features = subject_token.get("features")
             if has_s_form(features):
@@ -856,7 +902,7 @@ def handle_copula(context):
             else:
                 return "is", True
 
-        # fallback to old logic
+        # Legacy heuristics --- fallback only when tokens missing
         has_subject, is_third_person = detect_subject(context)
         if has_subject and not is_third_person:
             return "are", True
@@ -923,14 +969,16 @@ def handle_main_verb(context):
     - forces base form after auxiliaries
     """
     token = context["context_current_token"]
-    token_pos = set(token["pos"]) if token else set()
-    fallback_pos = get_pos(context["word"], context["lookup"], context["eng_lookup"])
-    pos = token_pos | fallback_pos
+
+    if token:
+        pos = set(token["pos"])
+    else:
+        pos = get_pos(context["word"], context["lookup"], context["eng_lookup"])
+
     if "verb" not in pos:
         return context["word"], False
 
-    current_token = context.get("context_current_token")
-    if current_token and has_ing_form(current_token["features"]):
+    if token and has_ing_form(token["features"]):
         return context["word"], False
 
     context["has_subject"], context["is_third_person"] = detect_subject(context)
@@ -1053,16 +1101,18 @@ def dedupe_function_words(words, lookup, eng_lookup, tokens):
     """
     assert_word_list(words, "dedupe_function_words input")
     result = []
+    result_tokens = []
     prev = None
 
-    for w in words:
+    for i,w in enumerate(words):
         if w == prev and w in COLLAPSIBLE_WORDS:
             continue
         result.append(w)
+        result_tokens.append(tokens[i])
         prev = w
 
-    validate_pipeline_step_result(result, "dedupe_function_words output")
-    return result, tokens
+    validate_pipeline_step_result(result, "dedupe_function_words output", result_tokens)
+    return result, result_tokens
 
 
 # Define currently permitted features
@@ -1267,11 +1317,13 @@ def insert_articles(words, lookup, eng_lookup, tokens):
     assert_word_list(words, "insert_articles input")
 
     result = []
+    result_tokens = []
+
     seen_verb = False
     consumed_object = False
 
     for i, w in enumerate(words):
-        token = find_token_for_word(w, tokens)
+        token = tokens[i]
         token_pos = set(token["pos"]) if token else set()
         fallback_pos = get_pos(w, lookup, eng_lookup)
         pos = token_pos | fallback_pos
@@ -1279,6 +1331,7 @@ def insert_articles(words, lookup, eng_lookup, tokens):
         # --- PRONOUN GUARD ---
         if w in SUBJECT_PRONOUNS:
             result.append(w)
+            result_tokens.append(tokens[i])
             continue
 
         is_noun = "noun" in pos
@@ -1305,6 +1358,7 @@ def insert_articles(words, lookup, eng_lookup, tokens):
             seen_verb = True
             consumed_object = False
             result.append(w)
+            result_tokens.append(tokens[i])
             continue
 
         should_article_after_to = (
@@ -1326,7 +1380,7 @@ def insert_articles(words, lookup, eng_lookup, tokens):
 
         if should_article_as_object or should_article_after_to:
             prev = result[-1] if result else None
-            prev_token = find_token_for_word(prev, tokens)
+            prev_token = result_tokens[-1] if result_tokens else None
             prev_token_pos = set(prev_token["pos"]) if prev_token else set()
             prev_fallback_pos = get_pos(prev, lookup, eng_lookup) if prev else set()
             prev_pos = prev_token_pos | prev_fallback_pos
@@ -1348,16 +1402,18 @@ def insert_articles(words, lookup, eng_lookup, tokens):
             article = "an" if w[0].lower() in "aeiou" else "a"
 
             if prev_is_modifier:
-                result.insert(len(result) - 1, article)
+                insert_pos = len(result) -1
+                result.insert(insert_pos, article)
+                result_tokens.insert(insert_pos, make_token(article, pos={"det"}))
             elif "det" not in prev_pos:
                 result.append(article)
-
+                result_tokens.append(make_token(article, pos={"det"}))
             consumed_object = True
 
         result.append(w)
-
-    validate_pipeline_step_result(result, "insert_articles output")
-    return result, tokens
+        result_tokens.append(tokens[i])
+    validate_pipeline_step_result(result, "insert_articles output", result_tokens)
+    return result, result_tokens
 
 def fix_determiners(words, lookup, eng_lookup, tokens):
     """
@@ -1372,6 +1428,7 @@ def fix_determiners(words, lookup, eng_lookup, tokens):
     """
     assert_word_list(words, "fix_determiners input")
     result = []
+    result_tokens = []
 
     for i, w in enumerate(words):
         if w == "I":
@@ -1387,6 +1444,7 @@ def fix_determiners(words, lookup, eng_lookup, tokens):
                 or nxt in VERB_LIKE_WORDS
             ):
                 result.append(w)
+                result_tokens.append(tokens[i])
                 continue
 
             if nxt and "noun" in nxt_pos:
@@ -1397,14 +1455,17 @@ def fix_determiners(words, lookup, eng_lookup, tokens):
                     or nxt2 in VERB_LIKE_WORDS
                 ):
                     result.append(w)
+                    result_tokens.append(tokens[i])
                     continue
                 result.append("my")
+                result_tokens.append(replace_token_word(tokens[i],"my"))
                 continue
 
         result.append(w)
+        result_tokens.append(tokens[i])
 
-    validate_pipeline_step_result(result, "fix_determiners output")
-    return result, tokens
+    validate_pipeline_step_result(result, "fix_determiners output", result_tokens)
+    return result, result_tokens
 
 
 def collapse_repeated_pronouns(words, lookup, eng_lookup, tokens):
@@ -1417,16 +1478,18 @@ def collapse_repeated_pronouns(words, lookup, eng_lookup, tokens):
     """
     assert_word_list(words, "collapse_repeated_pronouns input")
     result = []
+    result_tokens = []
     prev = None
 
-    for w in words:
+    for i, w in enumerate(words):
         if w == prev and w in {"I", "me", "my"}:
             continue
         result.append(w)
+        result_tokens.append(tokens[i])
         prev = w
 
-    validate_pipeline_step_result(result, "collapse_repeated_pronouns output")
-    return result, tokens
+    validate_pipeline_step_result(result, "collapse_repeated_pronouns output", result_tokens)
+    return result, result_tokens
 
 
 # ---------------------------
