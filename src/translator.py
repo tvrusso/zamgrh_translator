@@ -165,35 +165,58 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, tokens=None, debug=False):
     CONTRACT
     --------
     Expects:
-    - words is a tokenized list[str] of English glosses / unknown-token forms
-    - lookup and eng_lookup are valid dictionary lookup structures
+    - words: list[str] (tokenized English glosses / unknown-token forms)
+    - lookup / eng_lookup: valid dictionary structures
+    - tokens: parallel token list (may be partially aligned; treated as reference-only)
 
     Guarantees:
     - returns list[str]
-    - no step should introduce None or empty tokens
+    - no step introduces None or empty words
     - unknown bracketed tokens remain bracketed
-    - fix_verb_agreement acts as final agreement authority
+    - fix_verb_agreement is the FINAL authority on verb/copula form
 
-    PIPELINE OWNERSHIP
-    ------------------
-    - resolve_hab: lexical ambiguity cleanup
-    - simplify_subject: Zamgrh-specific subject cleanup
-    - fix_possession: possessive pronoun cleanup
-    - fix_pronouns: object pronoun cleanup
-    - collapse_repeated_pronouns: repeated-pronoun cleanup
-    - fix_determiners: determiner/possessive interpretation
-    - fix_prepositions: pronoun case after prepositions
-    - insert_copula: local missing-copula insertion
-    - insert_articles: local article insertion
-    - dedupe_function_words: duplicate function-word cleanup
-    - fix_am_progressive: narrow "I am going to" repair
-    - fix_verb_agreement: final verb/copula agreement pass
+    PIPELINE PHASES
+    ---------------
+    1. Lexical cleanup (no structure changes)
+      - resolve_hab_ambiguity
 
-    Debug levels:
+    2. Subject normalization (structure-changing, early)
+      - simplify_subject
+
+    3. Local grammar normalization (no agreement decisions)
+      - fix_possession
+      - fix_object_pronouns
+      - collapse_repeated_pronouns
+      - fix_determiners
+      - fix_prepositions
+
+    4. Structure completion (may insert tokens)
+      - insert_copula
+      - insert_articles
+      - dedupe_function_words
+      - fix_am_progressive
+
+    5. Final agreement authority
+      - fix_verb_agreement
+
+    ORDERING INVARIANTS
+    -------------------
+    - No step before fix_verb_agreement may rely on correct verb agreement
+    - No step after fix_verb_agreement may modify verbs or copulas
+    - simplify_subject MUST run before any subject-dependent logic
+    - insert_copula MUST run before fix_verb_agreement
+
+    TOKEN CONTRACT (TEMPORARY TECH DEBT)
+    -----------------------------------
+    - tokens are treated as read-only reference data
+    - pipeline steps may desynchronize words and tokens
+    - helpers must fall back to lookup-based POS when token alignment fails
+
+    DEBUG LEVELS
+    ------------
     - 0: no debug output
     - 1: show only steps that changed the token stream
-    - 2: show every step, including unchanged ones
-
+    - 2: show every step
     """
 
     # --- Input validation ---
@@ -225,6 +248,16 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, tokens=None, debug=False):
         ("fix_verb_agreement", fix_verb_agreement),
     ]
 
+    # enforce structural phase ordering
+    names = [name for name, _ in PIPELINE]
+    assert "simplify_subject" in names
+    assert "insert_copula" in names
+    assert "fix_verb_agreement" in names
+    assert names.index("simplify_subject") < names.index("insert_copula")
+    assert names.index("insert_copula") < names.index("fix_verb_agreement")
+    # Final authority lock
+    assert names[-1] == "fix_verb_agreement"
+
     # --- Helper for debug rendering ---
     def render(words):
         return " ".join(words) if words else "<empty>"
@@ -234,6 +267,9 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, tokens=None, debug=False):
         print("\n=== DEBUG: GRAMMAR PIPELINE ===")
         print("[INPUT]")
         print(f"  words: {render(words)}")
+
+    # CONTRACT: tokens are reference-only and may become misaligned
+    assert tokens is not None, "tokens must be provided (even if imperfect)"
 
     # --- Run pipeline ---
     for name, step in PIPELINE:
@@ -254,6 +290,10 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, tokens=None, debug=False):
             print(f"  input:   {render(before)}")
             print(f"  output:  {render(words)}")
             print(f"  status:  {'CHANGED' if changed else 'unchanged'}")
+
+    # --- Post-pipeline contract checks ---
+    assert_word_list(words, "pipeline final output")
+
 
     # --- Debug: final state ---
     if debug:
@@ -346,6 +386,9 @@ def resolve_hab_ambiguity(words, lookup, eng_lookup, tokens=None):
     Guarantees:
     - rewrites 'help' -> 'have' only in known local contexts
     - does not reorder tokens or infer broader syntax
+
+    MUST run before:
+    - any stage that relies on correct verb identity (e.g., agreement)
     """
     assert_word_list(words, "resolve_hab_ambiguity input")
     result = []
@@ -379,6 +422,11 @@ def simplify_subject(words, lookup, eng_lookup, tokens=None):
     Guarantees:
     - removes redundant 'zombie' after 'I'
     - does not otherwise rewrite clause structure
+
+    MUST run before:
+        - insert_copula
+        - fix_verb_agreement
+          because it defines the canonical subject form
     """
     assert_word_list(words, "simplify_subject input")
     result = []
@@ -474,6 +522,19 @@ def insert_copula(words, lookup, eng_lookup, tokens=None):
     - inserts auxiliary before progressive -ing predicates when safe
     - does not handle full clause repair or late agreement decisions
     - prefers token POS when available, falls back to lookup
+    Ordering:
+    - MUST run after simplify_subject (subject must be canonical)
+    - MUST run before fix_verb_agreement (output is not final)
+    - SHOULD run after basic lexical normalization
+
+    Notes:
+    - Relies on POS (token-first, lookup fallback)
+    - Uses heuristic "no earlier verb seen" to decide insertion
+    - May insert incorrect copula forms; correctness is enforced later
+
+    ASSUMPTION:
+     - subject normalization already applied
+     - this step must not rely on final agreement correctness
     """
     assert_word_list(words, "insert_copula input")
 
@@ -505,6 +566,9 @@ def insert_copula(words, lookup, eng_lookup, tokens=None):
             is_ing = token and has_ing_form(token["features"])
 
             # Progressive auxiliary insertion (e.g., "I reporting" → "I am reporting")
+            # NOTE:
+            # This is an early structural insertion.
+            # Final agreement (is/are/am correctness) is handled later.
             if (
                 not seen_verb
                 and is_ing
@@ -560,8 +624,17 @@ def fix_verb_agreement(words, lookup, eng_lookup, tokens=None):
     - is the last writer on verb/copula form
     - does not reorder tokens
     - uses helper functions to keep ownership localized
+
+    Ordering:
+    - MUST run after all structural modification stages
+    - MUST be the final pipeline step
+
+    Notes:
+    - Performs both early and late copula correction
+    - Relies on subject detection via build_context
     """
     assert_word_list(words, "fix_verb_agreement input")
+
     result = []
 
     for w in words:
@@ -577,7 +650,7 @@ def fix_verb_agreement(words, lookup, eng_lookup, tokens=None):
                 w, changed_word = handle_main_verb(context)
                 result_word = w
 
-        
+
         # Only update word here; late copula correction depends on subject/prev context,
         # not current-token morphology.
         # Late copula correction is intentional:
