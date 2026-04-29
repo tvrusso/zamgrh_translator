@@ -34,7 +34,6 @@ from translator import (
     inflect_verb,
     normalize_morphology,
     find_subject_head,
-    find_token_for_word,
 )
 
 # ---------------------------
@@ -600,7 +599,8 @@ PIPELINE_UNIT_TESTS = {
         ("Zombies will eat brains", "zombies will eat brains"),
         # You edge cases
         ("You give brains", "you give brains"),
-        ("You gives brains", "you give brains"),
+        ("You gives brains", "you give brains",
+         {"gives": {"pos": {"verb"}}}),
         # plural, non-pronoun noun subjects
         ("Humans eat brains", "humans eat brains"),
         ("Humans eats brains", "humans eat brains"),
@@ -1412,7 +1412,7 @@ def run_pipeline_unit_tests(verbose=False):
                 overrides=overrides,
                 eng_lookup=eng_lookup
             )
-            result = func(words, lookup, eng_lookup, tokens)
+            result, tokens = func(words, lookup, eng_lookup, tokens)
             sentence = " ".join(result)
 
             if sentence == expected:
@@ -1507,6 +1507,12 @@ def build_test_tokens(*words, overrides=None, eng_lookup=None):
                 token[key] = value
     return tokens
 
+def get_token_for(word, words, tokens):
+    for i, w in enumerate(words):
+        if w == word:
+            return tokens[i]
+    return None
+
 def run_pipeline_helper_unit_tests(verbose=False):
     data = load_dictionary()
     lookup = build_lookup(data)
@@ -1541,44 +1547,62 @@ def run_pipeline_helper_unit_tests(verbose=False):
                     overrides=overrides,
                     eng_lookup=eng_lookup
                 )
-            if "result_so_far" in context and "prev" not in context:
-                rsf = context["result_so_far"]
-                context["prev"] = rsf[-1] if rsf else None
 
             # ensure required fields exist
             context.setdefault("lookup", lookup)
             context.setdefault("eng_lookup", eng_lookup)
-            context.setdefault("result_so_far", build_result_stub(context))
+            # Make sure result_so_far exists
+            if "result_so_far" not in context:
+                context.setdefault("result_so_far", build_result_stub(context))
+
+            rsf = context.get("result_so_far")
+
+            # build prev and prev2 from result_so_far if not given
+            if "prev" not in context:
+                context["prev"] = rsf[-1] if len(rsf) >= 1 else None
+            if "prev2" not in context:
+                context["prev2"] = rsf[-2] if len(rsf) >= 2 else None
+
+            if "result_tokens_so_far" not in context:
+                context.setdefault(
+                    "result_tokens_so_far",
+                    build_test_tokens(
+                        *rsf,
+                        overrides=overrides,
+                        eng_lookup=eng_lookup
+                    )
+                )
+            subject_word, subject_token = find_subject_head(context)
             context.setdefault(
                 "context_subject_word",
-                find_subject_head(context)
+                subject_word
             )
             context.setdefault(
                 "context_subject_token",
-                find_token_for_word(
-                    context.get("context_subject_word"),
-                    context.get("context_tokens")
-                )
+                subject_token
             )
             context.setdefault(
                 "context_current_token",
-                find_token_for_word(
-                    context.get("word"),
-                    context.get("context_tokens")
+                next(
+                    (t for t in context.get("context_tokens", [])
+                     if t["word"] == context.get("word")),
+                    None
                 )
             )
             context.setdefault(
                 "context_previous_token",
-                find_token_for_word(
+                get_token_for(
                     context.get("prev"),
-                    context.get("context_tokens")
+                    context.get("result_so_far"),
+                    context.get("result_tokens_so_far")
                 )
             )
             context.setdefault(
                 "context_previous2_token",
-                find_token_for_word(
+                get_token_for(
                     context.get("prev2"),
-                    context.get("context_tokens")
+                    context.get("result_so_far"),
+                    context.get("result_tokens_so_far")
                 )
             )
             result = func(context)
@@ -1590,6 +1614,8 @@ def run_pipeline_helper_unit_tests(verbose=False):
                 func_passed +=1
             else:
                 print(f"FAIL: {base_context}")
+                print(f'  result_so_far: {context["result_so_far"]}')
+                print(f'  result_tokens_so_far: {context["result_tokens_so_far"]}')
                 print(f"  expected: {expected}")
                 print(f"  got:      {result}")
                 failed += 1
