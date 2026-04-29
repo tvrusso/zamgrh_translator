@@ -1412,7 +1412,7 @@ def run_pipeline_unit_tests(verbose=False):
                 overrides=overrides,
                 eng_lookup=eng_lookup
             )
-            result = func(words, lookup, eng_lookup, tokens)
+            result, tokens = func(words, lookup, eng_lookup, tokens)
             sentence = " ".join(result)
 
             if sentence == expected:

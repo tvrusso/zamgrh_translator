@@ -226,7 +226,7 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, tokens, debug=False):
         before = list(words)
 
         # Apply step with current words + tokens
-        words = step(words, lookup, eng_lookup, tokens=tokens)
+        words, tokens = step(words, lookup, eng_lookup, tokens=tokens)
 
         # Validate output integrity
         validate_pipeline_step_result(words, f"{name} output")
@@ -323,7 +323,7 @@ def fix_am_progressive(words, lookup, eng_lookup, tokens):
         i += 1
 
     validate_pipeline_step_result(result, "fix_am_progressive output")
-    return result
+    return result, tokens
 
 
 def resolve_hab_ambiguity(words, lookup, eng_lookup, tokens):
@@ -359,7 +359,7 @@ def resolve_hab_ambiguity(words, lookup, eng_lookup, tokens):
         i += 1
 
     validate_pipeline_step_result(result, "resolve_hab_ambiguity output")
-    return result
+    return result, tokens
 
 
 def simplify_subject(words, lookup, eng_lookup, tokens):
@@ -391,7 +391,7 @@ def simplify_subject(words, lookup, eng_lookup, tokens):
         i += 1
 
     validate_pipeline_step_result(result, "simplify_subject output")
-    return result
+    return result, tokens
 
 
 def fix_possession(words, lookup, eng_lookup, tokens):
@@ -416,7 +416,7 @@ def fix_possession(words, lookup, eng_lookup, tokens):
     result = words
 
     validate_pipeline_step_result(result, "fix_possession output")
-    return result
+    return result, tokens
 
 
 def fix_object_pronouns(words, lookup, eng_lookup, tokens):
@@ -441,7 +441,7 @@ def fix_object_pronouns(words, lookup, eng_lookup, tokens):
             result.append(w)
 
     validate_pipeline_step_result(result, "fix_object_pronouns output")
-    return result
+    return result, tokens
 
 def has_future_verb(words, start_idx, lookup, eng_lookup, tokens):
     for w in words[start_idx + 1:]:
@@ -537,7 +537,7 @@ def insert_copula(words, lookup, eng_lookup, tokens):
         result.append(w)
 
     validate_pipeline_step_result(result, "insert_copula output")
-    return result
+    return result, tokens
 
 def fix_prepositions(words, lookup, eng_lookup, tokens):
     """
@@ -560,7 +560,7 @@ def fix_prepositions(words, lookup, eng_lookup, tokens):
             result.append(w)
 
     validate_pipeline_step_result(result, "fix_prepositions output")
-    return result
+    return result, tokens
 
 
 def fix_verb_agreement(words, lookup, eng_lookup, tokens):
@@ -610,7 +610,7 @@ def fix_verb_agreement(words, lookup, eng_lookup, tokens):
         result.append(result_word)
 
     validate_pipeline_step_result(result, "fix_verb_agreement output")
-    return result
+    return result, tokens
 
 
 # ---------------------------
@@ -1062,7 +1062,7 @@ def dedupe_function_words(words, lookup, eng_lookup, tokens):
         prev = w
 
     validate_pipeline_step_result(result, "dedupe_function_words output")
-    return result
+    return result, tokens
 
 
 # Define currently permitted features
@@ -1357,7 +1357,7 @@ def insert_articles(words, lookup, eng_lookup, tokens):
         result.append(w)
 
     validate_pipeline_step_result(result, "insert_articles output")
-    return result
+    return result, tokens
 
 def fix_determiners(words, lookup, eng_lookup, tokens):
     """
@@ -1404,7 +1404,7 @@ def fix_determiners(words, lookup, eng_lookup, tokens):
         result.append(w)
 
     validate_pipeline_step_result(result, "fix_determiners output")
-    return result
+    return result, tokens
 
 
 def collapse_repeated_pronouns(words, lookup, eng_lookup, tokens):
@@ -1426,7 +1426,7 @@ def collapse_repeated_pronouns(words, lookup, eng_lookup, tokens):
         prev = w
 
     validate_pipeline_step_result(result, "collapse_repeated_pronouns output")
-    return result
+    return result, tokens
 
 
 # ---------------------------
