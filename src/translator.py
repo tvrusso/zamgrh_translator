@@ -103,60 +103,6 @@ def validate_pipeline_step_result(words, label):
     assert_word_list(words, label)
     assert_unknown_word_shape(words, label)
 
-# translation pipeline
-def build_tokens_from_words(words, eng_lookup):
-    """
-    Build a minimal token structure from a list of words.
-
-    This is a fallback shim used when real Zamgrh-derived tokens
-    are not available. It does NOT perform morphology.
-
-    Guarantees:
-    - len(tokens) == len(words)
-    - tokens[i]["word"] == words[i]
-    - features is always an empty dict
-    - pos is best-effort from lookup (if available)
-    """
-    assert_word_list(words, "build_tokens_from_words input")
-
-    def infer_features(word):
-        w = word.lower()
-        features = {}
-        form = []
-
-        pos = eng_lookup.get(w.lower(), set())
-
-        if w.endswith("ing") and len(w) >3:
-            base = w[:-3]
-            base_pos=eng_lookup.get(base,set())
-            if "verb" in base_pos:
-                pos = base_pos
-                form.append("ing")
-        elif w.endswith("s") and w not in {"is", "was", "has"} and len(w)>1:
-            base = w[:-1]
-            base_pos=eng_lookup.get(base,set())
-            if "noun" in base_pos:
-                pos = base_pos
-                form.append("s")
-        elif w in {"they", "we", "you"}:
-            form.append("s")
-
-        if form:
-            features["form"] = form
-        return pos,features
-
-    tokens = []
-    for w in words:
-        pos,features = infer_features(w)
-        tokens.append({
-            "raw": w,
-            "word": w,
-            "base": w,
-            "pos": set(pos),
-            "features": features,
-        })
-
-    return tokens
 
 def apply_grammar_pipeline(words, lookup, eng_lookup, tokens=None, debug=False):
     """
@@ -167,7 +113,11 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, tokens=None, debug=False):
     Expects:
     - words: list[str] (tokenized English glosses / unknown-token forms)
     - lookup / eng_lookup: valid dictionary structures
-    - tokens: parallel token list (may be partially aligned; treated as reference-only)
+    - tokens: parallel token list
+      - MUST be aligned with words on entry
+      - alignment may be broken by pipeline steps, and so until
+        technical debt is removed should be treated as reference-only while
+        in the pipeline
 
     Guarantees:
     - returns list[str]

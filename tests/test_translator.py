@@ -5,13 +5,14 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 
 from translator import (
-    load_dictionary,
+    assert_word_list,
     build_lookup,
     build_english_pos_lookup,
+    clean,
+    get_pos,
+    load_dictionary,
     zamgrh_to_english,
     zamgrh_to_structure,
-    get_pos,
-    clean,
     resolve_hab_ambiguity,
     simplify_subject,
     fix_possession,
@@ -32,7 +33,6 @@ from translator import (
     detect_auxiliary,
     inflect_verb,
     normalize_morphology,
-    build_tokens_from_words,
     find_subject_head,
     find_token_for_word,
 )
@@ -1435,6 +1435,62 @@ def run_pipeline_unit_tests(verbose=False):
     print(f"Unit tests Passed: {passed}")
     print(f"Unit tests Failed: {failed}")
     return failed == 0, passed, failed
+
+# translation pipeline
+def build_tokens_from_words(words, eng_lookup):
+    """
+    Build a minimal token structure from a list of words.
+
+    This is a fallback shim used only by the test harness
+    when real Zamgrh-derived tokens are not available. It does NOT perform
+    morphology other than a limited inference from English spelling.
+
+    Guarantees:
+    - len(tokens) == len(words)
+    - tokens[i]["word"] == words[i]
+    - features is a best guess based on limited English morphology
+    - pos is best-effort from lookup (if available)
+    """
+    assert_word_list(words, "build_tokens_from_words input")
+
+    def infer_features(word):
+        w = word.lower()
+        features = {}
+        form = []
+
+        pos = eng_lookup.get(w.lower(), set())
+
+        if w.endswith("ing") and len(w) >3:
+            base = w[:-3]
+            base_pos=eng_lookup.get(base,set())
+            if "verb" in base_pos:
+                pos = base_pos
+                form.append("ing")
+        elif w.endswith("s") and w not in {"is", "was", "has"} and len(w)>1:
+            base = w[:-1]
+            base_pos=eng_lookup.get(base,set())
+            if "noun" in base_pos:
+                pos = base_pos
+                form.append("s")
+        elif w in {"they", "we", "you"}:
+            form.append("s")
+
+        if form:
+            features["form"] = form
+        return pos,features
+
+    tokens = []
+    for w in words:
+        pos,features = infer_features(w)
+        tokens.append({
+            "raw": w,
+            "word": w,
+            "base": w,
+            "pos": set(pos),
+            "features": features,
+        })
+
+    return tokens
 
 def build_test_tokens(*words, overrides=None, eng_lookup=None):
     tokens = build_tokens_from_words(
