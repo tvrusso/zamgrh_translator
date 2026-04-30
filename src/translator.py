@@ -717,9 +717,7 @@ def build_context(idx, words, result, lookup, eng_lookup, tokens, result_tokens)
 def apply_ing_override(word, token, pos):
     """
     return "verb" as the pos if we've got a word that has an "ing" suffix
-    that was either:
-      - recognized as a verb with suffix already
-      - unrecognized and has "ing" at the end
+    that was recognized as a verb with suffix by normalize_morphology
     Otherwise return the pos passed in
     """
     is_ing = (token and has_ing_form(token["features"]))
