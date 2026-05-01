@@ -1087,6 +1087,21 @@ HELPER_UNIT_TESTS = {
              "prev": None},
             (False, False)
         ),
+        (
+            {"result_so_far": ["dogs"]},
+            (True, False)
+        )
+    ],
+    "find_subject_head": [
+        (
+            {"result_so_far": ["the", "dog"],
+             "token_overrides": {
+                 "dog": {"pos": {"noun"}, "features":{}}
+                 }
+             },
+            ("dog", {"raw": "dog", "word":"dog", "base":"dog",
+                     "pos": {"noun"}, "features":{}})
+            )
     ],
     "inflect_verb": [
         # third person singular
