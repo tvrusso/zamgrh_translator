@@ -1513,6 +1513,113 @@ def get_token_for(word, words, tokens):
             return tokens[i]
     return None
 
+def augment_context(base_context, lookup, eng_lookup):
+    """
+    Given a base context from a test case definition, augment
+    it with components necessary for the helper function under test
+
+    Expects:
+     - base context contains at least:
+       - "word" (the current word)
+       - "result_so_far", a list of previous words in the sentence
+       OR
+       - "prev" and "prev2", the previous word, and the word before it
+
+     - may contain token overrides defining POS and features for words in
+       the sentence.   These will populate the default tokens constructed for
+       words, overriding any specified in the base context
+
+    Produces: a fleshed out context containing:
+      - elements for "lookup" and "eng_lookup" dictionaries
+      - prev2 and prev constructed from result_so_far they are not given
+      - result_so_far constructed from prev and prev2 if it is not given
+      - tokens for all words in the sentence ("context_tokens")
+      - tokens for each word in result_so_far ("result_tokens_so_far)
+      - token and word for the subject detected in the sentence
+        ("context_subject_word" and "context_subject_token)
+      - token for the current word ("context_current_token")
+      - tokens for previous and second previous words
+        ("context_previous_token" and "context_previous2_token")
+    """
+    # augment context
+    context = dict(base_context)  # shallow copy
+    overrides = context.pop("token_overrides", None)
+    words_for_tokens = []
+
+    # include result_so_far FIRST (critical)
+    words_for_tokens.extend(context.get("result_so_far", []))
+
+    # then prev/prev2/word if not already included
+    for w in (context.get("prev2"), context.get("prev"), context.get("word")):
+        if isinstance(w, str) and w not in words_for_tokens:
+            words_for_tokens.append(w)
+
+    if "context_tokens" not in context:
+        context["context_tokens"] = build_test_tokens(
+            *words_for_tokens,
+            overrides=overrides,
+            eng_lookup=eng_lookup
+        )
+
+    # ensure required fields exist
+    context.setdefault("lookup", lookup)
+    context.setdefault("eng_lookup", eng_lookup)
+    # Make sure result_so_far exists
+    if "result_so_far" not in context:
+        context.setdefault("result_so_far", build_result_stub(context))
+
+    rsf = context.get("result_so_far")
+
+    # build prev and prev2 from result_so_far if not given
+    if "prev" not in context:
+        context["prev"] = rsf[-1] if len(rsf) >= 1 else None
+    if "prev2" not in context:
+        context["prev2"] = rsf[-2] if len(rsf) >= 2 else None
+
+    if "result_tokens_so_far" not in context:
+        context.setdefault(
+            "result_tokens_so_far",
+            build_test_tokens(
+                *rsf,
+                overrides=overrides,
+                eng_lookup=eng_lookup
+            )
+        )
+    subject_word, subject_token = find_subject_head(context)
+    context.setdefault(
+        "context_subject_word",
+        subject_word
+    )
+    context.setdefault(
+        "context_subject_token",
+        subject_token
+    )
+    context.setdefault(
+        "context_current_token",
+        next(
+            (t for t in context.get("context_tokens", [])
+             if t["word"] == context.get("word")),
+            None
+        )
+    )
+    context.setdefault(
+        "context_previous_token",
+        get_token_for(
+            context.get("prev"),
+            context.get("result_so_far"),
+            context.get("result_tokens_so_far")
+        )
+    )
+    context.setdefault(
+        "context_previous2_token",
+        get_token_for(
+            context.get("prev2"),
+            context.get("result_so_far"),
+            context.get("result_tokens_so_far")
+        )
+    )
+    return context
+
 def run_pipeline_helper_unit_tests(verbose=False):
     data = load_dictionary()
     lookup = build_lookup(data)
@@ -1528,83 +1635,7 @@ def run_pipeline_helper_unit_tests(verbose=False):
         print(f"\n=== HELPER: {func_name} ===")
 
         for base_context, expected in cases:
-            # augment context
-            context = dict(base_context)  # shallow copy
-            overrides = context.pop("token_overrides", None)
-            words_for_tokens = []
-
-            # include result_so_far FIRST (critical)
-            words_for_tokens.extend(context.get("result_so_far", []))
-
-            # then prev/prev2/word if not already included
-            for w in (context.get("prev2"), context.get("prev"), context.get("word")):
-                if isinstance(w, str) and w not in words_for_tokens:
-                    words_for_tokens.append(w)
-
-            if "context_tokens" not in context:
-                context["context_tokens"] = build_test_tokens(
-                    *words_for_tokens,
-                    overrides=overrides,
-                    eng_lookup=eng_lookup
-                )
-
-            # ensure required fields exist
-            context.setdefault("lookup", lookup)
-            context.setdefault("eng_lookup", eng_lookup)
-            # Make sure result_so_far exists
-            if "result_so_far" not in context:
-                context.setdefault("result_so_far", build_result_stub(context))
-
-            rsf = context.get("result_so_far")
-
-            # build prev and prev2 from result_so_far if not given
-            if "prev" not in context:
-                context["prev"] = rsf[-1] if len(rsf) >= 1 else None
-            if "prev2" not in context:
-                context["prev2"] = rsf[-2] if len(rsf) >= 2 else None
-
-            if "result_tokens_so_far" not in context:
-                context.setdefault(
-                    "result_tokens_so_far",
-                    build_test_tokens(
-                        *rsf,
-                        overrides=overrides,
-                        eng_lookup=eng_lookup
-                    )
-                )
-            subject_word, subject_token = find_subject_head(context)
-            context.setdefault(
-                "context_subject_word",
-                subject_word
-            )
-            context.setdefault(
-                "context_subject_token",
-                subject_token
-            )
-            context.setdefault(
-                "context_current_token",
-                next(
-                    (t for t in context.get("context_tokens", [])
-                     if t["word"] == context.get("word")),
-                    None
-                )
-            )
-            context.setdefault(
-                "context_previous_token",
-                get_token_for(
-                    context.get("prev"),
-                    context.get("result_so_far"),
-                    context.get("result_tokens_so_far")
-                )
-            )
-            context.setdefault(
-                "context_previous2_token",
-                get_token_for(
-                    context.get("prev2"),
-                    context.get("result_so_far"),
-                    context.get("result_tokens_so_far")
-                )
-            )
+            context = augment_context(base_context, lookup, eng_lookup)
             result = func(context)
 
             if result == expected:
