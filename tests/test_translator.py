@@ -1088,17 +1088,26 @@ HELPER_UNIT_TESTS = {
             (False, False)
         ),
         (
-            {"result_so_far": ["dogs"]},
+            {"word": "eat",
+             "pos": {"verb"},
+             "result_so_far": ["dogs"]},
             (True, False)
+        ),
+        (
+            {"word": "eat",
+             "pos": {"verb"},
+             "result_so_far": ["the", "dog"]},
+            (True, True)
         )
     ],
     "find_subject_head": [
         (
-            {"result_so_far": ["the", "dog"],
+            {"word": "eats",
+             "result_so_far": ["the", "dog"],
              "token_overrides": {
                  "dog": {"pos": {"noun"}, "features":{}}
-                 }
-             },
+             }
+            },
             ("dog", {"raw": "dog", "word":"dog", "base":"dog",
                      "pos": {"noun"}, "features":{}})
             )
@@ -1536,13 +1545,17 @@ def augment_context(base_context, lookup, eng_lookup):
     Expects:
      - base context contains at least:
        - "word" (the current word)
-       - "result_so_far", a list of previous words in the sentence
-       OR
-       - "prev" and "prev2", the previous word, and the word before it
-
      - may contain token overrides defining POS and features for words in
        the sentence.   These will populate the default tokens constructed for
        words, overriding any specified in the base context
+
+     If present in base:
+       - "result_so_far", a list of previous words in the sentence
+       OR
+       - "prev" and "prev2", the previous word, and the word before it
+     The exception is inflect_verb, which uses only "word" and does
+     not use previous words from the current result, so we do
+     not *require* either of these.
 
     Produces: a fleshed out context containing:
       - elements for "lookup" and "eng_lookup" dictionaries
@@ -1563,6 +1576,8 @@ def augment_context(base_context, lookup, eng_lookup):
 
     # include result_so_far FIRST (critical)
     words_for_tokens.extend(context.get("result_so_far", []))
+
+    assert "word" in context, f"Test context {context} does not contain a 'word'"
 
     # then prev/prev2/word if not already included
     for w in (context.get("prev2"), context.get("prev"), context.get("word")):

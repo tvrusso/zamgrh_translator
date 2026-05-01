@@ -1018,24 +1018,25 @@ def detect_subject(context):
     if not subject:
         return False, False
 
-    is_third_person = classify_subject_with_context(subject, context)
+    is_third_person = classify_subject_with_context(context)
     return True, is_third_person
 
-def classify_subject_with_context(word, context):
+def classify_subject_with_context(context):
     """
     Enhanced subject classification using morphology when available.
     Falls back to classify_subject.
     """
     token = context.get("context_subject_token")
+    subject_word = context.get("context_subject_word")
 
     if token and token.get("features"):
         if has_s_form(token["features"]):
             return False  # plural → not 3rd person singular
         pos = token.get("pos", set())
         if "noun" not in pos:
-            return classify_subject(word, token)
+            return classify_subject(subject_word, token)
 
-    return classify_subject(word, token)
+    return classify_subject(subject_word, token)
 
 def classify_subject(word, token):
     """
