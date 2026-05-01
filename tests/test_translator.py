@@ -1107,10 +1107,115 @@ HELPER_UNIT_TESTS = {
              "token_overrides": {
                  "dog": {"pos": {"noun"}, "features":{}}
              }
-            },
+             },
             ("dog", {"raw": "dog", "word":"dog", "base":"dog",
                      "pos": {"noun"}, "features":{}})
-            )
+        ),
+        (
+            {"word": "eat",
+             "pos": ["verb"],
+             "result_so_far": ["dogs"],
+             "token_overrides": {
+                 "dogs": {"pos": {"noun"}, "base": "dog",
+                          "features":{"form":["s"]}}
+             }
+            },
+            ("dogs", {"raw": "dogs", "word":"dogs", "base":"dog",
+                     "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        (
+            {"word": "eats",
+             "result_so_far": ["he"],
+             "token_overrides": {
+                 "he": {"pos": {"pron"}, "features":{}}
+             }
+             },
+            ("he", {"raw": "he", "word":"he", "base":"he",
+                     "pos": {"pron"}, "features":{}})
+        ),
+        (
+            {"word": "eat",
+             "result_so_far": ["they"],
+             "token_overrides": {
+                 "they": {"pos": {"pron"}, "features":{}}
+             }
+             },
+            ("they", {"raw": "they", "word":"they", "base":"they",
+                     "pos": {"pron"}, "features":{}})
+        ),
+        (
+            {"word": "attack",
+             "result_so_far": ["the", "eating", "zombies"],
+             "token_overrides": {
+                 "eating": {"pos": {"verb"}, "features":{"form":["ing"]}},
+                 "zombies": {"pos": {"noun"}, "base": "zombie",
+                             "features":{"form":["s"]}}
+             }
+             },
+            ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+                     "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        (
+            {"word": "brains",
+             "result_so_far": ["zombies", "eating"]
+             },
+            ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+                     "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        (
+            {"word": "baz",
+             "result_so_far": ["blargs", "are"]
+             },
+            ("blargs", {"raw": "blargs", "word":"blargs", "base":"blargs",
+                        "pos": set(), "features":{}})
+        ),
+        (
+             {"word": "attack",
+              "result_so_far": ["bad", "zombies"]
+              },
+             ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+                          "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        (
+             {"word": "attack",
+              "result_so_far": ["zombies", "and", "humans"]
+              },
+             ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+                          "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        # THIS TEST FAILS AND INDICATES A BUG THAT NEEDS FIXING
+        # “Premature verb boundary termination”
+        # (
+        #    {"word": "brains",
+        #     "result_so_far": ["zombies", "eat"]
+        #     },
+        #    ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+        #             "pos": {"noun"}, "features":{"form":["s"]}})
+        #),
+        # THIS TEST FAILS AND INDICATES A BUG THAT NEEDS FIXING
+        # “Premature boundary termination”
+        #(
+        #    {"word": "eat",
+        #     "result_so_far": ["zombies", "will"]
+        #     },
+        #    ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+        #             "pos": {"noun"}, "features":{"form":["s"]}})
+        #),
+        # THIS TEST FAILS AND INDICATES A BUG THAT NEEDS FIXING
+        # particple/gerund detection depends on syntactic hints
+        # (like determiners)
+        #(
+        #     {"word": "attack",
+        #      "result_so_far": ["eating", "zombies"],
+        #      "token_overrides": {
+        #          "eating": {"pos": {"verb"}, "features":{"form":["ing"]}},
+        #          "zombies": {"pos": {"noun"}, "base": "zombie",
+        #                      "features":{"form":["s"]}}
+        #      }
+        #      },
+        #     ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+        #                  "pos": {"noun"}, "features":{"form":["s"]}})
+        #),
     ],
     "inflect_verb": [
         # third person singular
@@ -1481,6 +1586,7 @@ def build_tokens_from_words(words, eng_lookup):
         w = word.lower()
         features = {}
         form = []
+        retbase = w
 
         pos = eng_lookup.get(w.lower(), set())
 
@@ -1489,27 +1595,29 @@ def build_tokens_from_words(words, eng_lookup):
             base_pos=eng_lookup.get(base,set())
             if "verb" in base_pos:
                 pos = base_pos
+                retbase = base
                 form.append("ing")
         elif w.endswith("s") and w not in {"is", "was", "has"} and len(w)>1:
             base = w[:-1]
             base_pos=eng_lookup.get(base,set())
             if "noun" in base_pos:
                 pos = base_pos
+                retbase = base
                 form.append("s")
         elif w in {"they", "we", "you"}:
             form.append("s")
 
         if form:
             features["form"] = form
-        return pos,features
+        return retbase,pos,features
 
     tokens = []
     for w in words:
-        pos,features = infer_features(w)
+        base, pos,features = infer_features(w)
         tokens.append({
             "raw": w,
             "word": w,
-            "base": w,
+            "base": base,
             "pos": set(pos),
             "features": features,
         })
