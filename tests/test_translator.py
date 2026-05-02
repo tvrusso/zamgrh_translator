@@ -34,6 +34,7 @@ from translator import (
     inflect_verb,
     normalize_morphology,
     find_subject_head,
+    classify_subject_with_context,
 )
 
 # ---------------------------
@@ -1098,6 +1099,89 @@ HELPER_UNIT_TESTS = {
              "pos": {"verb"},
              "result_so_far": ["the", "dog"]},
             (True, True)
+        ),
+        # Do features override string heuristics?
+        (
+            {"word": "eat",
+             "pos": {"verb"},
+             "prev": "zombie",
+             "token_overrides": {
+                 "zombie": {"pos": {"noun"}, "features": {"form": ["s"]}}
+             }},
+            (True, False)  # plural via features, not spelling
+        ),
+        # pronoun vs. noun ambiguity via token POS
+        (
+            {"word": "eat",
+             "prev": "you",
+             "token_overrides": {
+                 "you": {"pos": {"pron"}, "features": {}}
+             }},
+            (True, False)
+        ),
+        # Missing token features (fallback path)
+        (
+            {"word": "eat",
+             "prev": "dogs",
+             "token_overrides": {
+                 "dogs": {"pos": {"noun"}, "features": {}}
+             }},
+            (True, False)  # falls back to endswith("s")
+        ),
+        # compound subject
+        (
+            {"word": "eat",
+             "result_so_far": ["zombies", "and", "humans"]},
+            (True, False)
+        )
+    ],
+    "classify_subject_with_context": [
+        # feature driven plural overrides everything
+        (
+            {"word": "unused",
+             "context_subject_word": "zombie",
+             "context_subject_token": {
+                 "pos": {"noun"},
+                 "features": {"form": ["s"]}
+             }},
+            False
+        ),
+        # Feature present but not plural, falls through
+        (
+            {"word": "unused",
+             "context_subject_word": "zombie",
+             "context_subject_token": {
+                 "pos": {"noun"},
+                 "features": {"form": []}
+             }},
+            True
+        ),
+        # non-noun POS, defer to classify_subject
+        (
+            {"word": "unused",
+             "context_subject_word": "he",
+             "context_subject_token": {
+                 "pos": {"pronoun"},
+                 "features": {}
+             }},
+            True
+        ),
+        # missing features, fallback to word heuristic
+        (
+            {"word": "unused",
+             "context_subject_word": "dogs",
+             "context_subject_token": {
+                 "pos": {"noun"},
+                 "features": {}
+             }},
+            False
+        ),
+        # no token at all, full fallback
+        (
+            {"word": "unused",
+             "context_subject_word": "cats",
+             "context_subject_token": None},
+            False
         )
     ],
     "find_subject_head": [
