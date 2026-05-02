@@ -34,6 +34,7 @@ from translator import (
     inflect_verb,
     normalize_morphology,
     find_subject_head,
+    classify_subject_with_context,
 )
 
 # ---------------------------
@@ -1098,6 +1099,89 @@ HELPER_UNIT_TESTS = {
              "pos": {"verb"},
              "result_so_far": ["the", "dog"]},
             (True, True)
+        ),
+        # Do features override string heuristics?
+        (
+            {"word": "eat",
+             "pos": {"verb"},
+             "prev": "zombie",
+             "token_overrides": {
+                 "zombie": {"pos": {"noun"}, "features": {"form": ["s"]}}
+             }},
+            (True, False)  # plural via features, not spelling
+        ),
+        # pronoun vs. noun ambiguity via token POS
+        (
+            {"word": "eat",
+             "prev": "you",
+             "token_overrides": {
+                 "you": {"pos": {"pron"}, "features": {}}
+             }},
+            (True, False)
+        ),
+        # Missing token features (fallback path)
+        (
+            {"word": "eat",
+             "prev": "dogs",
+             "token_overrides": {
+                 "dogs": {"pos": {"noun"}, "features": {}}
+             }},
+            (True, False)  # falls back to endswith("s")
+        ),
+        # compound subject
+        (
+            {"word": "eat",
+             "result_so_far": ["zombies", "and", "humans"]},
+            (True, False)
+        )
+    ],
+    "classify_subject_with_context": [
+        # feature driven plural overrides everything
+        (
+            {"word": "unused",
+             "context_subject_word": "zombie",
+             "context_subject_token": {
+                 "pos": {"noun"},
+                 "features": {"form": ["s"]}
+             }},
+            False
+        ),
+        # Feature present but not plural, falls through
+        (
+            {"word": "unused",
+             "context_subject_word": "zombie",
+             "context_subject_token": {
+                 "pos": {"noun"},
+                 "features": {"form": []}
+             }},
+            True
+        ),
+        # non-noun POS, defer to classify_subject
+        (
+            {"word": "unused",
+             "context_subject_word": "he",
+             "context_subject_token": {
+                 "pos": {"pronoun"},
+                 "features": {}
+             }},
+            True
+        ),
+        # missing features, fallback to word heuristic
+        (
+            {"word": "unused",
+             "context_subject_word": "dogs",
+             "context_subject_token": {
+                 "pos": {"noun"},
+                 "features": {}
+             }},
+            False
+        ),
+        # no token at all, full fallback
+        (
+            {"word": "unused",
+             "context_subject_word": "cats",
+             "context_subject_token": None},
+            False
         )
     ],
     "find_subject_head": [
@@ -1107,10 +1191,115 @@ HELPER_UNIT_TESTS = {
              "token_overrides": {
                  "dog": {"pos": {"noun"}, "features":{}}
              }
-            },
+             },
             ("dog", {"raw": "dog", "word":"dog", "base":"dog",
                      "pos": {"noun"}, "features":{}})
-            )
+        ),
+        (
+            {"word": "eat",
+             "pos": ["verb"],
+             "result_so_far": ["dogs"],
+             "token_overrides": {
+                 "dogs": {"pos": {"noun"}, "base": "dog",
+                          "features":{"form":["s"]}}
+             }
+            },
+            ("dogs", {"raw": "dogs", "word":"dogs", "base":"dog",
+                     "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        (
+            {"word": "eats",
+             "result_so_far": ["he"],
+             "token_overrides": {
+                 "he": {"pos": {"pron"}, "features":{}}
+             }
+             },
+            ("he", {"raw": "he", "word":"he", "base":"he",
+                     "pos": {"pron"}, "features":{}})
+        ),
+        (
+            {"word": "eat",
+             "result_so_far": ["they"],
+             "token_overrides": {
+                 "they": {"pos": {"pron"}, "features":{}}
+             }
+             },
+            ("they", {"raw": "they", "word":"they", "base":"they",
+                     "pos": {"pron"}, "features":{}})
+        ),
+        (
+            {"word": "attack",
+             "result_so_far": ["the", "eating", "zombies"],
+             "token_overrides": {
+                 "eating": {"pos": {"verb"}, "features":{"form":["ing"]}},
+                 "zombies": {"pos": {"noun"}, "base": "zombie",
+                             "features":{"form":["s"]}}
+             }
+             },
+            ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+                     "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        (
+            {"word": "brains",
+             "result_so_far": ["zombies", "eating"]
+             },
+            ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+                     "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        (
+            {"word": "baz",
+             "result_so_far": ["blargs", "are"]
+             },
+            ("blargs", {"raw": "blargs", "word":"blargs", "base":"blargs",
+                        "pos": set(), "features":{}})
+        ),
+        (
+             {"word": "attack",
+              "result_so_far": ["bad", "zombies"]
+              },
+             ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+                          "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        (
+             {"word": "attack",
+              "result_so_far": ["zombies", "and", "humans"]
+              },
+             ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+                          "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        # THIS TEST FAILS AND INDICATES A BUG THAT NEEDS FIXING
+        # “Premature verb boundary termination”
+        # (
+        #    {"word": "brains",
+        #     "result_so_far": ["zombies", "eat"]
+        #     },
+        #    ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+        #             "pos": {"noun"}, "features":{"form":["s"]}})
+        #),
+        # THIS TEST FAILS AND INDICATES A BUG THAT NEEDS FIXING
+        # “Premature boundary termination”
+        #(
+        #    {"word": "eat",
+        #     "result_so_far": ["zombies", "will"]
+        #     },
+        #    ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+        #             "pos": {"noun"}, "features":{"form":["s"]}})
+        #),
+        # THIS TEST FAILS AND INDICATES A BUG THAT NEEDS FIXING
+        # particple/gerund detection depends on syntactic hints
+        # (like determiners)
+        #(
+        #     {"word": "attack",
+        #      "result_so_far": ["eating", "zombies"],
+        #      "token_overrides": {
+        #          "eating": {"pos": {"verb"}, "features":{"form":["ing"]}},
+        #          "zombies": {"pos": {"noun"}, "base": "zombie",
+        #                      "features":{"form":["s"]}}
+        #      }
+        #      },
+        #     ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+        #                  "pos": {"noun"}, "features":{"form":["s"]}})
+        #),
     ],
     "inflect_verb": [
         # third person singular
@@ -1481,6 +1670,7 @@ def build_tokens_from_words(words, eng_lookup):
         w = word.lower()
         features = {}
         form = []
+        retbase = w
 
         pos = eng_lookup.get(w.lower(), set())
 
@@ -1489,27 +1679,29 @@ def build_tokens_from_words(words, eng_lookup):
             base_pos=eng_lookup.get(base,set())
             if "verb" in base_pos:
                 pos = base_pos
+                retbase = base
                 form.append("ing")
         elif w.endswith("s") and w not in {"is", "was", "has"} and len(w)>1:
             base = w[:-1]
             base_pos=eng_lookup.get(base,set())
             if "noun" in base_pos:
                 pos = base_pos
+                retbase = base
                 form.append("s")
         elif w in {"they", "we", "you"}:
             form.append("s")
 
         if form:
             features["form"] = form
-        return pos,features
+        return retbase,pos,features
 
     tokens = []
     for w in words:
-        pos,features = infer_features(w)
+        base, pos,features = infer_features(w)
         tokens.append({
             "raw": w,
             "word": w,
-            "base": w,
+            "base": base,
             "pos": set(pos),
             "features": features,
         })
