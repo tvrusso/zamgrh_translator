@@ -1723,12 +1723,6 @@ def build_test_tokens(*words, overrides=None, eng_lookup=None):
                 token[key] = value
     return tokens
 
-def get_token_for(word, words, tokens):
-    for i, w in enumerate(words):
-        if w == word:
-            return tokens[i]
-    return None
-
 def augment_context(base_context, lookup, eng_lookup):
     """
     Given a base context from a test case definition, augment
@@ -1777,11 +1771,19 @@ def augment_context(base_context, lookup, eng_lookup):
             words_for_tokens.append(w)
 
     if "context_tokens" not in context:
-        context["context_tokens"] = build_test_tokens(
+        context_tokens = build_test_tokens(
             *words_for_tokens,
             overrides=overrides,
             eng_lookup=eng_lookup
         )
+
+    assert len(words_for_tokens) >= 1 and len(words_for_tokens) == len(context_tokens), f"words_for_tokens and context_tokens not aligned"
+
+    context["context_tokens"] = context_tokens
+
+    # At this point, because tokens are aligned and we *definitely* have
+    # a "word", that the token for "word" is the last one:
+    current_token = context_tokens[-1]
 
     # ensure required fields exist
     context.setdefault("lookup", lookup)
@@ -1798,15 +1800,26 @@ def augment_context(base_context, lookup, eng_lookup):
     if "prev2" not in context:
         context["prev2"] = rsf[-2] if len(rsf) >= 2 else None
 
+    # At this point, result_so_far and prev2,prev both exist
+    # no matter which was given in the base context, and they agree.
+
     if "result_tokens_so_far" not in context:
-        context.setdefault(
-            "result_tokens_so_far",
-            build_test_tokens(
+        rtsf = build_test_tokens(
                 *rsf,
                 overrides=overrides,
                 eng_lookup=eng_lookup
             )
+        context.setdefault(
+            "result_tokens_so_far",
+            rtsf
         )
+    else:
+        rtsf = context["result_tokens_so_far"]
+
+    # This assertion there only to guard against the test case having
+    # both result_so_far and result_tokens_so_far specified, but misaligned
+    assert len(rsf) == len(rtsf), f"result_so_far and result_tokens_so_far misaligned"
+
     subject_word, subject_token = find_subject_head(context)
     context.setdefault(
         "context_subject_word",
@@ -1818,28 +1831,29 @@ def augment_context(base_context, lookup, eng_lookup):
     )
     context.setdefault(
         "context_current_token",
-        next(
-            (t for t in context.get("context_tokens", [])
-             if t["word"] == context.get("word")),
-            None
-        )
+        current_token
     )
+    previous_token = None
+    previous2_token = None
+    if len(rsf) >= 1:
+        previous_token = rtsf[-1]
+
     context.setdefault(
         "context_previous_token",
-        get_token_for(
-            context.get("prev"),
-            context.get("result_so_far"),
-            context.get("result_tokens_so_far")
-        )
+        previous_token
+    )
+    if len(rsf) >= 2:
+        previous2_token = rtsf[-2]
+
+    context.setdefault(
+        "context_previous_token",
+        previous_token
     )
     context.setdefault(
         "context_previous2_token",
-        get_token_for(
-            context.get("prev2"),
-            context.get("result_so_far"),
-            context.get("result_tokens_so_far")
-        )
+        previous2_token
     )
+
     return context
 
 def run_pipeline_helper_unit_tests(verbose=False):
