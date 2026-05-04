@@ -1851,10 +1851,6 @@ def augment_context(base_context, lookup, eng_lookup):
         previous2_token = rtsf[-2]
 
     context.setdefault(
-        "context_previous_token",
-        previous_token
-    )
-    context.setdefault(
         "context_previous2_token",
         previous2_token
     )
