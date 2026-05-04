@@ -1776,10 +1776,15 @@ def augment_context(base_context, lookup, eng_lookup):
             overrides=overrides,
             eng_lookup=eng_lookup
         )
+        context["context_tokens"] = context_tokens
+    else:
+        context_tokens = context["context_tokens"]
 
+    # This assertion here to guard against the possibility that the test
+    # case contains a "context_tokens" list that is misaligned with the
+    # word list in the test case
     assert len(words_for_tokens) >= 1 and len(words_for_tokens) == len(context_tokens), f"words_for_tokens and context_tokens not aligned"
 
-    context["context_tokens"] = context_tokens
 
     # At this point, because tokens are aligned and we *definitely* have
     # a "word", that the token for "word" is the last one:
