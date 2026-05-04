@@ -124,7 +124,7 @@ def replace_token_word(token, new_word):
         "base": token.get("base", new_word),
     }
 
-def apply_grammar_pipeline(words, lookup, eng_lookup, tokens, debug=False):
+def apply_grammar_pipeline(words, lookup, eng_lookup, tokens, debug=0):
     """
     Apply the English grammar cleanup pipeline.
 
@@ -187,6 +187,7 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, tokens, debug=False):
     - 0: no debug output
     - 1: show only steps that changed the token stream
     - 2: show every step
+    - 3: used by pipeline steps for extended debugging output
     """
 
     # --- Input validation ---
@@ -244,7 +245,7 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, tokens, debug=False):
         before = list(words)
 
         # Apply step with current words + tokens
-        words, tokens = step(words, lookup, eng_lookup, tokens=tokens)
+        words, tokens = step(words, lookup, eng_lookup, tokens=tokens, debug=debug)
 
         # Validate output integrity
         validate_pipeline_step_result(words, f"{name} output", tokens)
@@ -313,7 +314,7 @@ def is_going_to_sequence(words, i):
         return 1
     return 0
 
-def fix_am_progressive(words, lookup, eng_lookup, tokens):
+def fix_am_progressive(words, lookup, eng_lookup, tokens, debug=0):
     """
     Owns: narrow repair of 'I going to' -> 'I am going to'.
 
@@ -348,7 +349,7 @@ def fix_am_progressive(words, lookup, eng_lookup, tokens):
     return result, result_tokens
 
 
-def resolve_hab_ambiguity(words, lookup, eng_lookup, tokens):
+def resolve_hab_ambiguity(words, lookup, eng_lookup, tokens, debug=0):
     """
     Owns: lexical ambiguity cleanup for specific known collisions.
 
@@ -384,7 +385,7 @@ def resolve_hab_ambiguity(words, lookup, eng_lookup, tokens):
     return result, result_tokens
 
 
-def simplify_subject(words, lookup, eng_lookup, tokens):
+def simplify_subject(words, lookup, eng_lookup, tokens, debug=0):
     """
     Owns: Zamgrh-specific redundant subject cleanup.
 
@@ -419,7 +420,7 @@ def simplify_subject(words, lookup, eng_lookup, tokens):
     return result, result_tokens
 
 
-def fix_possession(words, lookup, eng_lookup, tokens):
+def fix_possession(words, lookup, eng_lookup, tokens, debug=0):
     """
     Owns: possessive pronoun conversion for narrow lexical patterns.
 
@@ -444,7 +445,7 @@ def fix_possession(words, lookup, eng_lookup, tokens):
     return result, tokens
 
 
-def fix_object_pronouns(words, lookup, eng_lookup, tokens):
+def fix_object_pronouns(words, lookup, eng_lookup, tokens, debug=0):
     """
     Owns: object pronoun case after selected verbs.
 
@@ -491,7 +492,7 @@ def choose_copula(prev, prev_token):
         return "are"
     return "is"
 
-def insert_copula(words, lookup, eng_lookup, tokens):
+def insert_copula(words, lookup, eng_lookup, tokens, debug=0):
     """
     Owns: local missing-copula insertion.
 
@@ -576,7 +577,7 @@ def insert_copula(words, lookup, eng_lookup, tokens):
     validate_pipeline_step_result(result, "insert_copula output", result_tokens)
     return result, result_tokens
 
-def fix_prepositions(words, lookup, eng_lookup, tokens):
+def fix_prepositions(words, lookup, eng_lookup, tokens, debug=0):
     """
     Owns: pronoun case after prepositions.
 
@@ -603,7 +604,7 @@ def fix_prepositions(words, lookup, eng_lookup, tokens):
     return result, result_tokens
 
 
-def fix_verb_agreement(words, lookup, eng_lookup, tokens):
+def fix_verb_agreement(words, lookup, eng_lookup, tokens, debug=0):
     """
     Owns: final verb and copula agreement normalization.
 
@@ -628,17 +629,30 @@ def fix_verb_agreement(words, lookup, eng_lookup, tokens):
     result = []
     result_tokens = []
 
+    if debug >= 3:
+        print(f"  --- fix_verb_agreement---")
+
     for i,w in enumerate(words):
         context = build_context(i, words, result, lookup, eng_lookup, tokens, result_tokens)
+        if debug >= 3:
+            print(f"  processing word {i}: {w}")
+
         w, changed_word = handle_copula(context)
         result_word = w
+
+        if debug >= 3 and changed_word:
+            print(f"    word changed to {w} by handle_copula")
 
         if not changed_word:
             w, changed_word = handle_auxiliary(context)
             if changed_word:
                 result_word = w
+                if debug >= 3:
+                    print(f"    word changed to {w} by handle_auxiliary")
             else:
-                w, changed_word = handle_main_verb(context)
+                w, changed_word = handle_main_verb(context, debug=debug)
+                if debug >= 3 and changed_word:
+                    print(f"    word changed to {w} by handle_main_verb")
                 result_word = w
 
 
@@ -967,7 +981,7 @@ def handle_auxiliary(context):
     return w, False
 
 
-def handle_main_verb(context):
+def handle_main_verb(context, debug=0):
     """
     Owns: main-verb inflection using subject and auxiliary context.
 
@@ -976,11 +990,17 @@ def handle_main_verb(context):
     - forces base form after auxiliaries
     """
     token = context["context_current_token"]
+    if debug >= 3:
+        print(f"   ----handle_main_verb-----")
+        print(f"   token is {token}")
 
     if token:
         pos = set(token["pos"])
     else:
         pos = get_pos(context["word"], context["lookup"], context["eng_lookup"])
+
+    if debug >= 3:
+        print(f"    pos is {pos}")
 
     if "verb" not in pos:
         return context["word"], False
@@ -1099,7 +1119,7 @@ def inflect_verb(context):
     return word, (word != context["word"])
 
 
-def dedupe_function_words(words, lookup, eng_lookup, tokens):
+def dedupe_function_words(words, lookup, eng_lookup, tokens, debug=0):
     """
     Owns: duplicate collapsible function-word cleanup.
 
@@ -1303,7 +1323,7 @@ def get_pos(word, lookup, eng_lookup):
     return set()
 
 
-def insert_articles(words, lookup, eng_lookup, tokens):
+def insert_articles(words, lookup, eng_lookup, tokens, debug=0):
     """
     Owns: local article insertion for object-like noun phrases.
 
@@ -1423,7 +1443,7 @@ def insert_articles(words, lookup, eng_lookup, tokens):
     validate_pipeline_step_result(result, "insert_articles output", result_tokens)
     return result, result_tokens
 
-def fix_determiners(words, lookup, eng_lookup, tokens):
+def fix_determiners(words, lookup, eng_lookup, tokens, debug=0):
     """
     Owns: determiner / possessive interpretation for local noun phrases.
 
@@ -1476,7 +1496,7 @@ def fix_determiners(words, lookup, eng_lookup, tokens):
     return result, result_tokens
 
 
-def collapse_repeated_pronouns(words, lookup, eng_lookup, tokens):
+def collapse_repeated_pronouns(words, lookup, eng_lookup, tokens, debug=0):
     """
     Owns: cleanup of repeated adjacent pronouns.
 
@@ -1515,7 +1535,7 @@ def clean(word):
     return word
 
 
-def grammar_postprocess(text, debug=False):
+def grammar_postprocess(text, debug=0):
     """
     Final surface cleanup after the grammar pipeline.
 
