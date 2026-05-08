@@ -1133,7 +1133,51 @@ HELPER_UNIT_TESTS = {
             {"word": "eat",
              "result_so_far": ["zombies", "and", "humans"]},
             (True, False)
-        )
+        ),
+        # compound subject with inverted subjects
+        (
+            {"word": "eat",
+             "result_so_far": ["humans", "and", "zombies"]},
+            (True, False)
+        ),
+        # compound subject with determiners
+        (
+            {"word": "eat",
+             "result_so_far": ["the", "zombie", "and", "the", "human"]},
+            (True, False)
+        ),
+        # compound subject with mixed singular/plural and determiners
+        (
+            {"word": "eat",
+             "result_so_far": ["the", "zombie", "and", "the", "humans"]},
+            (True, False)
+        ),
+        # compound subject with subject head not at the edges
+        (
+            {"word": "eat",
+             "result_so_far": ["angry", "zombies", "and", "humans"]},
+            (True, False)
+        ),
+        # Stray conjunction should not trigger compound logic
+        (
+            {"word": "eat",
+             "result_so_far": ["zombies", "eat", "and"]},
+            (True, False)
+        ),
+        # Stray conjunction should not trigger compound logic with singular
+        # third person, and compound detection does not override correct
+        # singular agreement
+        (
+            {"word": "eats",
+             "result_so_far": ["the", "zombie", "eats", "and"]},
+            (True, True)
+        ),
+        # incomplete coordination should not be misinterpreted
+        (
+            {"word": "eat",
+             "result_so_far": ["zombies", "and"]},
+            (True, False)
+        ),
     ],
     "classify_subject_with_context": [
         # feature driven plural overrides everything
