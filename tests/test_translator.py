@@ -437,7 +437,8 @@ TEST_GROUPS = {
          "Do not I must will eat brains and [flargh] to you"),
         ("nah maz barg bra!nz", "Do not must eat brains"),
         ("nah nah maz barg bra!nz", "Do not do not must eat brains"),
-        ("zambah maz maz barg bra!nz", "Zombie must eat brains")
+        ("zambah maz maz barg bra!nz", "Zombie must eat brains"),
+        ("zah flargh!ng zambahz !z habbah", "The [flargh!ng] zombies are happy"),
     ],
     # =========================
     # LEXICON / COVERAGE
@@ -476,7 +477,6 @@ TEST_GROUPS = {
          "No you must do not shoot zombies a headhunter"),
         ("ambra!z!ng", "Embraceing"),
         ("nah gahz g!b mah zambah bra!nz", "Do not you give me brains"),
-        ("zah flargh!ng zambahz !z habbah", "The [flargh!ng] zombies is happy"),
     ]
  }
 
@@ -1267,29 +1267,85 @@ HELPER_UNIT_TESTS = {
              ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
                           "pos": {"noun"}, "features":{"form":["s"]}})
         ),
-        # THIS TEST FAILS AND INDICATES A BUG THAT NEEDS FIXING
-        # “Premature verb boundary termination”
-        # (
-        #    {"word": "brains",
-        #     "result_so_far": ["zombies", "eat"]
-        #     },
-        #    ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
-        #             "pos": {"noun"}, "features":{"form":["s"]}})
-        #),
-        # THIS TEST FAILS AND INDICATES A BUG THAT NEEDS FIXING
-        # “Premature boundary termination”
-        #(
-        #    {"word": "eat",
-        #     "result_so_far": ["zombies", "will"]
-        #     },
-        #    ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
-        #             "pos": {"noun"}, "features":{"form":["s"]}})
-        #),
-        # THIS TEST FAILS AND INDICATES A BUG THAT NEEDS FIXING
+        (
+            {"word": "eat",
+             "result_so_far": ["zombies"]
+             },
+            ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+                     "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        # Test ambiguous word termination (eat is in dictionary as both
+        # noun and verb
+        (
+            {"word": "bring",
+             "result_so_far": ["zombies", "eat"]
+             },
+            ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+                     "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        # test verb+aux termination
+        # Previously ambiguous due to dictionary error, but no longer
+        (
+            {"word": "bring",
+             "result_so_far": ["zombies", "will"]
+             },
+            ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+                     "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        # test verb+aux termination (have is unambiguous aux)
+        (
+            {"word": "eat",
+             "result_so_far": ["zombies", "have"]
+             },
+            ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+                     "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        # Test pure verb termination:
+        (
+            {"word": "trust",
+             "result_so_far": ["zombies", "embrace"]
+             },
+            (None, None)
+        ),
+        # no subject guardrail with noun/verb ambiguity
+        (
+            {"word": "eat",
+             "result_so_far": ["eat", "eat"],
+             "token_overrides": {
+                 "eat": {"pos": {"verb", "noun"}, "features":{}}
+             }
+             },
+            (None, None)
+        ),
+        # noun survives past ambiguous verb
+        (
+            {
+                "word": "run",
+                "result_so_far": ["zombies", "eat"],
+                "token_overrides": {
+                    "zombies":{"pos": {"noun"}, "features": {"form": ["s"]}},
+                    "eat": {"pos": {"noun", "verb"}, "features": {}},
+                    }
+            },
+            ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+                     "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        (
+            {"word": "eat",
+             "result_so_far": ["zombies", "will"]
+             },
+            ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+                     "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
+        # THIS TEST FAILS because detecting the difference between
+        # gerunds and participles is not possible in our code yet!
+        #  "eating zombies are happy"
+        #           --> subject is "zombies", "eating" is modifier (participle)
+        #  "eating brains is nice" --> subject is "eating" (gerund)
         # particple/gerund detection depends on syntactic hints
         # (like determiners)
         #(
-        #     {"word": "attack",
+        #      {"word": "smash",
         #      "result_so_far": ["eating", "zombies"],
         #      "token_overrides": {
         #          "eating": {"pos": {"verb"}, "features":{"form":["ing"]}},
@@ -1300,6 +1356,18 @@ HELPER_UNIT_TESTS = {
         #     ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
         #                  "pos": {"noun"}, "features":{"form":["s"]}})
         #),
+        (
+             {"word": "smash",
+              "result_so_far": ["the", "eating", "zombies"],
+              "token_overrides": {
+                  "eating": {"pos": {"verb"}, "features":{"form":["ing"]}},
+                  "zombies": {"pos": {"noun"}, "base": "zombie",
+                              "features":{"form":["s"]}}
+              }
+              },
+             ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
+                          "pos": {"noun"}, "features":{"form":["s"]}})
+        ),
     ],
     "inflect_verb": [
         # third person singular

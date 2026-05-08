@@ -751,6 +751,9 @@ def find_subject_head(context):
     - returns best-effort local subject candidate or None
     - stops scanning at verb/aux boundaries
     - prefers token POS when available, falls back to lookup POS
+    POLICY:
+    - When ambiguous ("ing" + noun), prefer noun as subject.
+    - Do not attempt to disambiguate without syntactic cues.
     """
     words = context["result_so_far"]
     tokens = context.get("result_tokens_so_far")
@@ -759,7 +762,9 @@ def find_subject_head(context):
 
     idx = len(words) - 1
     candidate = None
+    fallback_candidate = None
     candidate_token = None
+    fallback_token = None
 
     while idx >= 0:
         word = words[idx]
@@ -767,11 +772,16 @@ def find_subject_head(context):
         token = tokens[idx]
         pos = set(token["pos"]) if token else get_pos(word, lookup, eng_lookup)
         pos = apply_ing_override(word, token, pos)
+        # Skip ambiguous tokens entirely
+        if ("noun" in pos) and (("verb" in pos) or ("aux" in pos)):
+            idx -= 1
+            continue
 
-        if "aux" in pos:
-            return None, None
+        if "aux" in pos and "noun" not in pos:
+            idx -= 1
+            continue
 
-        if "verb" in pos:
+        if "verb" in pos and "noun" not in pos and "aux" not in pos:
             if has_ing_suffix(word, token):
                 idx -= 1
                 continue
@@ -779,8 +789,10 @@ def find_subject_head(context):
 
         # Treat leftmost unknown with no POS as potential candidate
         if len(pos) == 0:
-            candidate = word
-            candidate_token = tokens[idx]
+            # only store as fallback, NEVER block better candidates
+            if candidate is None:
+                fallback_candidate = word
+                fallback_token = tokens[idx]
             idx -= 1
             continue
 
@@ -836,7 +848,11 @@ def find_subject_head(context):
 
         idx -= 1
 
-    return candidate, candidate_token
+    if candidate is not None:
+        return candidate, candidate_token
+    if fallback_candidate is not None:
+        return fallback_candidate, fallback_token
+    return None, None
 
 def has_compound_subject(context):
     """
@@ -1009,7 +1025,8 @@ def handle_main_verb(context, debug=0):
         return context["word"], False
 
     context["has_subject"], context["is_third_person"] = detect_subject(context)
-    context["has_aux"] = detect_auxiliary(context)
+    context["has_aux"] = detect_auxiliary(context) or context["prev"] == "not"
+
 
     if context["has_aux"]:
         if not context["has_subject"] and context["prev"] == "is":
