@@ -1608,31 +1608,6 @@ def pick_gloss(entry, desired_pos=None):
 
     return english[0]["gloss"]
 
-
-def infer_desired_pos(words, i, translated_out):
-    """
-    Infer a desired POS from local translated context.
-
-    Current status:
-    - helper for possible future gloss selection improvements
-    - not central to current pipeline contracts
-    """
-    if i == 0:
-        return None
-
-    prev = translated_out[-1].lower() if translated_out else ""
-    if prev in {"i", "you", "we", "they", "he", "she"}:
-        return "verb"
-    if prev in {"the", "a", "an", "my", "your", "our", "their", "this", "that"}:
-        return "noun"
-    if prev in {"must", "will", "can", "should"}:
-        return "verb"
-    if len(translated_out) >= 2 and translated_out[-2:].copy() == ["going", "to"]:
-        return "verb"
-
-    return None
-
-
 def select_gloss(entry):
     english = entry.get("english", [])
 
