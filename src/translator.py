@@ -1206,6 +1206,19 @@ def has_s_suffix(word=None, token=None):
     2. Surface fallback (only if no features available)
 
     Does NOT interpret meaning (plural vs agreement).
+
+    IMPORTANT:
+    - This function may use surface heuristics (word.endswith("s")).
+    - It MUST NOT be used in logic that requires strict adherence
+      to morphology.
+
+    Use:
+        has_s_form(features)
+    when morphology must be treated as authoritative (e.g., agreement,
+    subject classification, copula selection).
+
+    This function is intended ONLY for fallback / surface-level handling
+    (e.g., inflection repair when morphology is incomplete).
     """
     if token and token.get("features"):
         return has_s_form(token["features"])
