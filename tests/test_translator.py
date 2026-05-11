@@ -1178,6 +1178,57 @@ HELPER_UNIT_TESTS = {
              "result_so_far": ["zombies", "and"]},
             (True, False)
         ),
+        # gerund as subject (no noun present → should be accepted)
+        (
+            {"word": "is",
+             "result_so_far": ["eating"],
+             "token_overrides": {
+                 "eating": {"pos": {"verb"}, "features": {"form": ["ing"]}}
+             }},
+            (True, True)
+        ),
+        # determiner + gerund → should NOT become subject
+        (
+            {"word": "is",
+             "result_so_far": ["the", "eating"],
+             "token_overrides": {
+                 "eating": {"pos": {"verb"}, "features": {"form": ["ing"]}}
+             }},
+            (False, False)
+        ),
+        # unknown word becomes subject
+        (
+            {"word": "eat",
+             "result_so_far": ["blarg"]},
+            (True, True)  # default to third-person
+        ),
+        # noun does not beat gerund without determiner
+        (
+            {"word": "is",
+             "result_so_far": ["eating", "brains"],
+             "token_overrides": {
+                 "eating": {"pos": {"verb"}, "features": {"form": ["ing"]}},
+                 "brains": {"pos": {"noun"}, "features": {"form": ["s"]}}
+             }},
+            (True, True)
+        ),
+        # pronoun not immediately adjacent
+        (
+            {"word": "eat",
+             "result_so_far": ["he", "quickly"]},
+            (True, True)
+        ),
+        # no valid subject candidates
+        (
+            {"word": "eat",
+             "result_so_far": ["quickly", "happily"],
+             "token_overrides": {
+                 "quickly": {"pos": {"adv"}, "features":{}},
+                 "happily": {"pos": {"adv"}, "features":{}},
+                 }
+             },
+            (False, False)
+        ),
     ],
     "classify_subject_with_context": [
         # feature driven plural overrides everything

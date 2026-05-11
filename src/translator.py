@@ -761,8 +761,15 @@ def find_subject_head(context):
     - stops scanning at verb/aux boundaries
     - prefers token POS when available, falls back to lookup POS
     POLICY:
-    - When ambiguous ("ing" + noun), prefer noun as subject.
-    - Do not attempt to disambiguate without syntactic cues.
+    - Uses shallow, surface-based heuristics only (no deep syntax).
+    - Leading gerunds ("ing" forms) are treated as subjects by default.
+    - A following noun does NOT override a gerund unless structural
+      cues (e.g., determiners) indicate a noun phrase.
+        - "eating brains" → subject = "eating"
+        - "the eating zombies" → subject = "zombies"
+    - Determiners are used as a proxy signal for noun phrase structure.
+    - Does not attempt to distinguish gerunds vs participles beyond
+      these surface cues.
     """
     words = context["result_so_far"]
     tokens = context.get("result_tokens_so_far")
@@ -792,6 +799,10 @@ def find_subject_head(context):
 
         if "verb" in pos and "noun" not in pos and "aux" not in pos:
             if has_ing_suffix(word, token):
+                if fallback_candidate is None:
+                    fallback_candidate= word
+                    fallback_token = token
+                    fallback_idx = idx
                 idx -= 1
                 continue
             break
@@ -801,7 +812,8 @@ def find_subject_head(context):
             # only store as fallback, NEVER block better candidates
             if candidate is None:
                 fallback_candidate = word
-                fallback_token = tokens[idx]
+                fallback_token = token
+                fallback_idx = idx
             idx -= 1
             continue
 
@@ -814,6 +826,18 @@ def find_subject_head(context):
             candidate_token = tokens[idx]
 
             # Check if this noun is governed by a gerund.
+
+            # IMPORTANT:
+            # Do NOT promote noun over gerund unless we have structural evidence
+            # (e.g., determiner). This block handles the ONLY case where we allow
+            # a noun to override a preceding gerund.
+            #
+            # Without this rule:
+            #   "eating brains is nice" → subject must remain "eating"
+            # With determiner:
+            #   "the eating zombies" → subject = "zombies"
+            #
+            # This is a deliberate shallow heuristic to avoid full parsing.
             if idx - 1 >= 0:
                 prev_word = words[idx - 1]
                 prev_token = tokens[idx - 1]
@@ -860,6 +884,14 @@ def find_subject_head(context):
     if candidate is not None:
         return candidate, candidate_token
     if fallback_candidate is not None:
+        idx = fallback_idx
+        if (
+                fallback_token
+                and has_ing_form(fallback_token.get("features"))
+                and idx > 0
+                and words[idx - 1] in DETERMINERS
+        ):
+            return None, None
         return fallback_candidate, fallback_token
     return None, None
 
