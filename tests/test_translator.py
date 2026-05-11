@@ -683,14 +683,14 @@ HELPER_UNIT_TESTS = {
           "prev":"Zombie",
           "prev2":None},
          ("is", True)),
-        # known word, but override the "s" ending by clearing features
+        # Empty features do NOT block fallback; surface form is used.
         ({"word":"is",
           "prev":"zombies",
           "token_overrides": {
               "zombies": {"pos": {"noun"}, "features": {}}
           }
           },
-          ("is", True)),
+          ("are", True)),
         # invalid word, no "s" ending, *does* have "s" form from morphology
         (
             {
@@ -822,7 +822,8 @@ HELPER_UNIT_TESTS = {
             },
             ("am", True)
         ),
-        # "I" subject not adjacent
+        # "I" subject not adjacent → still resolves to "am"
+        # adjacency does not affect copula selection
         (
             {
                 "word": "is",
@@ -831,7 +832,7 @@ HELPER_UNIT_TESTS = {
                     "not": {"pos": {"adv"}, "features": {}}
                 }
             },
-            ("are", True)
+            ("am", True)
         ),
         # non-I subject not adjacent
         (

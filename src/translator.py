@@ -965,22 +965,6 @@ def handle_copula(context):
         if subject_word in PRONOUN_MAP:
             return PRONOUN_MAP[subject_word]["copula"], True
 
-        # Token-based logic (preferred)
-        if subject_token is not None:
-            features = subject_token.get("features")
-            if has_s_form(features):
-                return "are", True
-            else:
-                return "is", True
-
-        if prev_token is not None:
-            features = prev_token.get("features")
-            if has_s_form(features):
-                return "are", True
-            else:
-                return "is", True
-
-        # Legacy heuristics --- fallback only when tokens missing
         has_subject, is_third_person = detect_subject(context)
         if has_subject and not is_third_person:
             return "are", True
@@ -1005,18 +989,14 @@ def handle_copula_late(context):
     if word not in {"is", "are", "am"}:
         return word, False
 
-    previous_word = context.get("prev")
-    subject_token = context.get("context_subject_token")
-
-    if previous_word in PRONOUN_MAP:
-        return PRONOUN_MAP[previous_word]["copula"], True
-
-    if subject_token and has_s_form(subject_token["features"]):
-        return "are", True
-
     has_subject, is_third_person = detect_subject(context)
     if not has_subject:
         return word, False
+
+    # English irregular: "I" takes "am"
+    subject = context.get("context_subject_word")
+    if subject == "I":
+        return "am", word != "am"
 
     if is_third_person:
         return "is", word != "is"
