@@ -1033,18 +1033,22 @@ def handle_main_verb(context, debug=0):
     if token and has_ing_form(token["features"]):
         return context["word"], False
 
-    context["has_subject"], context["is_third_person"] = detect_subject(context)
-    context["has_aux"] = detect_auxiliary(context) or context["prev"] == "not"
+    has_subject, is_third_person = detect_subject(context)
+    has_aux = detect_auxiliary(context) or context["prev"] == "not"
 
 
-    if context["has_aux"]:
-        if not context["has_subject"] and context["prev"] == "is":
+    if has_aux:
+        if not has_subject and context["prev"] == "is":
             return context["word"], False
-        context["is_third_person"] = False
-        return inflect_verb(context)
+        is_third_person = False
+        local_context = dict(context)
+        local_context["is_third_person"] = is_third_person
+        return inflect_verb(local_context)
 
-    if context["has_subject"]:
-        return inflect_verb(context)
+    if has_subject:
+        local_context = dict(context)
+        local_context["is_third_person"] = is_third_person
+        return inflect_verb(local_context)
 
     return context["word"], False
 

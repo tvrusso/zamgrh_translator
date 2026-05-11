@@ -1416,43 +1416,43 @@ HELPER_UNIT_TESTS = {
     "inflect_verb": [
         # third person singular
         (
-            {"word": "eat", "is_third_person": True, "has_subject": True, "has_aux": False},
+            {"word": "eat", "is_third_person": True},
             ("eats", True)
         ),
         (
-            {"word": "go", "is_third_person": True, "has_subject": True, "has_aux": False},
+            {"word": "go", "is_third_person": True},
             ("goes", True)
         ),
         (
-            {"word": "try", "is_third_person": True, "has_subject": True, "has_aux": False},
+            {"word": "try", "is_third_person": True},
             ("tries", True)
         ),
 
         # plural / non-third-person
         (
-            {"word": "eats", "is_third_person": False, "has_subject": True, "has_aux": False},
+            {"word": "eats", "is_third_person": False},
             ("eat", True)
         ),
 
         # already correct → no change
         (
-            {"word": "eat", "is_third_person": False, "has_subject": True, "has_aux": False},
+            {"word": "eat", "is_third_person": False},
             ("eat", False)
         ),
 
         # blocked by auxiliary
         (
-            {"word": "eat", "is_third_person": True, "has_subject": True, "has_aux": True},
+            {"word": "eat", "is_third_person": True},
             ("eats", True)
         ),
         (
-            {"word": "eats", "is_third_person": True, "has_subject": True, "has_aux": True},
+            {"word": "eats", "is_third_person": True},
             ("eats", False)
         ),
 
         # no subject → no change
         (
-            {"word": "eat", "is_third_person": True, "has_subject": False, "has_aux": False},
+            {"word": "eat", "is_third_person": True},
             ("eats", True)
         ),
         # token forces plural
