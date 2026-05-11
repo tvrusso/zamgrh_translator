@@ -1124,7 +1124,11 @@ def inflect_verb(context):
     has_s = has_s_suffix(word, token)
 
     if is_third_person:
-        if not has_s:
+        # TEMPORARY GUARD:
+        # Prevent double-inflection when token features are incomplete
+        # (word may already carry surface 's')
+        # TODO: remove when token morphology is authoritative
+        if not has_s and not word.endswith("s"):
             if word.endswith("y"):
                 word = word[:-1] + "ies"
             elif word.endswith(("s", "sh", "ch", "x", "z", "o")):
@@ -1132,7 +1136,8 @@ def inflect_verb(context):
             else:
                 word = word + "s"
     else:
-        if has_s:
+        # don't double de-inflect
+        if has_s or word.endswith("s"):
             if word.endswith("ies"):
                 word = word[:-3] + "y"
             elif word.endswith("es") and word[:-2].endswith(("s", "sh", "ch", "x", "z", "o")):
@@ -1192,18 +1197,36 @@ def set_feature_s_suffix(features: dict):
 def has_s_form(features: dict):
     return "form" in features and "s" in features["form"]
 
-def has_s_suffix(word, token: dict):
+def has_s_suffix(word=None, token=None):
     """
-    Return true if morphology has identified an "s" suffix OR there is no
-    token associated with this word and the word ends in "s"
+    Canonical 's' detection.
 
-    Use "has_s_form" for strict observance of morphology, only use this
-    when the fallback rule is needed.
+    Priority:
+    1. Token features (authoritative)
+    2. Surface fallback (only if no features available)
+
+    Does NOT interpret meaning (plural vs agreement).
+
+    IMPORTANT:
+    - This function may use surface heuristics (word.endswith("s")).
+    - It MUST NOT be used in logic that requires strict adherence
+      to morphology.
+
+    Use:
+        has_s_form(features)
+    when morphology must be treated as authoritative (e.g., agreement,
+    subject classification, copula selection).
+
+    This function is intended ONLY for fallback / surface-level handling
+    (e.g., inflection repair when morphology is incomplete).
     """
-    return ((token and "form" in token["features"]
-             and "s" in token["features"]["form"])
-            or
-            (word and word.endswith("s")))
+    if token and token.get("features"):
+        return has_s_form(token["features"])
+
+    if word:
+        return word.endswith("s")
+
+    return False
 
 def set_feature_ing_suffix(features: dict):
     features.setdefault("form",[]).append("ing")
