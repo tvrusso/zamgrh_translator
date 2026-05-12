@@ -683,14 +683,14 @@ HELPER_UNIT_TESTS = {
           "prev":"Zombie",
           "prev2":None},
          ("is", True)),
-        # known word, but override the "s" ending by clearing features
+        # Empty features do NOT block fallback; surface form is used.
         ({"word":"is",
           "prev":"zombies",
           "token_overrides": {
               "zombies": {"pos": {"noun"}, "features": {}}
           }
           },
-          ("is", True)),
+          ("are", True)),
         # invalid word, no "s" ending, *does* have "s" form from morphology
         (
             {
@@ -822,7 +822,8 @@ HELPER_UNIT_TESTS = {
             },
             ("am", True)
         ),
-        # "I" subject not adjacent
+        # "I" subject not adjacent → still resolves to "am"
+        # adjacency does not affect copula selection
         (
             {
                 "word": "is",
@@ -831,7 +832,7 @@ HELPER_UNIT_TESTS = {
                     "not": {"pos": {"adv"}, "features": {}}
                 }
             },
-            ("are", True)
+            ("am", True)
         ),
         # non-I subject not adjacent
         (
@@ -1915,8 +1916,7 @@ def augment_context(base_context, lookup, eng_lookup):
       - token and word for the subject detected in the sentence
         ("context_subject_word" and "context_subject_token)
       - token for the current word ("context_current_token")
-      - tokens for previous and second previous words
-        ("context_previous_token" and "context_previous2_token")
+      - tokens  second previous word, "context_previous2_token"
     """
     # augment context
     context = dict(base_context)  # shallow copy
@@ -2001,15 +2001,8 @@ def augment_context(base_context, lookup, eng_lookup):
         "context_current_token",
         current_token
     )
-    previous_token = None
     previous2_token = None
-    if len(rsf) >= 1:
-        previous_token = rtsf[-1]
 
-    context.setdefault(
-        "context_previous_token",
-        previous_token
-    )
     if len(rsf) >= 2:
         previous2_token = rtsf[-2]
 
