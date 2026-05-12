@@ -707,7 +707,6 @@ def build_context(idx, words, result, lookup, eng_lookup, tokens, result_tokens)
     pos = set(current_token["pos"])
 
     prev = result[-1] if result else None
-    prev_token = result_tokens[-1] if result_tokens else None
 
     prev2 = result[-2] if len(result) > 1 else None
     prev2_token = result_tokens[-2] if len(result_tokens) >1 else None
@@ -720,6 +719,9 @@ def build_context(idx, words, result, lookup, eng_lookup, tokens, result_tokens)
         "context_tokens": tokens,
     })
 
+    # Note that we have context_previous2_token but not context_previous_token.
+    # That's because detect_auxiliary needs the previous2, but nobody
+    # needs previous.
     return {
         "word": current_word,
         "pos": pos,
@@ -731,25 +733,10 @@ def build_context(idx, words, result, lookup, eng_lookup, tokens, result_tokens)
         "eng_lookup": eng_lookup,
         "context_tokens": tokens,
         "context_current_token": current_token,
-        "context_previous_token": prev_token,
         "context_previous2_token": prev2_token,
         "context_subject_token": subject_token,
         "context_subject_word": subject_word,
     }
-
-def apply_ing_override(word, token, pos):
-    """
-    return "verb" as the pos if we've got a word that has an "ing" suffix
-    that was recognized as a verb with suffix by normalize_morphology
-    Otherwise return the pos passed in
-    """
-    is_ing = (token and has_ing_form(token["features"]))
-
-    if is_ing:
-        retpos = {"verb"}
-    else:
-        retpos = pos
-    return retpos
 
 def find_subject_head(context):
     """
@@ -787,7 +774,7 @@ def find_subject_head(context):
 
         token = tokens[idx]
         pos = set(token["pos"]) if token else get_pos(word, lookup, eng_lookup)
-        pos = apply_ing_override(word, token, pos)
+
         # Skip ambiguous tokens entirely
         if ("noun" in pos) and (("verb" in pos) or ("aux" in pos)):
             idx -= 1
@@ -797,6 +784,10 @@ def find_subject_head(context):
             idx -= 1
             continue
 
+        # NOTE:
+        # has_ing_suffix is intentionally used here as a fallback heuristic.
+        # Subject detection operates partly without guaranteed morphology,
+        # so surface-form detection is allowed in this narrow scope.
         if "verb" in pos and "noun" not in pos and "aux" not in pos:
             if has_ing_suffix(word, token):
                 if fallback_candidate is None:
@@ -846,8 +837,12 @@ def find_subject_head(context):
                     if prev_token
                     else get_pos(prev_word, lookup, eng_lookup)
                 )
-                prev_pos = apply_ing_override(prev_word, prev_token, prev_pos)
 
+                # NOTE: has_ing_suffix is intentionally used here as a
+                # fallback heuristic.  Subject detection operates
+                # partly without guaranteed morphology, so
+                # surface-form detection is allowed in this narrow
+                # scope.
                 if "verb" in prev_pos and has_ing_suffix(prev_word, prev_token):
                     # Check if this is part of a larger noun phrase.
                     if idx - 2 >= 0:
@@ -915,14 +910,8 @@ def has_compound_subject(context):
 
     while idx >= 0:
         word = words[idx]
-
         token = tokens[idx]
-        if token:
-            pos = set(token["pos"])
-        else:
-            get_pos(word, lookup, eng_lookup)
-
-        pos = apply_ing_override(word, token, pos)
+        pos = set(token["pos"])
 
         if "verb" in pos or "aux" in pos:
             break
@@ -932,9 +921,8 @@ def has_compound_subject(context):
                 return True
             seen_noun = True
 
-        elif word == "and":
-            if seen_noun:
-                seen_and = True
+        elif word == "and" and seen_noun:
+            seen_and = True
 
         idx -= 1
 
@@ -956,7 +944,6 @@ def handle_copula(context):
     previous_word = context["prev"]
     subject_word = context.get("context_subject_word")
     subject_token = context.get("context_subject_token")
-    prev_token = context.get("context_previous_token")
 
     if current_word in {"is", "are", "am"}:
         if previous_word in PRONOUN_MAP:
@@ -1064,18 +1051,13 @@ def handle_main_verb(context, debug=0):
 
     return context["word"], False
 
-
 def detect_subject(context):
     """
     Owns: local subject presence / plurality detection for agreement.
 
     Guarantees:
     - returns (has_subject, is_third_person)
-    - compound subjects are treated as non-third-person singular
     """
-    if has_compound_subject(context):
-        return True, False
-
     subject = context.get("context_subject_word")
     if not subject:
         return False, False
@@ -1091,12 +1073,13 @@ def classify_subject_with_context(context):
     token = context.get("context_subject_token")
     subject_word = context.get("context_subject_word")
 
+    # Compound subjects do not trigger third-person singular agreement
+    if has_compound_subject(context):
+        return False
+
     if token and token.get("features"):
         if has_s_form(token["features"]):
             return False  # plural → not 3rd person singular
-        pos = token.get("pos", set())
-        if "noun" not in pos:
-            return classify_subject(subject_word, token)
 
     return classify_subject(subject_word, token)
 
