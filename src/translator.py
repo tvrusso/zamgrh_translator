@@ -539,8 +539,8 @@ def insert_copula(words, lookup, eng_lookup, tokens, debug=0):
     for i, w in enumerate(words):
         # Token-first POS
         token = tokens[i]
-        pos = set(token["pos"]) if token else get_pos(w, lookup, eng_lookup)
-        is_ing = token and has_ing_form(token["features"])
+        pos = set(token["pos"])
+        is_ing = has_ing_form(token["features"])
 
         if ("verb" in pos or "aux" in pos) and not is_ing:
             seen_verb = True
@@ -558,8 +558,8 @@ def insert_copula(words, lookup, eng_lookup, tokens, debug=0):
 
             is_noun = "noun" in prev_pos
             is_adj = "adj" in pos
-            is_unknown = w.startswith("[")
-            is_ing = token and has_ing_form(token["features"])
+            is_unknown = token["unknown"]
+            is_ing = has_ing_form(token["features"])
 
             # Progressive auxiliary insertion (e.g., "I reporting" → "I am reporting")
             # NOTE:
@@ -1667,6 +1667,22 @@ def render_gloss_with_features(gloss, features, pos):
 
     return retval
 
+def render_token_word(token, mode="bracket"):
+    """
+    Configurable rendering of unknown words
+
+    This function owns the rendering of these words and should be used whenever
+    rendering of unknowns is to be done.
+    """
+
+    if not token["unknown"]:
+        return token["word"]
+
+    if mode == "raw":
+        return token["raw"]
+    elif mode == "bracket":
+        return f"[{token['raw']}]"
+
 def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
     """
     Look up Zamgrh text words and return a list of corresponding
@@ -1678,9 +1694,10 @@ def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
 
     Guarantees:
      - Returns a list of token structures
-     - unknown input words are bracketed
-    - Morphology may normalize unknown tokens internally, but surface form is
-      preserved during gloss rendering.
+     - unknown input words are flagged with a boolean in the token
+     - rendering of unknowns not handled here
+     - Morphology may normalize unknown tokens internally, but surface form is
+       preserved during gloss rendering.
     """
     assert isinstance(text, str), f"text must be str, got {type(text).__name__}"
     assert_lookup_shapes(lookup, eng_lookup)
@@ -1700,7 +1717,7 @@ def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
             pos = set(entry.get("pos", []))
             gloss = render_gloss_with_features(gloss, features, pos)
         else:
-            gloss = f"[{raw}]"
+            gloss = raw
             pos = set()
 
         tokens.append({
@@ -1715,7 +1732,7 @@ def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
 
     return tokens
 
-def zamgrh_to_english(text, lookup, eng_lookup, debug=0):
+def zamgrh_to_english(text, lookup, eng_lookup, debug=0, unknown_mode="bracket"):
     """
     Translate Zamgrh text to English.
 
@@ -1725,7 +1742,7 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=0):
 
     Guarantees:
     - returns a string
-    - unknown tokens are bracketed
+    - unknown tokens are rendered only by render_token_to_word
     - grammar pipeline and postprocess are always applied
     """
     assert isinstance(text, str), f"text must be str, got {type(text).__name__}"
@@ -1734,7 +1751,7 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=0):
     is_question = text.strip().endswith("?")
 
     tokens = zamgrh_to_gloss_tokens(text, lookup, eng_lookup)
-    words = [t["word"] for t in tokens]
+    words = [render_token_word(t, mode=unknown_mode) for t in tokens]
 
     words = apply_grammar_pipeline(words, lookup, eng_lookup, tokens=tokens, debug=debug)
     sentence = " ".join(words)
