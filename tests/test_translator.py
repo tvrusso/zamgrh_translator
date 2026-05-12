@@ -1862,12 +1862,17 @@ def build_tokens_from_words(words, eng_lookup):
     tokens = []
     for w in words:
         base, pos,features = infer_features(w)
+        # Kludge: if empty POS, it's "unknown"
+        is_unknown = len(set(pos))==0
+
         tokens.append({
             "raw": w,
             "word": w,
             "base": base,
             "pos": set(pos),
             "features": features,
+            "unknown": is_unknown,
+            "candidates": None,
         })
 
     return tokens
@@ -1885,6 +1890,10 @@ def build_test_tokens(*words, overrides=None, eng_lookup=None):
 
             for key, value in override.items():
                 token[key] = value
+                # Kludge: if empty POS, it's "unknown"
+                if key == "pos" and "unknown" not in override:
+                    token["unknown"] = len(value)== 0
+
     return tokens
 
 def augment_context(base_context, lookup, eng_lookup):
@@ -2013,6 +2022,27 @@ def augment_context(base_context, lookup, eng_lookup):
 
     return context
 
+def tokens_match(actual, expected):
+    # Compare only relevant fields from expected, even if actual has more
+    return all(actual.get(k) == v for k, v in expected.items())
+
+def results_match(actual, expected):
+    # Detect (word, token) pattern
+    if (
+        isinstance(actual, tuple) and
+        isinstance(expected, tuple) and
+        len(actual) == 2 and
+        len(expected) == 2 and
+        isinstance(actual[1], dict) and
+        isinstance(expected[1], dict)
+    ):
+        return (
+            actual[0] == expected[0] and
+            tokens_match(actual[1], expected[1])
+        )
+
+    return actual == expected
+
 def run_pipeline_helper_unit_tests(verbose=False):
     data = load_dictionary()
     lookup = build_lookup(data)
@@ -2031,7 +2061,7 @@ def run_pipeline_helper_unit_tests(verbose=False):
             context = augment_context(base_context, lookup, eng_lookup)
             result = func(context)
 
-            if result == expected:
+            if results_match(result, expected):
                 if (verbose):
                     print(f"PASS: {base_context}->{result}")
                 passed += 1

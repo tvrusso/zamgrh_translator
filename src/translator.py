@@ -124,6 +124,8 @@ def make_token(word, *, pos=None, features=None, base=None):
         "base": base or word,
         "pos": set(pos) if pos else set(),
         "features": features or {},
+        "unknown": pos is None,
+        "candidates": None # placeholder for candidates list
     }
 
 def replace_token_word(token, new_word):
@@ -774,6 +776,7 @@ def find_subject_head(context):
 
         token = tokens[idx]
         pos = set(token["pos"]) if token else get_pos(word, lookup, eng_lookup)
+        is_unknown = token["unknown"]
 
         # Skip ambiguous tokens entirely
         if ("noun" in pos) and (("verb" in pos) or ("aux" in pos)):
@@ -799,7 +802,7 @@ def find_subject_head(context):
             break
 
         # Treat leftmost unknown with no POS as potential candidate
-        if len(pos) == 0:
+        if is_unknown:
             # only store as fallback, NEVER block better candidates
             if candidate is None:
                 fallback_candidate = word
@@ -1690,6 +1693,8 @@ def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
         base, features = normalize_morphology(w, lookup)
         entry = lookup.get(base)
 
+        is_unknown = entry is None
+
         if entry:
             gloss = select_gloss(entry)
             pos = set(entry.get("pos", []))
@@ -1704,6 +1709,8 @@ def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
             "base": base,
             "pos": pos,
             "features": dict(features),
+            "unknown": is_unknown,
+            "candidates": None,  # Reserved for future list of candidates
         })
 
     return tokens
