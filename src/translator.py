@@ -486,10 +486,7 @@ def fix_object_pronouns(words, lookup, eng_lookup, tokens, debug=0):
 def has_future_verb(words, start_idx, lookup, eng_lookup, tokens):
     for j in range(start_idx + 1, len(words)):
         token = tokens[j]
-        if token:
-            pos = set(token["pos"])
-        else:
-            get_pos(w, lookup, eng_lookup)
+        pos = set(token["pos"])
 
         if "verb" in pos or "aux" in pos:
             return True
@@ -775,7 +772,7 @@ def find_subject_head(context):
         word = words[idx]
 
         token = tokens[idx]
-        pos = set(token["pos"]) if token else get_pos(word, lookup, eng_lookup)
+        pos = set(token["pos"])
         is_unknown = token["unknown"]
 
         # Skip ambiguous tokens entirely
@@ -1021,10 +1018,7 @@ def handle_main_verb(context, debug=0):
         print(f"   ----handle_main_verb-----")
         print(f"   token is {token}")
 
-    if token:
-        pos = set(token["pos"])
-    else:
-        pos = get_pos(context["word"], context["lookup"], context["eng_lookup"])
+    pos = set(token["pos"])
 
     if debug >= 3:
         print(f"    pos is {pos}")
@@ -1032,7 +1026,7 @@ def handle_main_verb(context, debug=0):
     if "verb" not in pos:
         return context["word"], False
 
-    if token and has_ing_form(token["features"]):
+    if has_ing_form(token["features"]):
         return context["word"], False
 
     has_subject, is_third_person = detect_subject(context)
@@ -1080,6 +1074,8 @@ def classify_subject_with_context(context):
     if has_compound_subject(context):
         return False
 
+    # Checking "if token" is correct here because there might not be a
+    # subject token
     if token and token.get("features"):
         if has_s_form(token["features"]):
             return False  # plural → not 3rd person singular
@@ -1122,7 +1118,7 @@ def inflect_verb(context):
     is_third_person = context.get("is_third_person")
 
     token = context.get("context_current_token")
-    features = token["features"] if token else {}
+    features = token["features"]
     has_s = has_s_suffix(word, token)
 
     if is_third_person:
@@ -1401,7 +1397,7 @@ def insert_articles(words, lookup, eng_lookup, tokens, debug=0):
 
     for i, w in enumerate(words):
         token = tokens[i]
-        token_pos = set(token["pos"]) if token else set()
+        token_pos = set(token["pos"])
         fallback_pos = get_pos(w, lookup, eng_lookup)
         pos = token_pos | fallback_pos
 
