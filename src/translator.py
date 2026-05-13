@@ -1712,7 +1712,7 @@ def fuzzy_candidates(query, choices, *, max_dist=2, min_score=80, limit=5):
         if dist <= max_dist and score >= min_score:
             candidates.append({
                 "word": match,
-                "score": score,
+                "score": score/100,
                 "distance": dist,
             })
 

@@ -1627,7 +1627,7 @@ GLOSS_TOKEN_UNIT_TESTS = [
     # unknown, but close match exists
     ("zamba", {
         "unknown": True,
-        "candidates": ["zambah"]  # or just check first candidate
+        "candidates": [{"word": "zambah"}]  # or just check first candidate
     }),
 
     # plural unknown with base fallback
@@ -1638,12 +1638,36 @@ GLOSS_TOKEN_UNIT_TESTS = [
     # noisy input hitting fuzzy via raw fallback
     ("zamb!h", {
         "unknown": True,
-        "candidates": ["zambah"]
+        "candidates": [{"word":"zambah"}]
     }),
-    # noisy input hitting fuzzy via raw fallback
+    # don't accept garbage matches
     ("zzmbh", {
         "unknown": True,
         "candidates": []
+    }),
+    # distance boundary test
+    ("zamxxh", {
+    "unknown": True,
+    "candidates": []
+    }),
+    ("zambh", {
+        "unknown": True,
+        "candidates": [
+            {"word": "zambah", "score": 0.9}  # partial match ok
+        ]
+   }),
+    # Test sort order
+    ("graam", {
+        "unknown": True,
+        "candidates": [
+            {"word": "raam"},  # must be first
+            {"word": "graab"}, # must be after
+        ]
+    }),
+    # very short word test
+    ("ma", {
+    "unknown": True,
+    "candidates": []
     }),
 ]
 
@@ -2156,6 +2180,52 @@ def run_morphology_unit_tests(verbose=False):
 
     return failed == 0, passed, failed
 
+def approx_equal(a, b, tol=0.02):
+    return abs(a - b) <= tol
+
+def candidates_match(actual, expected):
+    """
+    Compare candidate lists with flexible matching and enforced ordering.
+
+    expected format:
+    [
+        {"word": "zambah", "score": 0.90},  # score optional
+        ...
+    ]
+    """
+    if expected is None:
+        return True
+
+    actual = actual or []
+
+    # Build index map for actual ordering
+    index_map = {c["word"]: i for i, c in enumerate(actual)}
+
+    last_index = -1
+
+    for exp in expected:
+        word = exp["word"]
+
+        if word not in index_map:
+            return False
+
+        current_index = index_map[word]
+
+        # Enforce ordering: must not go backwards
+        if current_index < last_index:
+            return False
+
+        last_index = current_index
+
+        # Optional score check
+        if "score" in exp:
+            match = actual[current_index]
+            if not approx_equal(match.get("score", 0), exp["score"]):
+                return False
+
+    return True
+
+
 def run_gloss_token_unit_tests(verbose=False):
     data = load_dictionary()
     lookup = build_lookup(data)
@@ -2173,12 +2243,8 @@ def run_gloss_token_unit_tests(verbose=False):
         ok = True
 
         for key, val in expected.items():
-            if key == "candidates" and val is not None:
-                actual_words = [c["word"] for c in token["candidates"] or []]
-                if not all(v in actual_words for v in val):
-                    ok = False
-            else:
-                if token.get(key) != val:
+            if key == "candidates":
+                if not candidates_match(token.get("candidates"), val):
                     ok = False
 
         if ok:
