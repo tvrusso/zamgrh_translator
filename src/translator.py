@@ -1679,6 +1679,91 @@ def render_token_word(token, mode="bracket"):
     elif mode == "bracket":
         return f"[{token['raw']}]"
 
+# ------ FUZZY MATCHING
+def fuzzy_candidates(query, choices, *, max_dist=2, min_score=80, limit=5):
+    """
+    Return ranked fuzzy matches for query from choices.
+
+    Args:
+        query (str): word to match
+        choices (Iterable[str]): dictionary keys (e.g., lookup.keys())
+        max_dist (int): maximum allowed edit distance
+        min_score (int): minimum similarity score (0–100)
+        limit (int): max number of candidates to return
+
+    Returns:
+        List[dict]: [{ "word": str, "score": int, "distance": int }]
+    """
+    from rapidfuzz import process, fuzz, distance
+
+    # Get top matches by similarity
+    results = process.extract(
+        query,
+        choices,
+        scorer=fuzz.ratio,
+        limit=limit * 3  # overfetch, then filter
+    )
+
+    candidates = []
+
+    for match, score, _ in results:
+        dist = distance.Levenshtein.distance(query, match)
+
+        if dist <= max_dist and score >= min_score:
+            candidates.append({
+                "word": match,
+                "score": score,
+                "distance": dist,
+            })
+
+    # Sort: best score first, then lowest distance
+    candidates.sort(key=lambda x: (-x["score"], x["distance"]))
+
+    return candidates[:limit]
+
+def get_thresholds(word):
+    length = len(word)
+
+    if length <= 3:
+        return {"max_dist": 1, "min_score": 90}
+    elif length <= 6:
+        # 80 chosen empirically: allows near-matches like "zambh"→"zambah"
+        # while still filtering low-quality candidates
+        return {"max_dist": 2, "min_score": 80}
+    else:
+        return {"max_dist": 2, "min_score": 80}
+
+def attach_fuzzy_candidates(token, lookup_keys):
+    if not token["unknown"]:
+        return token  # no-op
+
+    # Step 1: try base form first
+    query = token["base"]
+
+    thresholds = get_thresholds(query)
+    candidates = fuzzy_candidates(
+        query,
+        lookup_keys,
+        max_dist=thresholds["max_dist"],
+        min_score=thresholds["min_score"],
+    )
+
+    # Step 2: fallback to raw if base failed
+    if not candidates and token["raw"] != query:
+        query = token["raw"]
+        thresholds = get_thresholds(query)
+        candidates = fuzzy_candidates(
+            query,
+            lookup_keys,
+            max_dist=thresholds["max_dist"],
+            min_score=thresholds["min_score"],
+        )
+
+    token["candidates"] = candidates if candidates else []
+    return token
+
+# ---- END FUZZY MATCHING helpers
+
 def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
     """
     Look up Zamgrh text words and return a list of corresponding
@@ -1716,15 +1801,20 @@ def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
             gloss = raw
             pos = set()
 
-        tokens.append({
+        token = {
             "raw": raw,
             "word": gloss,
             "base": base,
             "pos": pos,
             "features": dict(features),
             "unknown": is_unknown,
-            "candidates": None,  # Reserved for future list of candidates
-        })
+            "candidates": None,
+        }
+
+        if is_unknown:
+            attach_fuzzy_candidates(token, lookup.keys())
+
+        tokens.append(token)
 
     return tokens
 

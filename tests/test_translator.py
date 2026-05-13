@@ -12,6 +12,7 @@ from translator import (
     get_pos,
     load_dictionary,
     zamgrh_to_english,
+    zamgrh_to_gloss_tokens,
     zamgrh_to_structure,
     resolve_hab_ambiguity,
     simplify_subject,
@@ -1610,6 +1611,42 @@ MORPHOLOGY_UNIT_TESTS = [
     ("flarghzz", ("flarghz", {"form": ["s"]})),  # no double-strip
 ]
 
+GLOSS_TOKEN_UNIT_TESTS = [
+    # exact match → no candidates
+    ("zambah", {
+        "unknown": False,
+        "candidates": None
+    }),
+
+    # unknown, no good fuzzy match
+    ("zzzzz", {
+        "unknown": True,
+        "candidates": []
+    }),
+
+    # unknown, but close match exists
+    ("zamba", {
+        "unknown": True,
+        "candidates": ["zambah"]  # or just check first candidate
+    }),
+
+    # plural unknown with base fallback
+    ("zambahz", {
+        "unknown": False,  # because morphology resolves it
+    }),
+
+    # noisy input hitting fuzzy via raw fallback
+    ("zamb!h", {
+        "unknown": True,
+        "candidates": ["zambah"]
+    }),
+    # noisy input hitting fuzzy via raw fallback
+    ("zzmbh", {
+        "unknown": True,
+        "candidates": []
+    }),
+]
+
 # Invariant tests
 def check_invariants(sentence: str, lookup, eng_lookup) -> list[str]:
     issues = []
@@ -2119,6 +2156,47 @@ def run_morphology_unit_tests(verbose=False):
 
     return failed == 0, passed, failed
 
+def run_gloss_token_unit_tests(verbose=False):
+    data = load_dictionary()
+    lookup = build_lookup(data)
+    eng_lookup = build_english_pos_lookup(data)
+
+    passed = 0
+    failed = 0
+
+    print("\n=== GLOSS TOKEN UNIT TESTS ===")
+
+    for inp, expected in GLOSS_TOKEN_UNIT_TESTS:
+        tokens = zamgrh_to_gloss_tokens(inp, lookup, eng_lookup)
+        token = tokens[0]
+
+        ok = True
+
+        for key, val in expected.items():
+            if key == "candidates" and val is not None:
+                actual_words = [c["word"] for c in token["candidates"] or []]
+                if not all(v in actual_words for v in val):
+                    ok = False
+            else:
+                if token.get(key) != val:
+                    ok = False
+
+        if ok:
+            if verbose:
+                print(f"PASS: {inp} -> {token}")
+            passed += 1
+        else:
+            print(f"FAIL: {inp}")
+            print(f"  expected: {expected}")
+            print(f"  got:      {token}")
+            failed += 1
+
+    print("\n---")
+    print(f"Gloss Tokens Passed: {passed}")
+    print(f"Gloss Tokens Failed: {failed}")
+
+    return failed == 0, passed, failed
+
 def check_duplicates():
     seen = {}
     duplicates = []
@@ -2227,6 +2305,7 @@ if __name__ == "__main__":
     success_pipeline_helper_unit, phelp_passed, phelp_failed = run_pipeline_helper_unit_tests(verbose)
     success_pipeline_unit, pipeline_unit_passed, pipeline_unit_failed = run_pipeline_unit_tests(verbose)
     success_morphology_unit, morph_passed, morph_failed = run_morphology_unit_tests(verbose)
+    success_gloss_token_unit, gloss_passed, gloss_failed = run_gloss_token_unit_tests(verbose)
 
     # These lines are here to remind us that if we do a major restructure
     # of TEST_GROUPS, we can uncomment these and make sure that no tests got
@@ -2272,6 +2351,11 @@ if __name__ == "__main__":
     else:
         print(f"Ran and passed {morph_passed} morphology tests")
 
+    if (not success_gloss_token_unit):
+        print(f"{gloss_failed} gloss token tests failed!")
+    else:
+        print(f"Ran and passed {gloss_passed} gloss token tests")
+
     if (success_translation and success_structure and success_pipeline_unit
         and success_pipeline_helper_unit and success_morphology_unit):
         print(f"All test types passed.")
@@ -2284,5 +2368,6 @@ if __name__ == "__main__":
         print(f"build_tokens_from_words did not produce a list of tokens matching words")
     sys.exit(0 if (success_translation and success_structure
                    and success_pipeline_unit and success_pipeline_helper_unit
-                   and success_morphology_unit and success_token_build
-                   and success_token_list) else 1)
+                   and success_morphology_unit and success_gloss_token_unit
+                   and success_token_build
+                   and success_token_list ) else 1)
