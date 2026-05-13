@@ -1627,7 +1627,7 @@ GLOSS_TOKEN_UNIT_TESTS = [
     # unknown, but close match exists
     ("zamba", {
         "unknown": True,
-        "candidates": [{"word": "zambah"}]  # or just check first candidate
+        "candidates": [{"word": "zambah"}]
     }),
 
     # plural unknown with base fallback
@@ -1668,6 +1668,39 @@ GLOSS_TOKEN_UNIT_TESTS = [
     ("ma", {
     "unknown": True,
     "candidates": []
+    }),
+    # unknown, but close match exists, check token existence
+    ("zamba", {
+        "unknown": True,
+        "candidates": [{"word": "zambah", "token":{"word": "zombie"}}]
+    }),
+    # Test token includes correct POS
+    ("graam", {
+        "unknown": True,
+        "candidates": [
+            {"word": "raam", "token":{"word":"room", "pos":{"noun"}}},  # must be first
+            ]
+        }
+     ),
+    # Test token includes no morphology features
+    ("graamz", {
+        "unknown": True,
+        "candidates": [
+            {"word": "raam", "token":{"word":"room", "features":{}}},
+            ]
+        }
+     ),
+    # Candidate token is not unknown
+    ("zamba", {
+        "unknown": True,
+        "candidates": [{"word": "zambah", "token":{"unknown":False}}]
+    }),
+    # No recursive candidates
+    ("zamba", {
+    "unknown": True,
+    "candidates": [
+        {"word": "zambah", "token": {"candidates": None}}
+    ]
     }),
 ]
 
@@ -2185,22 +2218,16 @@ def approx_equal(a, b, tol=0.02):
 
 def candidates_match(actual, expected):
     """
-    Compare candidate lists with flexible matching and enforced ordering.
-
-    expected format:
-    [
-        {"word": "zambah", "score": 0.90},  # score optional
-        ...
-    ]
+    Compare candidate lists with flexible matching, ordering,
+    score tolerance, and optional token validation.
     """
     if expected is None:
         return True
 
     actual = actual or []
 
-    # Build index map for actual ordering
+    # Build index map for ordering
     index_map = {c["word"]: i for i, c in enumerate(actual)}
-
     last_index = -1
 
     for exp in expected:
@@ -2211,20 +2238,30 @@ def candidates_match(actual, expected):
 
         current_index = index_map[word]
 
-        # Enforce ordering: must not go backwards
+        # Enforce ordering
         if current_index < last_index:
             return False
-
         last_index = current_index
 
-        # Optional score check
+        match = actual[current_index]
+
+        # Score check (optional)
         if "score" in exp:
-            match = actual[current_index]
             if not approx_equal(match.get("score", 0), exp["score"]):
                 return False
 
-    return True
+        # Token check (optional, partial match like tokens_match)
+        if "token" in exp:
+            actual_token = match.get("token")
+            expected_token = exp["token"]
 
+            if not actual_token:
+                return False
+
+            if not tokens_match(actual_token, expected_token):
+                return False
+
+    return True
 
 def run_gloss_token_unit_tests(verbose=False):
     data = load_dictionary()

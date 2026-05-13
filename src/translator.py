@@ -1733,7 +1733,7 @@ def get_thresholds(word):
     else:
         return {"max_dist": 2, "min_score": 80}
 
-def attach_fuzzy_candidates(token, lookup_keys):
+def attach_fuzzy_candidates(token, lookup, eng_lookup):
     if not token["unknown"]:
         return token  # no-op
 
@@ -1743,7 +1743,7 @@ def attach_fuzzy_candidates(token, lookup_keys):
     thresholds = get_thresholds(query)
     candidates = fuzzy_candidates(
         query,
-        lookup_keys,
+        lookup.keys(),
         max_dist=thresholds["max_dist"],
         min_score=thresholds["min_score"],
     )
@@ -1754,15 +1754,55 @@ def attach_fuzzy_candidates(token, lookup_keys):
         thresholds = get_thresholds(query)
         candidates = fuzzy_candidates(
             query,
-            lookup_keys,
+            lookup.keys(),
             max_dist=thresholds["max_dist"],
             min_score=thresholds["min_score"],
         )
 
-    token["candidates"] = candidates if candidates else []
+    raw_candidates = candidates if candidates else []
+
+    enriched = []
+    for c in raw_candidates:
+        match = c["word"]
+
+        candidate_token = build_token_from_raw(match, lookup, eng_lookup)
+
+        # Prevent recursion / unnecessary work
+        candidate_token["candidates"] = None
+
+        enriched.append({
+            **c,
+            "token": candidate_token
+        })
+
+    token["candidates"] = enriched
     return token
 
 # ---- END FUZZY MATCHING helpers
+def build_token_from_raw(raw, lookup, eng_lookup):
+    w = clean(raw)
+    base, features = normalize_morphology(w, lookup)
+    entry = lookup.get(base)
+
+    is_unknown = entry is None
+
+    if entry:
+        gloss = select_gloss(entry)
+        pos = set(entry.get("pos", []))
+        gloss = render_gloss_with_features(gloss, features, pos)
+    else:
+        gloss = raw
+        pos = set()
+
+    return {
+        "raw": raw,
+        "word": gloss,
+        "base": base,
+        "pos": pos,
+        "features": dict(features),
+        "unknown": is_unknown,
+        "candidates": None,
+    }
 
 def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
     """
@@ -1787,32 +1827,10 @@ def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
     words = text.split()
 
     for raw in words:
-        w = clean(raw)
-        base, features = normalize_morphology(w, lookup)
-        entry = lookup.get(base)
+        token = build_token_from_raw(raw, lookup, eng_lookup)
 
-        is_unknown = entry is None
-
-        if entry:
-            gloss = select_gloss(entry)
-            pos = set(entry.get("pos", []))
-            gloss = render_gloss_with_features(gloss, features, pos)
-        else:
-            gloss = raw
-            pos = set()
-
-        token = {
-            "raw": raw,
-            "word": gloss,
-            "base": base,
-            "pos": pos,
-            "features": dict(features),
-            "unknown": is_unknown,
-            "candidates": None,
-        }
-
-        if is_unknown:
-            attach_fuzzy_candidates(token, lookup.keys())
+        if token["unknown"]:
+            attach_fuzzy_candidates(token, lookup, eng_lookup)
 
         tokens.append(token)
 
