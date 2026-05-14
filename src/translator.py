@@ -281,7 +281,7 @@ def apply_grammar_pipeline(words, lookup, eng_lookup, tokens, debug=0):
         print(f"  words: {render(words)}")
         print("=== END DEBUG ===")
 
-    return words
+    return words, tokens
 
 def question_postprocess(text, structure, original_text):
     """
@@ -545,13 +545,9 @@ def insert_copula(words, lookup, eng_lookup, tokens, debug=0):
         if i > 0:
             prev = result[-1]
 
-            prev_token = result_tokens[-1] if result_tokens else None
+            prev_token = result_tokens[-1]
 
-            prev_pos = (
-                set(prev_token["pos"])
-                if prev_token
-                else get_pos(prev, lookup, eng_lookup)
-            )
+            prev_pos = set(prev_token["pos"])
 
             is_noun = "noun" in prev_pos
             is_adj = "adj" in pos
@@ -832,11 +828,7 @@ def find_subject_head(context):
             if idx - 1 >= 0:
                 prev_word = words[idx - 1]
                 prev_token = tokens[idx - 1]
-                prev_pos = (
-                    set(prev_token["pos"])
-                    if prev_token
-                    else get_pos(prev_word, lookup, eng_lookup)
-                )
+                prev_pos = set(prev_token["pos"])
 
                 # NOTE: has_ing_suffix is intentionally used here as a
                 # fallback heuristic.  Subject detection operates
@@ -848,11 +840,7 @@ def find_subject_head(context):
                     if idx - 2 >= 0:
                         prev2_word = words[idx - 2]
                         prev2_token = tokens[idx -2]
-                        prev2_pos = (
-                            set(prev2_token["pos"])
-                            if prev2_token
-                            else get_pos(prev2_word, lookup, eng_lookup)
-                        )
+                        prev2_pos = set(prev2_token["pos"])
 
                         if ("noun" in prev2_pos) or (prev2_word in DETERMINERS):
                             # Modifier, e.g. "the eating zombies"
@@ -1332,51 +1320,13 @@ def apply_plural(word, features):
         return word
     return word + "s"
 
-# ---------------------------
-# Helpers for dictionary-driven POS logic
-# ---------------------------
-
-def get_pos(word, lookup, eng_lookup):
-    """
-    Get POS tags for a token using direct lookup plus narrow fallbacks.
-
-    Guarantees:
-    - returns set[str]
-    - never raises on missing token
-    """
-    if not word:
-        return set()
-
-    word = word.lower()
-
-    entry = lookup.get(word)
-    if entry:
-        return set(entry.get("pos", []))
-
-    if word in eng_lookup:
-        return eng_lookup[word]
-
-    if word.endswith("s"):
-        base = word[:-1]
-        if base in eng_lookup:
-            return eng_lookup[base]
-
-    base, _features = normalize_morphology(word, lookup)
-    if base != word:
-        entry = lookup.get(base)
-        if entry:
-            return set(entry.get("pos", []))
-
-    return set()
-
-
 def insert_articles(words, lookup, eng_lookup, tokens, debug=0):
     """
     Owns: local article insertion for object-like noun phrases.
 
     Expects:
     - tokenized English glosses
-    - usable POS lookup from get_pos()
+    - usable POS lookup from token
     - earlier steps have already handled pronoun/determiner/preposition cleanup
 
     Guarantees:
@@ -1399,9 +1349,7 @@ def insert_articles(words, lookup, eng_lookup, tokens, debug=0):
 
     for i, w in enumerate(words):
         token = tokens[i]
-        token_pos = set(token["pos"])
-        fallback_pos = get_pos(w, lookup, eng_lookup)
-        pos = token_pos | fallback_pos
+        pos = set(token["pos"])
 
         # --- PRONOUN GUARD ---
         if w in SUBJECT_PRONOUNS:
@@ -1420,7 +1368,7 @@ def insert_articles(words, lookup, eng_lookup, tokens, debug=0):
         )
 
         nxt = words[i + 1] if i + 1 < len(words) else None
-        nxt_pos = get_pos(nxt, lookup, eng_lookup) if nxt else set()
+        nxt_pos = set(tokens[i+1]["pos"]) if i + 1 < len(words) else set()
         next_is_noun = (
             nxt is not None
             and "noun" in nxt_pos
@@ -1456,9 +1404,7 @@ def insert_articles(words, lookup, eng_lookup, tokens, debug=0):
         if should_article_as_object or should_article_after_to:
             prev = result[-1] if result else None
             prev_token = result_tokens[-1] if result_tokens else None
-            prev_token_pos = set(prev_token["pos"]) if prev_token else set()
-            prev_fallback_pos = get_pos(prev, lookup, eng_lookup) if prev else set()
-            prev_pos = prev_token_pos | prev_fallback_pos
+            prev_pos = set(prev_token["pos"]) if prev_token else set()
 
             # If the previous token looks like a local modifier, insert the
             # article before that modifier so we get "a big brain" instead of
@@ -1509,8 +1455,8 @@ def fix_determiners(words, lookup, eng_lookup, tokens, debug=0):
         if w == "I":
             nxt = words[i + 1] if i + 1 < len(words) else None
             nxt2 = words[i + 2] if i + 2 < len(words) else None
-            nxt_pos = get_pos(nxt, lookup, eng_lookup) if nxt else set()
-            nxt2_pos = get_pos(nxt2, lookup, eng_lookup) if nxt2 else set()
+            nxt_pos = set(tokens[i + 1]["pos"]) if i + 1 < len(words) else set()
+            nxt2_pos = set(tokens[i + 2]["pos"]) if i + 2 < len(words) else set()
 
             if nxt and (
                 "verb" in nxt_pos
@@ -1957,7 +1903,7 @@ def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
 
     return tokens
 
-def zamgrh_to_english(text, lookup, eng_lookup, debug=0, unknown_mode="bracket"):
+def zamgrh_to_english(text, lookup, eng_lookup, debug=0, unknown_mode="bracket", return_tokens=False):
     """
     Translate Zamgrh text to English.
 
@@ -1979,12 +1925,15 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=0, unknown_mode="bracket")
     tokens = resolve_unknowns(tokens, lookup, eng_lookup, policy=None, debug=debug)
     words = [render_token_word(t, mode=unknown_mode) for t in tokens]
 
-    words = apply_grammar_pipeline(words, lookup, eng_lookup, tokens=tokens, debug=debug)
+    words, tokens = apply_grammar_pipeline(words, lookup, eng_lookup, tokens=tokens, debug=debug)
     sentence = " ".join(words)
     sentence = grammar_postprocess(sentence, debug=debug)
 
     if is_question and sentence and not sentence.endswith("?"):
         sentence += "?"
+
+    if return_tokens:
+        return sentence, tokens
 
     return sentence
 

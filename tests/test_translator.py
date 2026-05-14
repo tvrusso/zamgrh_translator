@@ -9,7 +9,6 @@ from translator import (
     build_lookup,
     build_english_pos_lookup,
     clean,
-    get_pos,
     load_dictionary,
     zamgrh_to_english,
     zamgrh_to_gloss_tokens,
@@ -48,8 +47,8 @@ def build_translator():
     lookup = build_lookup(data)
     eng_lookup = build_english_pos_lookup(data)
 
-    def run(text, debug=0):
-        return zamgrh_to_english(text, lookup, eng_lookup, debug=debug)
+    def run(text, debug=0, return_tokens=False):
+        return zamgrh_to_english(text, lookup, eng_lookup, debug=debug, return_tokens=return_tokens)
 
     return run, lookup, eng_lookup
 
@@ -1754,9 +1753,13 @@ RESOLVE_UNIT_TESTS = [
     }),
 ]
 # Invariant tests
-def check_invariants(sentence: str, lookup, eng_lookup) -> list[str]:
+
+def token_words(tokens):
+    return [t["word"] for t in tokens]
+
+def check_invariants(tokens) -> list[str]:
     issues = []
-    words = sentence.lower().split()
+    words = token_words(tokens)
 
     COLLAPSIBLE = {"must", "will", "can", "should", "have", "is", "are", "am", "the", "a", "an"}
     ARTICLES = {"a", "an", "the"}
@@ -1780,16 +1783,13 @@ def check_invariants(sentence: str, lookup, eng_lookup) -> list[str]:
         if words[i] in ARTICLES and words[i + 1] in ARTICLES:
             issues.append("stacked determiners")
 
-    if sentence and sentence[0].islower():
-        issues.append("sentence not capitalized")
-
     VERB_LIKE = {"eat", "give", "go", "smash", "speak", "come", "run", "have", "is", "are", "am", "must", "will", "can", "should", "do", "does"}
 
     if "i" in words:
         for idx, w in enumerate(words[:-1]):
             if w == "i":
                 nxt = words[idx + 1]
-                nxt_pos = get_pos(nxt, lookup, eng_lookup)
+                nxt_pos = set(tokens[idx + 1]["pos"])
 
                 next_is_noun = "noun" in nxt_pos
                 next_is_verb_like = (
@@ -1800,6 +1800,13 @@ def check_invariants(sentence: str, lookup, eng_lookup) -> list[str]:
 
                 if next_is_noun and not next_is_verb_like:
                     issues.append("'I' before noun (likely missing determiner conversion)")
+
+    return issues
+
+def check_surface(sentence):
+    issues = []
+    if sentence and sentence[0].islower():
+        issues.append("sentence not capitalized")
 
     return issues
 
@@ -1818,17 +1825,19 @@ def run_tests(verbose=False):
         group_failed = 0
 
         for zamgrh, expected in cases:
-            result = translator(zamgrh)
+            sentence, tokens = translator(zamgrh, return_tokens=True)
 
             # don't bother checking invariants on known_bad, coz, well,
             # they are bad translations and might actually be bad because
             # they don't conform to the invariants
             if group != "known_bad":
-                inv_errors = check_invariants(result, lookup, eng_lookup)
+                inv_errors = []
+                inv_errors += check_invariants(tokens)
+                inv_errors += check_surface(sentence)
 
                 if inv_errors:
                     print(f"FAIL (invariant): {zamgrh}")
-                    print(f"  result: {result}")
+                    print(f"  sentence: {sentence}")
                     print(f"  issues: {inv_errors}")
                     print(f"\n--- DEBUG TRACE ---")
                     print(f"[input] {zamgrh}")
@@ -1840,7 +1849,7 @@ def run_tests(verbose=False):
                     group_failed += 1
                     continue
 
-            if result == expected:
+            if sentence == expected:
                 if verbose:
                     print(f"PASS: {zamgrh}")
                 passed += 1
@@ -1848,7 +1857,7 @@ def run_tests(verbose=False):
             else:
                 print(f"FAIL: {zamgrh}")
                 print(f"  expected: {expected}")
-                print(f"  got:      {result}")
+                print(f"  got:      {sentence}")
                 print(f"\n--- DEBUG TRACE ---")
                 print(f"[input] {zamgrh}")
                 translator(zamgrh, debug=2)
