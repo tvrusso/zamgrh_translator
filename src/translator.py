@@ -1259,6 +1259,8 @@ def normalize_morphology(word, lookup):
     - transformations depend only on lookup
     - POS is never changed; function emits features based on lookup
 
+     NOTE: intentionally returns only (base, features)
+     Resolution decisions are handled downstream (resolve_unknowns)
     """
     assert isinstance(word, str), f"word must be str, got {type(word).__name__}"
 
@@ -1679,6 +1681,250 @@ def render_token_word(token, mode="bracket"):
     elif mode == "bracket":
         return f"[{token['raw']}]"
 
+# ------ FUZZY MATCHING
+def fuzzy_candidates(query, choices, *, max_dist=2, min_score=80, limit=5):
+    """
+    Return ranked fuzzy matches for query from choices.
+
+    Args:
+        query (str): word to match
+        choices (Iterable[str]): dictionary keys (e.g., lookup.keys())
+        max_dist (int): maximum allowed edit distance
+        min_score (int): minimum similarity score (0–100)
+        limit (int): max number of candidates to return
+
+    Returns:
+        List[dict]: [{ "word": str, "score": int, "distance": int }]
+    """
+    from rapidfuzz import process, fuzz, distance
+
+    # Get top matches by similarity
+    results = process.extract(
+        query,
+        choices,
+        scorer=fuzz.ratio,
+        limit=limit * 3  # overfetch, then filter
+    )
+
+    candidates = []
+
+    for match, score, _ in results:
+        dist = distance.Levenshtein.distance(query, match)
+
+        if dist <= max_dist and score >= min_score:
+            candidates.append({
+                "word": match,
+                "score": score/100,
+                "distance": dist,
+            })
+
+    # Sort: best score first, then lowest distance
+    candidates.sort(key=lambda x: (-x["score"], x["distance"]))
+
+    return candidates[:limit]
+
+def get_thresholds(word):
+    length = len(word)
+
+    if length <= 3:
+        return {"max_dist": 1, "min_score": 90}
+    elif length <= 6:
+        # 80 chosen empirically: allows near-matches like "zambh"→"zambah"
+        # while still filtering low-quality candidates
+        return {"max_dist": 2, "min_score": 80}
+    else:
+        return {"max_dist": 2, "min_score": 80}
+
+def attach_fuzzy_candidates(token, lookup, eng_lookup):
+    if not token["unknown"]:
+        return token  # no-op
+
+    # Step 1: try base form first
+    query = token["base"]
+
+    thresholds = get_thresholds(query)
+    candidates = fuzzy_candidates(
+        query,
+        lookup.keys(),
+        max_dist=thresholds["max_dist"],
+        min_score=thresholds["min_score"],
+    )
+
+    # Step 2: fallback to raw if base failed
+    if not candidates and token["raw"] != query:
+        query = token["raw"]
+        thresholds = get_thresholds(query)
+        candidates = fuzzy_candidates(
+            query,
+            lookup.keys(),
+            max_dist=thresholds["max_dist"],
+            min_score=thresholds["min_score"],
+        )
+
+    raw_candidates = candidates if candidates else []
+
+    enriched = []
+    for c in raw_candidates:
+        match = c["word"]
+
+        candidate_token = build_token_from_raw(match, lookup, eng_lookup)
+
+        # Prevent recursion / unnecessary work
+        candidate_token["candidates"] = None
+
+        enriched.append({
+            **c,
+            "token": candidate_token
+        })
+
+    token["candidates"] = enriched
+    return token
+
+# ---- END FUZZY MATCHING helpers
+
+# --- functions for making use of candidate matches
+class ResolutionPolicy:
+    def __init__(
+        self,
+        high_confidence=0.9,
+        medium_confidence=0.8,
+        max_candidates=5,
+        annotate_medium=True,
+    ):
+        self.high_confidence = high_confidence
+        self.medium_confidence = medium_confidence
+        self.max_candidates = max_candidates
+        self.annotate_medium = annotate_medium
+
+def resolve_unknowns(tokens, lookup, eng_lookup, policy=None, debug=0):
+    """
+    Resolve unknown tokens using fuzzy candidates.
+
+    Expects:
+    - tokens from zamgrh_to_gloss_tokens (with candidates attached)
+
+    Guarantees:
+    - returns NEW list of tokens
+    - preserves alignment
+    - does not mutate input tokens
+    """
+
+    if policy is None:
+        policy = ResolutionPolicy()
+
+    resolved = []
+
+    for token in tokens:
+        if debug >= 2:
+            print("\n[RESOLVE:CHECK]")
+            print(f"  raw: {token['raw']}")
+            print(f"  unknown: {token['unknown']}")
+            print(f"  has_candidates: {bool(token.get('candidates'))}")
+
+        if not token["unknown"] or not token.get("candidates"):
+            resolved.append(token)
+            continue
+
+        candidates = token["candidates"][:policy.max_candidates]
+
+        decision = choose_resolution(token, candidates, policy)
+
+        if debug >= 2:
+            print("\n[RESOLVE]")
+            print(f"  raw: {token['raw']}")
+            print(f"  token: {token}")
+            print(f"  candidates: {[c['word'] for c in candidates]}")
+            print(f"  decision: {decision['type']}")
+
+        if decision["type"] == "replace":
+            new_token = merge_token(token, decision["candidate"]["token"])
+            gloss = select_gloss(lookup[new_token["base"]])
+            new_token["word"] = render_gloss_with_features(
+                gloss,
+                new_token["features"],
+                new_token["pos"]
+            )
+            if debug >= 2:
+                print(f"  replaced token: {new_token}")
+            resolved.append(new_token)
+
+        elif decision["type"] == "annotate":
+            annotated = annotate_token(token, candidates)
+            if debug >= 2:
+                print(f"  annotated token: {annotated}")
+            resolved.append(annotated)
+
+        else:  # pass-through
+            resolved.append(token)
+
+    return resolved
+
+def choose_resolution(token, candidates, policy):
+    if not candidates:
+        return {"type": "pass"}
+
+    best = candidates[0]
+    score = best["score"]
+
+    if score >= policy.high_confidence:
+        return {"type": "replace", "candidate": best}
+
+    if score >= policy.medium_confidence and policy.annotate_medium:
+        return {"type": "annotate", "candidates": candidates}
+
+    return {"type": "pass"}
+
+def merge_token(original, candidate_token):
+    """
+    Replace unknown token with candidate token,
+    preserving morphology from original.
+    """
+    return {
+        "raw": original["raw"],
+        "word": candidate_token["word"],
+        "base": candidate_token["base"],
+        "pos": set(candidate_token["pos"]),
+        "features": dict(original["features"]),  # KEEP morphology
+        "unknown": False,
+        "candidates": None,
+    }
+
+def annotate_token(token, candidates):
+    """
+    Keep original token but attach candidates (already present).
+    Could later influence rendering.
+    """
+    new_token = dict(token)
+    new_token["candidates"] = candidates
+    return new_token
+
+# ------
+
+def build_token_from_raw(raw, lookup, eng_lookup):
+    w = clean(raw)
+    base, features = normalize_morphology(w, lookup)
+    entry = lookup.get(base)
+
+    is_unknown = entry is None
+
+    if entry:
+        gloss = select_gloss(entry)
+        pos = set(entry.get("pos", []))
+        gloss = render_gloss_with_features(gloss, features, pos)
+    else:
+        gloss = raw
+        pos = set()
+
+    return {
+        "raw": raw,
+        "word": gloss,
+        "base": base,
+        "pos": pos,
+        "features": dict(features),
+        "unknown": is_unknown,
+        "candidates": None,
+    }
+
 def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
     """
     Look up Zamgrh text words and return a list of corresponding
@@ -1702,29 +1948,12 @@ def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
     words = text.split()
 
     for raw in words:
-        w = clean(raw)
-        base, features = normalize_morphology(w, lookup)
-        entry = lookup.get(base)
+        token = build_token_from_raw(raw, lookup, eng_lookup)
 
-        is_unknown = entry is None
+        if token["unknown"]:
+            attach_fuzzy_candidates(token, lookup, eng_lookup)
 
-        if entry:
-            gloss = select_gloss(entry)
-            pos = set(entry.get("pos", []))
-            gloss = render_gloss_with_features(gloss, features, pos)
-        else:
-            gloss = raw
-            pos = set()
-
-        tokens.append({
-            "raw": raw,
-            "word": gloss,
-            "base": base,
-            "pos": pos,
-            "features": dict(features),
-            "unknown": is_unknown,
-            "candidates": None,  # Reserved for future list of candidates
-        })
+        tokens.append(token)
 
     return tokens
 
@@ -1747,6 +1976,7 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=0, unknown_mode="bracket")
     is_question = text.strip().endswith("?")
 
     tokens = zamgrh_to_gloss_tokens(text, lookup, eng_lookup)
+    tokens = resolve_unknowns(tokens, lookup, eng_lookup, policy=None, debug=debug)
     words = [render_token_word(t, mode=unknown_mode) for t in tokens]
 
     words = apply_grammar_pipeline(words, lookup, eng_lookup, tokens=tokens, debug=debug)

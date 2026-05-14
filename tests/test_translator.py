@@ -12,6 +12,8 @@ from translator import (
     get_pos,
     load_dictionary,
     zamgrh_to_english,
+    zamgrh_to_gloss_tokens,
+    resolve_unknowns,
     zamgrh_to_structure,
     resolve_hab_ambiguity,
     simplify_subject,
@@ -46,7 +48,7 @@ def build_translator():
     lookup = build_lookup(data)
     eng_lookup = build_english_pos_lookup(data)
 
-    def run(text, debug=False):
+    def run(text, debug=0):
         return zamgrh_to_english(text, lookup, eng_lookup, debug=debug)
 
     return run, lookup, eng_lookup
@@ -257,7 +259,7 @@ TEST_GROUPS = {
         ("zambah", "Zombie"),
         ("zambah,", "Zombie"),
         ("zambahz", "Zombies"),
-        ("zambahzz", "[zambahzz]")
+        ("zambahzz", "Zombies")
     ],
     # =========================
     # GRAMMAR (core behavior)
@@ -1570,46 +1572,187 @@ HELPER_UNIT_TESTS = {
 
 MORPHOLOGY_UNIT_TESTS = [
     # base case
-    ("zambah", ("zambah", {})),
+    ("zambah", {"base":"zambah", "features":{}}),
 
     # plural (known word)
-    ("zambahz", ("zambah", {"form": ["s"]})),
+    ("zambahz", {"base":"zambah", "features":{"form": ["s"]}}),
 
     # known word not noun or pronoun so not plural
-    ("bargz", ("barg",{})),
+    ("bargz", {"base":"barg","features":{}}),
 
     # plural (unknown word — critical for Story 5)
-    ("flarghz", ("flargh", {"form": ["s"]})),
+    ("flarghz", {"base":"flargh", "features":{"form": ["s"]}}),
 
     # gerund
-    ("barg!ng", ("barg", {"form": ["ing"]})),
+    ("barg!ng", {"base":"barg", "features":{"form": ["ing"]}}),
 
     # combined (future-proofing)
-    # ("flargh!ng", ("flargh", {"form": ["ing"]})),
+    # ("flargh!ng", {"base":"flargh", "features":{"form": ["ing"]}}),
 
     # guardrails
-    ("anz", ("anz", {})),  # NOT plural
-    ("haz", ("haz", {})),  # NOT plural
-    ("maz", ("maz", {})),  # NOT plural
-    ("hazzz", ("hazz",{"form": ["s"]})),
-    ("flargh!ng", ("flargh!ng", {})),   # unknown word, not recognized as "ing"
+    ("anz", {"base":"anz", "features":{}}),  # NOT plural
+    ("haz", {"base":"haz", "features":{}}),  # NOT plural
+    ("maz", {"base":"maz", "features":{}}),  # NOT plural
+    ("hazzz", {"base":"hazz","features":{"form": ["s"]}}),
+    ("flargh!ng", {"base":"flargh!ng","features": {}}),   # unknown word, not recognized as "ing"
 
     # stacking !ng and -z
-    ("barg!ngz", ("barg", {"form":["s", "ing"]})),
+    ("barg!ngz", {"base":"barg","features": {"form":["s", "ing"]}}),
     # current behavior, no "ing" recognized for unknown words
-    ("flargh!ngz", ("flargh!ng", {"form": ["s"]})),
+    ("flargh!ngz", {"base":"flargh!ng","features": {"form": ["s"]}}),
 
     # --- safety boundaries ---
-    ("abz", ("abz", {})),     # base too short → not plural
-    ("z", ("z", {})),         # single char ignored
+    ("abz", {"base":"abz","features": {}}),     # base too short → not plural
+    ("z", {"base":"z","features": {}}),         # single char ignored
 
     # --- unknown baseline ---
-    ("flargh", ("flargh", {})),
+    ("flargh", {"base":"flargh","features": {}}),
 
     # --- robustness ---
-    ("flarghzz", ("flarghz", {"form": ["s"]})),  # no double-strip
+    ("flarghzz", {"base":"flarghz","features": {"form": ["s"]}}),  # no double-strip
 ]
 
+GLOSS_TOKEN_UNIT_TESTS = [
+    # exact match → no candidates
+    ("zambah", {
+        "unknown": False,
+        "candidates": None
+    }),
+
+    # unknown, no good fuzzy match
+    ("zzzzz", {
+        "unknown": True,
+        "candidates": []
+    }),
+
+    # unknown, but close match exists
+    ("zamba", {
+        "unknown": True,
+        "candidates": [{"word": "zambah"}]
+    }),
+
+    # plural unknown with base fallback
+    ("zambahz", {
+        "unknown": False,  # because morphology resolves it
+    }),
+
+    # noisy input hitting fuzzy via raw fallback
+    ("zamb!h", {
+        "unknown": True,
+        "candidates": [{"word":"zambah"}]
+    }),
+    # don't accept garbage matches
+    ("zzmbh", {
+        "unknown": True,
+        "candidates": []
+    }),
+    # distance boundary test
+    ("zamzzh", {
+    "unknown": True,
+    "candidates": []
+    }),
+    ("zambh", {
+        "unknown": True,
+        "candidates": [
+            {"word": "zambah", "score": 0.9}  # partial match ok
+        ]
+   }),
+    # Test sort order
+    ("graam", {
+        "unknown": True,
+        "candidates": [
+            {"word": "raam"},  # must be first
+            {"word": "graab"}, # must be after
+        ]
+    }),
+    # very short word test
+    ("ma", {
+    "unknown": True,
+    "candidates": []
+    }),
+    # unknown, but close match exists, check token existence
+    ("zamba", {
+        "unknown": True,
+        "candidates": [{"word": "zambah", "token":{"word": "zombie"}}]
+    }),
+    # Test token includes correct POS
+    ("graam", {
+        "unknown": True,
+        "candidates": [
+            {"word": "raam", "token":{"word":"room", "pos":{"noun"}}},  # must be first
+            ]
+        }
+     ),
+    # Test token includes no morphology features
+    ("graamz", {
+        "unknown": True,
+        "candidates": [
+            {"word": "raam", "token":{"word":"room", "features":{}}},
+            ]
+        }
+     ),
+    # Candidate token is not unknown
+    ("zamba", {
+        "unknown": True,
+        "candidates": [{"word": "zambah", "token":{"unknown":False}}]
+    }),
+    # No recursive candidates
+    ("zamba", {
+    "unknown": True,
+    "candidates": [
+        {"word": "zambah", "token": {"candidates": None}}
+    ]
+    }),
+]
+RESOLVE_UNIT_TESTS = [
+    # 1. High-confidence: replace
+    ("zamba", {
+        "unknown": False,
+        "word": "zombie",
+    }),
+    # 2. High-confidence with applied morphology
+    #  This is recognized as "zambahz + z" and then "zambahz" is a high
+    # confidence match for "zambah"
+    ("zambahzz", {
+        "unknown": False,
+        "word": "zombies",   # base word rendered with features
+    }),
+    # 3. Medium confidence: annotate (not replace)
+    # "graam" is only 88% match for "raam" or "gaam", under the "high
+    # confidence" tolerance
+    ("graam", {
+        "unknown": True,
+        "candidates": [
+            {"word": "raam"}
+        ]
+    }),
+    # 4. No candidates: pass-through
+    ("zzzzz", {
+        "unknown": True,
+        "candidates": []
+    }),
+    # 5. Known word: untouched
+    ("zambah", {
+        "unknown": False,
+        "word": "zombie",
+    }),
+    # 6. Replacement preserves morphology features
+    # (IMPORTANT: merge_token behavior)
+    ("zambaz", {
+        "unknown": False,
+        "word": "zombies",
+        "features": {"form": ["s"]},
+    }),
+    # 7. edit distance too large, no candidates found
+    ("zamzzh", {
+        "unknown": True,
+    }),
+    # 8. Ensure replacement pulls POS from candidate token (POS check)
+    ("zamba", {
+        "unknown": False,
+        "pos": {"noun"},
+    }),
+]
 # Invariant tests
 def check_invariants(sentence: str, lookup, eng_lookup) -> list[str]:
     issues = []
@@ -1689,7 +1832,7 @@ def run_tests(verbose=False):
                     print(f"  issues: {inv_errors}")
                     print(f"\n--- DEBUG TRACE ---")
                     print(f"[input] {zamgrh}")
-                    translator(zamgrh, debug=True)
+                    translator(zamgrh, debug=2)
                     structure = zamgrh_to_structure(zamgrh, lookup, eng_lookup)
                     print(f"[structure] {structure}")
                     print(f"--- END DEBUG TRACE ---")
@@ -1708,7 +1851,7 @@ def run_tests(verbose=False):
                 print(f"  got:      {result}")
                 print(f"\n--- DEBUG TRACE ---")
                 print(f"[input] {zamgrh}")
-                translator(zamgrh, debug=True)
+                translator(zamgrh, debug=2)
                 structure = zamgrh_to_structure(zamgrh, lookup, eng_lookup)
                 print(f"[structure] {structure}")
                 print(f"--- END DEBUG TRACE ---")
@@ -2092,6 +2235,23 @@ def build_result_stub(context):
 
     return result
 
+def morphology_match(actual, expected):
+    if isinstance(expected, dict):
+        assert "base" in expected and "features" in expected, \
+            f"Morphology test {expected}must include 'base' and 'features'"
+        return morph_match(actual, expected)
+    else:
+        raise AssertionError(f"Unsupported expected format: {type(expected)}")
+
+def morph_match(actual, expected):
+    base, features = actual
+
+    if "base" in expected and expected["base"] != base:
+        return False
+    if "features" in expected and expected["features"] != features:
+        return False
+    return True
+
 def run_morphology_unit_tests(verbose=False):
     data = load_dictionary()
     lookup = build_lookup(data)
@@ -2103,7 +2263,7 @@ def run_morphology_unit_tests(verbose=False):
     for inp, expected in MORPHOLOGY_UNIT_TESTS:
         result = normalize_morphology(inp, lookup)
 
-        if result == expected:
+        if morphology_match(result,expected):
             if verbose:
                 print(f"PASS: {inp} -> {result}")
             passed += 1
@@ -2117,6 +2277,143 @@ def run_morphology_unit_tests(verbose=False):
     print(f"Morphology Passed: {passed}")
     print(f"Morphology Failed: {failed}")
 
+    return failed == 0, passed, failed
+
+def approx_equal(a, b, tol=0.02):
+    return abs(a - b) <= tol
+
+def candidates_match(actual, expected):
+    """
+    Compare candidate lists with flexible matching, ordering,
+    score tolerance, and optional token validation.
+    """
+    if expected is None:
+        return True
+
+    actual = actual or []
+
+    # Build index map for ordering
+    index_map = {c["word"]: i for i, c in enumerate(actual)}
+    last_index = -1
+
+    for exp in expected:
+        word = exp["word"]
+
+        if word not in index_map:
+            return False
+
+        current_index = index_map[word]
+
+        # Enforce ordering
+        if current_index < last_index:
+            return False
+        last_index = current_index
+
+        match = actual[current_index]
+
+        # Score check (optional)
+        if "score" in exp:
+            if not approx_equal(match.get("score", 0), exp["score"]):
+                return False
+
+        # Token check (optional, partial match like tokens_match)
+        if "token" in exp:
+            if not token_partial_match(match.get("token",{}), exp["token"]):
+                return False
+
+    return True
+
+def token_partial_match(actual, expected):
+    assert expected, "Test must specify at least one expectation"
+
+    for k, v in expected.items():
+        actual_val = actual.get(k)
+
+        # Special case: explicitly expect empty dict
+        if v == {}:
+            if actual_val != {}:
+                return False
+            continue
+
+        # Nested token
+        if isinstance(v, dict):
+            if not isinstance(actual_val, dict):
+                return False
+            if not token_partial_match(actual_val, v):
+                return False
+
+        # Candidate list
+        elif k == "candidates":
+            if not candidates_match(actual_val, v):
+                return False
+
+        # Primitive / direct compare
+        else:
+            if actual_val != v:
+                return False
+
+    return True
+
+def run_gloss_token_unit_tests(verbose=False):
+    data = load_dictionary()
+    lookup = build_lookup(data)
+    eng_lookup = build_english_pos_lookup(data)
+
+    passed = 0
+    failed = 0
+
+    print("\n=== GLOSS TOKEN UNIT TESTS ===")
+
+    for inp, expected in GLOSS_TOKEN_UNIT_TESTS:
+        tokens = zamgrh_to_gloss_tokens(inp, lookup, eng_lookup)
+        token = tokens[0]
+
+        ok = True
+
+        for key, val in expected.items():
+            if key == "candidates":
+                if not candidates_match(token.get("candidates"), val):
+                    ok = False
+
+        if ok:
+            if verbose:
+                print(f"PASS: {inp} -> {token}")
+            passed += 1
+        else:
+            print(f"FAIL: {inp}")
+            print(f"  expected: {expected}")
+            print(f"  got:      {token}")
+            failed += 1
+
+    print("\n---")
+    print(f"Gloss Tokens Passed: {passed}")
+    print(f"Gloss Tokens Failed: {failed}")
+
+    return failed == 0, passed, failed
+
+def run_resolve_unit_tests(verbose=False):
+    data = load_dictionary()
+    lookup = build_lookup(data)
+    eng_lookup = build_english_pos_lookup(data)
+    passed = 0
+    failed = 0
+    print("\n=== RESOLVE UNIT TESTS ===")
+    for inp, expected in RESOLVE_UNIT_TESTS:
+        tokens = zamgrh_to_gloss_tokens(inp, lookup, eng_lookup)
+        tokens = resolve_unknowns(tokens, lookup, eng_lookup)
+        token = tokens[0]
+        if token_partial_match(token, expected):
+            if verbose:
+                print(f"PASS: {inp} -> {token}")
+            passed += 1
+        else:
+            print(f"FAIL: {inp}")
+            print(f"  expected: {expected}")
+            print(f"  got:      {token}")
+            failed += 1
+    print("\n---")
+    print(f"Resolve Passed: {passed}")
+    print(f"Resolve Failed: {failed}")
     return failed == 0, passed, failed
 
 def check_duplicates():
@@ -2227,6 +2524,8 @@ if __name__ == "__main__":
     success_pipeline_helper_unit, phelp_passed, phelp_failed = run_pipeline_helper_unit_tests(verbose)
     success_pipeline_unit, pipeline_unit_passed, pipeline_unit_failed = run_pipeline_unit_tests(verbose)
     success_morphology_unit, morph_passed, morph_failed = run_morphology_unit_tests(verbose)
+    success_gloss_token_unit, gloss_passed, gloss_failed = run_gloss_token_unit_tests(verbose)
+    success_resolve_unit, resolve_passed, resolve_failed = run_resolve_unit_tests(verbose)
 
     # These lines are here to remind us that if we do a major restructure
     # of TEST_GROUPS, we can uncomment these and make sure that no tests got
@@ -2272,6 +2571,16 @@ if __name__ == "__main__":
     else:
         print(f"Ran and passed {morph_passed} morphology tests")
 
+    if (not success_gloss_token_unit):
+        print(f"{gloss_failed} gloss token tests failed!")
+    else:
+        print(f"Ran and passed {gloss_passed} gloss token tests")
+
+    if (not success_resolve_unit):
+        print(f"{resolve_failed} resolve token tests failed!")
+    else:
+        print(f"Ran and passed {resolve_passed} resolve token tests")
+
     if (success_translation and success_structure and success_pipeline_unit
         and success_pipeline_helper_unit and success_morphology_unit):
         print(f"All test types passed.")
@@ -2284,5 +2593,7 @@ if __name__ == "__main__":
         print(f"build_tokens_from_words did not produce a list of tokens matching words")
     sys.exit(0 if (success_translation and success_structure
                    and success_pipeline_unit and success_pipeline_helper_unit
-                   and success_morphology_unit and success_token_build
-                   and success_token_list) else 1)
+                   and success_morphology_unit and success_gloss_token_unit
+                   and success_resolve_unit
+                   and success_token_build
+                   and success_token_list ) else 1)
