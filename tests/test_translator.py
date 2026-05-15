@@ -1705,52 +1705,102 @@ GLOSS_TOKEN_UNIT_TESTS = [
 ]
 RESOLVE_UNIT_TESTS = [
     # 1. High-confidence: replace
-    ("zamba", {
+    ("zamba", [{
         "unknown": False,
         "word": "zombie",
-    }),
+    }]),
     # 2. High-confidence with applied morphology
     #  This is recognized as "zambahz + z" and then "zambahz" is a high
     # confidence match for "zambah"
-    ("zambahzz", {
+    ("zambahzz", [{
         "unknown": False,
         "word": "zombies",   # base word rendered with features
-    }),
+    }]),
     # 3. Medium confidence: annotate (not replace)
     # "graam" is only 88% match for "raam" or "gaam", under the "high
     # confidence" tolerance
-    ("graam", {
+    ("graam", [{
         "unknown": True,
         "candidates": [
             {"word": "raam"}
         ]
-    }),
+    }]),
     # 4. No candidates: pass-through
-    ("zzzzz", {
+    ("zzzzz", [{
         "unknown": True,
         "candidates": []
-    }),
+    }]),
     # 5. Known word: untouched
-    ("zambah", {
+    ("zambah", [{
         "unknown": False,
         "word": "zombie",
-    }),
+    }]),
     # 6. Replacement preserves morphology features
     # (IMPORTANT: merge_token behavior)
-    ("zambaz", {
+    ("zambaz", [{
         "unknown": False,
         "word": "zombies",
         "features": {"form": ["s"]},
-    }),
+    }]),
     # 7. edit distance too large, no candidates found
-    ("zamzzh", {
+    ("zamzzh", [{
         "unknown": True,
-    }),
+    }]),
     # 8. Ensure replacement pulls POS from candidate token (POS check)
-    ("zamba", {
+    ("zamba", [{
         "unknown": False,
         "pos": {"noun"},
-    }),
+    }]),
+    # POS-aware reranking:  prefer noun after determiner
+    # raam should win
+    ("zah graam", [
+        { "word": "the"},
+        { "word": "room", "unknown": False},
+    ]),
+    # We should choose the verb after a noun
+    ("zambah graam", [
+        {"word": "zombie"},
+        {"word": "come", "unknown": False}
+        ]
+     ),
+    # No context, we just still have candidates and no resolution
+    ("graam",
+     [
+        {"unknown": True, "candidates": [ {"word": "gaam"},
+                                          {"word": "raam"}
+                                         ]
+         }
+     ]
+     ),
+    # Determiner beats raw score tie
+    ("mah zambah maz haz zah graam",
+     [
+        { "word": "my"},
+        { "word": "zombie"},
+        { "word": "must"},
+        { "word": "have"},
+        { "word": "the"},
+        { "word": "room" },   # should not select "come" here
+     ]
+     ),
+    # verb preference does not over correct:
+    ("zah zambah graam",
+     [
+         {"word": "the"}, {"word":"zombie"},
+         { "word": "come"}
+     ]
+     ),
+    # Reranking does not overwrite original scores
+    ("graam",
+     [
+         {
+             "candidates": [
+                 {"word": "gaam", "score": 0.8888},
+                 {"word": "raam", "score": 0.8888}
+             ]
+         }
+     ]
+     ),
 ]
 # Invariant tests
 
@@ -2410,16 +2460,29 @@ def run_resolve_unit_tests(verbose=False):
     for inp, expected in RESOLVE_UNIT_TESTS:
         tokens = zamgrh_to_gloss_tokens(inp, lookup, eng_lookup)
         tokens = resolve_unknowns(tokens, lookup, eng_lookup)
-        token = tokens[0]
-        if token_partial_match(token, expected):
+        if len(tokens) != len(expected):
+            print(f"FAIL: {inp}")
+            print(f"  expected token count: {len(expected)}")
+            print(f"  got token count:      {len(tokens)}")
+            failed += 1
+            continue
+
+        ok = True
+        for t, exp in zip(tokens, expected):
+            if not token_partial_match(t, exp):
+                ok = False
+                break
+
+        if ok:
             if verbose:
-                print(f"PASS: {inp} -> {token}")
+                print(f"PASS: {inp} -> {tokens}")
             passed += 1
         else:
             print(f"FAIL: {inp}")
             print(f"  expected: {expected}")
-            print(f"  got:      {token}")
+            print(f"  got:      {tokens}")
             failed += 1
+
     print("\n---")
     print(f"Resolve Passed: {passed}")
     print(f"Resolve Failed: {failed}")

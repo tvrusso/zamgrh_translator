@@ -1742,6 +1742,26 @@ class ResolutionPolicy:
         self.max_candidates = max_candidates
         self.annotate_medium = annotate_medium
 
+def rerank_candidates_with_context(token, candidates, tokens,index, policy):
+    prev_token = tokens[index - 1] if index > 0 else None
+    next_token = tokens[index + 1] if index + 1 < len(tokens) else None
+
+    prev_pos = set(prev_token["pos"]) if prev_token else set()
+    expect_noun = prev_token and prev_token["word"] in DETERMINERS
+    expect_verb = prev_token and "noun" in prev_pos
+
+    for c in candidates:
+        cand_pos = set(c["token"]["pos"])
+        bonus = 0
+        if expect_noun and "noun" in cand_pos:
+            bonus += 0.05
+        if expect_verb and ("verb" in cand_pos or "aux" in cand_pos):
+            bonus += 0.05
+        c["adjusted_score"] = min(1.0,c["score"] + bonus)
+
+    candidates.sort(key=lambda c: c.get("adjusted_score", c["score"]), reverse=True)
+    return candidates
+
 def resolve_unknowns(tokens, lookup, eng_lookup, policy=None, debug=0):
     """
     Resolve unknown tokens using fuzzy candidates.
@@ -1760,7 +1780,7 @@ def resolve_unknowns(tokens, lookup, eng_lookup, policy=None, debug=0):
 
     resolved = []
 
-    for token in tokens:
+    for index, token in enumerate(tokens):
         if debug >= 2:
             print("\n[RESOLVE:CHECK]")
             print(f"  raw: {token['raw']}")
@@ -1772,6 +1792,15 @@ def resolve_unknowns(tokens, lookup, eng_lookup, policy=None, debug=0):
             continue
 
         candidates = token["candidates"][:policy.max_candidates]
+
+        candidates = rerank_candidates_with_context(
+            token, candidates, tokens, index, policy
+        )
+        if debug >= 2:
+            print("  reranked:", [
+                (c["word"], c.get("adjusted_score", c["score"]))
+                for c in candidates
+            ])
 
         decision = choose_resolution(token, candidates, policy)
 
@@ -1810,7 +1839,7 @@ def choose_resolution(token, candidates, policy):
         return {"type": "pass"}
 
     best = candidates[0]
-    score = best["score"]
+    score = best.get("adjusted_score", best["score"])
 
     if score >= policy.high_confidence:
         return {"type": "replace", "candidate": best}
