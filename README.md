@@ -79,5 +79,26 @@ Harmanz maz gab zamgrh!
 
 ## Getting Started  (Zarz zhambar!ng)
 
+Get python via the method of your choice.  See https://python.org if
+you need help with that.
+
+You must also have the RapidFuzz python package installed.  If it isn't
+already, you might have to do either
+
+```bash
+pip install rapidfuzz
+```
+
+or
+```bash
+conda install -c conda-forge rapidfuzz
+```
+depending on how you installed python.
+
+Then start using it:
+
 ```bash
 python src/translator.py
+```
+
+Gab zamgrh, !z n!z!
