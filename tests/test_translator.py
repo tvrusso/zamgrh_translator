@@ -36,6 +36,7 @@ from translator import (
     normalize_morphology,
     find_subject_head,
     classify_subject_with_context,
+    ResolutionPolicy,
 )
 
 # ---------------------------
@@ -1811,6 +1812,63 @@ RESOLVE_UNIT_TESTS = [
          {"word": "room"},
      ]
      ),
+    # Tightening "high_confidence" still leaves word unknown
+    ("graam",
+     [
+         {
+             "candidates": [
+                 {"word": "gaam", "score": 0.8888},
+                 {"word": "raam", "score": 0.8888}
+             ]
+         }
+     ],
+     {"high_confidence":0.92}
+     ),
+    # Tightening "high_confidence" changes word to unknown
+    ("zambh",
+     [
+         {
+             "unknown": True,
+             "candidates": [
+                 {"word": "zambah", "score": 0.9090},
+             ]
+         }
+     ],
+     {"high_confidence":0.92}
+     ),
+    # loosening "high_confidence" properly recognizes word
+    ("zambh",
+     [
+         {"word": "zombie"}
+     ],
+     {"high_confidence":0.85}
+     ),
+    # exactly at high_confidence → should replace
+    ("zambh",
+     [
+         {"word": "zombie"}
+     ],
+     {"high_confidence": 0.9090}
+     ),
+    # medium confidence but annotation disabled → pass-through
+    ("graam",
+     [
+         {"unknown": True}
+     ],
+     {"medium_confidence": 0.85, "annotate_medium": False}
+     ),
+    ("graam",
+     [
+         {
+             "candidates": [
+                 {"word": "gaam"},
+                 {"word": "raam"}
+             ],
+             "candidates_exact": True
+         }
+     ],
+     {"max_candidates": 2}
+),
 ]
 # Invariant tests
 
@@ -2396,6 +2454,10 @@ def token_partial_match(actual, expected):
     assert expected, "Test must specify at least one expectation"
 
     for k, v in expected.items():
+        # Skip test-only keys
+        if k == "candidates_exact":
+            continue
+
         actual_val = actual.get(k)
 
         # Special case: explicitly expect empty dict
@@ -2415,7 +2477,9 @@ def token_partial_match(actual, expected):
         elif k == "candidates":
             if not candidates_match(actual_val, v):
                 return False
-
+            if expected.get("candidates_exact"):
+                if len(actual_val or []) != len(v):
+                    return False
         # Primitive / direct compare
         else:
             if actual_val != v:
@@ -2467,9 +2531,15 @@ def run_resolve_unit_tests(verbose=False):
     passed = 0
     failed = 0
     print("\n=== RESOLVE UNIT TESTS ===")
-    for inp, expected in RESOLVE_UNIT_TESTS:
+    for case in RESOLVE_UNIT_TESTS:
+        if len(case) == 3:
+            inp, expected, policy_kwargs = case
+            policy = ResolutionPolicy(**policy_kwargs)
+        else:
+            inp, expected = case
+            policy = ResolutionPolicy()
         tokens = zamgrh_to_gloss_tokens(inp, lookup, eng_lookup)
-        tokens = resolve_unknowns(tokens, lookup, eng_lookup)
+        tokens = resolve_unknowns(tokens, lookup, eng_lookup, policy=policy)
         if len(tokens) != len(expected):
             print(f"FAIL: {inp}")
             print(f"  expected token count: {len(expected)}")

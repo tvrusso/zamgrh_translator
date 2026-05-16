@@ -1938,7 +1938,7 @@ def zamgrh_to_gloss_tokens(text,lookup, eng_lookup):
 
     return tokens
 
-def zamgrh_to_english(text, lookup, eng_lookup, debug=0, unknown_mode="bracket", return_tokens=False):
+def zamgrh_to_english(text, lookup, eng_lookup, debug=0, unknown_mode="bracket", return_tokens=False, policy=None):
     """
     Translate Zamgrh text to English.
 
@@ -1957,7 +1957,7 @@ def zamgrh_to_english(text, lookup, eng_lookup, debug=0, unknown_mode="bracket",
     is_question = text.strip().endswith("?")
 
     tokens = zamgrh_to_gloss_tokens(text, lookup, eng_lookup)
-    tokens = resolve_unknowns(tokens, lookup, eng_lookup, policy=None, debug=debug)
+    tokens = resolve_unknowns(tokens, lookup, eng_lookup, policy=policy, debug=debug)
     words = [render_token_word(t, mode=unknown_mode) for t in tokens]
 
     words, tokens = apply_grammar_pipeline(words, lookup, eng_lookup, tokens=tokens, debug=debug)
