@@ -1801,6 +1801,16 @@ RESOLVE_UNIT_TESTS = [
          }
      ]
      ),
+    # Favor nouns after verbs
+    ("mah zamba maz haz graam",
+     [
+         {"word": "my"},
+         {"word": "zombie"},
+         {"word": "must"},
+         {"word": "have"},
+         {"word": "room"},
+     ]
+     ),
 ]
 # Invariant tests
 

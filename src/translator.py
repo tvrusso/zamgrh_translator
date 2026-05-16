@@ -1747,7 +1747,13 @@ def rerank_candidates_with_context(token, candidates, tokens,index, policy):
     next_token = tokens[index + 1] if index + 1 < len(tokens) else None
 
     prev_pos = set(prev_token["pos"]) if prev_token else set()
-    expect_noun = prev_token and prev_token["word"] in DETERMINERS
+
+    # This is a risk if verb is intransitive, but accept that risk
+    # for now.  Ultimate solution is to distinguish transitive/intransitive
+    # verbs in the dictionary
+    expect_noun = ((prev_token and prev_token["word"] in DETERMINERS)
+                   or (prev_token and "verb" in prev_pos))
+
     expect_verb = prev_token and "noun" in prev_pos
 
     for c in candidates:
