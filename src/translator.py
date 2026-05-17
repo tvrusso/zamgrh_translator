@@ -466,6 +466,24 @@ def fix_object_pronouns(words, lookup, eng_lookup, tokens, debug=0):
     Guarantees:
     - converts 'verb I' -> 'verb me' for known verbs
     - does not own possessive or prepositional pronoun case
+
+    UNKNOWN TOKEN POLICY:
+    - This function does NOT use token POS or unknown flags.
+    - Unknown tokens are treated purely as surface strings.
+    - Therefore, unknown verbs NEVER trigger object pronoun correction.
+
+    LIMITATIONS:
+    - Relies on a hardcoded verb list rather than token POS.
+    - Even known verbs not in the list will not trigger correction.
+    - Inconsistent with the rest of the pipeline, which uses token-based
+      analysis.
+
+    IMPLICATION:
+    - Pronoun case correction may fail in sentences involving:
+    - unknown verbs
+    - verbs outside the hardcoded list
+    - This can lead to grammatically incorrect outputs such as:
+    "graam I" instead of "graam me"
     """
     assert_word_list(words, "fix_object_pronouns input")
     verbs = {"give", "help", "shoot", "eat", "smash", "have"}
@@ -511,20 +529,34 @@ def insert_copula(words, lookup, eng_lookup, tokens, debug=0):
     - inserts 'is/are' between noun + adjective when no earlier verb was seen
     - inserts auxiliary before progressive -ing predicates when safe
     - does not handle full clause repair or late agreement decisions
-    - prefers token POS when available, falls back to lookup
     Ordering:
     - MUST run after simplify_subject (subject must be canonical)
     - MUST run before fix_verb_agreement (output is not final)
     - SHOULD run after basic lexical normalization
 
     Notes:
-    - Relies on POS (token-first, lookup fallback)
+    - Relies on POS from token
     - Uses heuristic "no earlier verb seen" to decide insertion
     - May insert incorrect copula forms; correctness is enforced later
 
     ASSUMPTION:
      - subject normalization already applied
      - this step must not rely on final agreement correctness
+    UNKNOWN TOKEN POLICY:
+    - Unknown tokens do NOT participate in copula insertion.
+    - They lack POS, so cannot be recognized as nouns or adjectives.
+    - They do not receive "-ing" morphology, so cannot trigger progressive insertion.
+
+    IMPLICATION:
+    - Copula insertion is completely disabled in contexts involving unknowns.
+    - Example failures:
+    "zombie [graam]" → no "is" inserted
+    "[graam] hungry" → no "is" inserted
+    "I graaming" → no "am" inserted
+
+    NOTE:
+    - Unlike plural ("-s") handling, "-ing" morphology is only assigned
+    to known verbs, further preventing unknown participation.
     """
     assert_word_list(words, "insert_copula input")
 
@@ -534,7 +566,6 @@ def insert_copula(words, lookup, eng_lookup, tokens, debug=0):
     seen_verb = False
 
     for i, w in enumerate(words):
-        # Token-first POS
         token = tokens[i]
         pos = set(token["pos"])
         is_ing = has_ing_form(token["features"])
@@ -591,6 +622,28 @@ def fix_prepositions(words, lookup, eng_lookup, tokens, debug=0):
     Guarantees:
     - converts 'to I' -> 'to me'
     - does not own possessive determiner conversion
+    UNKNOWN TOKEN POLICY:
+    - This function does NOT use token POS or unknown flags.
+    - Unknown tokens are treated purely as surface strings.
+    - Unknown prepositions do NOT trigger pronoun case correction.
+
+    LIMITATIONS:
+    - Only handles the specific pattern "to I" → "to me".
+    - Does not generalize to other prepositions ("with", "for", etc.).
+    - Does not use POS information, unlike other pipeline steps.
+
+    INCONSISTENCY:
+    - Overlaps conceptually with fix_object_pronouns but uses a different,
+    non-POS-based mechanism.
+    - Leads to inconsistent behavior across similar grammatical contexts.
+
+    IMPLICATION:
+    - Pronoun case correction may fail for:
+    - unknown prepositions
+    - valid prepositions not explicitly handled
+    - Example failures:
+      "with I" → unchanged (should be "with me")
+      "[graam] I" → unchanged even if graam behaves like a preposition
     """
     assert_word_list(words, "fix_prepositions input")
     result = []
@@ -627,6 +680,9 @@ def fix_verb_agreement(words, lookup, eng_lookup, tokens, debug=0):
     Notes:
     - Performs both early and late copula correction
     - Relies on subject detection via build_context
+    - Unknown tokens may act as fallback subjects and are
+       treated as third-person singular unless plural morphology
+       is explicitly present.
     """
     assert_word_list(words, "fix_verb_agreement input")
 
@@ -741,7 +797,7 @@ def find_subject_head(context):
     Guarantees:
     - returns best-effort local subject candidate or None
     - stops scanning at verb/aux boundaries
-    - prefers token POS when available, falls back to lookup POS
+    - Depends on token POS
     POLICY:
     - Uses shallow, surface-based heuristics only (no deep syntax).
     - Leading gerunds ("ing" forms) are treated as subjects by default.
@@ -752,11 +808,14 @@ def find_subject_head(context):
     - Determiners are used as a proxy signal for noun phrase structure.
     - Does not attempt to distinguish gerunds vs participles beyond
       these surface cues.
+    - Subject Detection Policy for Unknown Tokens
+      - Unknown tokens are eligible as subject candidates only as fallback.
+      - Known nouns and pronouns always take precedence.
+      - Unknown tokens do not participate in POS-based subject heuristics.
+
     """
     words = context["result_so_far"]
     tokens = context.get("result_tokens_so_far")
-    lookup = context["lookup"]
-    eng_lookup = context["eng_lookup"]
 
     idx = len(words) - 1
     candidate = None
@@ -1338,6 +1397,16 @@ def insert_articles(words, lookup, eng_lookup, tokens, debug=0):
     - resolve subject/verb agreement
     - fully understand multi-clause boundaries
     - perform deep noun-phrase analysis
+
+    Article Insertion Policy (Current)
+    - Unknown tokens are not treated as nouns (no article insertion)
+    - Article insertion relies strictly on POS tags
+    Conflict:
+    - Resolver may classify unknowns as noun-like via context
+    - But grammar pipeline does not honor that assumption
+    Implication:
+    - Some noun-like unknowns fail to receive articles
+
     """
     assert_word_list(words, "insert_articles input")
 
@@ -1446,6 +1515,19 @@ def fix_determiners(words, lookup, eng_lookup, tokens, debug=0):
     Guarantees:
     - converts 'I noun' -> 'my noun' in clearly possessive environments
     - does not override clear subject uses of 'I'
+
+    UNKNOWN TOKEN POLICY:
+    - Unknown tokens (token["unknown"] == True) are treated as having no POS.
+    - Therefore, they are NOT considered nouns for determiner conversion.
+
+    IMPLICATION:
+    - Phrases like "I [unknown]" will NOT be converted to "my [unknown]",
+    even if the unknown token is likely a noun.
+
+    KNOWN LIMITATION:
+    - This differs from resolution logic, where unknowns may be treated
+    as noun-like based on context.
+    - Leads to inconsistent noun-phrase handling across the pipeline.
     """
     assert_word_list(words, "fix_determiners input")
     result = []
