@@ -1928,7 +1928,10 @@ def resolve_unknowns(tokens, lookup, eng_lookup, policy=None, debug=0):
                 new_token["pos"]
             )
             if debug >= 2:
-                print(f"  replaced token: {new_token}")
+                print(f"  before:{token['word']}")
+                print(f"  after:{new_token['word']}")
+                if debug >= 3:
+                    print(f"  replaced token: {new_token}")
             resolved.append(new_token)
 
         elif decision["type"] == "annotate":
