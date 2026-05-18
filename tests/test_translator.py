@@ -37,6 +37,7 @@ from translator import (
     find_subject_head,
     classify_subject_with_context,
     ResolutionPolicy,
+    derive_word_parts,
 )
 
 # ---------------------------
@@ -2138,6 +2139,7 @@ def build_tokens_from_words(words, eng_lookup):
         tokens.append({
             "raw": w,
             "word": w,
+            "word_parts": derive_word_parts(w),
             "base": base,
             "pos": set(pos),
             "features": features,

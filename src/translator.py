@@ -121,6 +121,7 @@ def make_token(word, *, pos=None, features=None, base=None):
     return {
         "raw": word,
         "word": word,
+        "word_parts": derive_word_parts(word),
         "base": base or word,
         "pos": set(pos) if pos else set(),
         "features": features or {},
@@ -132,6 +133,7 @@ def replace_token_word(token, new_word):
     return {
         **token,
         "word": new_word,
+        "word_parts": derive_word_parts(new_word),
         "base": token.get("base", new_word),
     }
 
@@ -1874,6 +1876,8 @@ def resolve_unknowns(tokens, lookup, eng_lookup, policy=None, debug=0):
             print(f"  raw: {token['raw']}")
             print(f"  unknown: {token['unknown']}")
             print(f"  has_candidates: {bool(token.get('candidates'))}")
+        if debug >= 3:
+            print(f"  token: {token}")
 
         if not token["unknown"] or not token.get("candidates"):
             resolved.append(token)
@@ -1963,6 +1967,11 @@ def annotate_token(token, candidates):
 
 # ------
 
+def derive_word_parts(word):
+    parts = word.split()
+    assert parts, f"Invalid word for token: {word!r}"
+    return parts
+
 def build_token_from_raw(raw, lookup, eng_lookup):
     w = clean(raw)
     base, features = normalize_morphology(w, lookup)
@@ -1981,6 +1990,7 @@ def build_token_from_raw(raw, lookup, eng_lookup):
     return {
         "raw": raw,
         "word": gloss,
+        "word_parts": derive_word_parts(gloss),
         "base": base,
         "pos": pos,
         "features": dict(features),
