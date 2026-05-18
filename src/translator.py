@@ -1872,7 +1872,7 @@ def resolve_unknowns(tokens, lookup, eng_lookup, policy=None, debug=0):
 
     for index, token in enumerate(tokens):
         if debug >= 2:
-            print("\n[RESOLVE:CHECK]")
+            print(f"\n[RESOLVE:CHECK] index={index}")
             print(f"  raw: {token['raw']}")
             print(f"  unknown: {token['unknown']}")
             print(f"  has_candidates: {bool(token.get('candidates'))}")
@@ -1889,19 +1889,35 @@ def resolve_unknowns(tokens, lookup, eng_lookup, policy=None, debug=0):
             token, candidates, tokens, index, policy
         )
         if debug >= 2:
-            print("  reranked:", [
-                (c["word"], c.get("adjusted_score", c["score"]))
-                for c in candidates
-            ])
+            for c in candidates:
+                base = c["score"]
+                adj = c.get("adjusted_score",base)
+                delta = adj - base
+                print("  reranked:", [
+                    (c["word"], round(base,3), round(adj,3), round(delta,3))])
 
         decision = choose_resolution(token, candidates, policy)
 
         if debug >= 2:
             print("\n[RESOLVE]")
             print(f"  raw: {token['raw']}")
-            print(f"  token: {token}")
+            if debug >= 3:
+                print(f"  token: {token}")
             print(f"  candidates: {[c['word'] for c in candidates]}")
-            print(f"  decision: {decision['type']}")
+
+            reason = []
+            if "score" in decision:
+                reason.append(f"score={decision['score']:.3f}")
+            if "threshold" in decision:
+                reason.append(f"threshold={decision['threshold']:.3f}")
+            # Detect POS influence
+            if candidates:
+                best = candidates[0]
+                if "adjusted_score" in best and best["adjusted_score"] != best["score"]:
+                    reason.append("pos_adjusted=True")
+
+            reason_str = ", ".join(reason)
+            print(f"  decision: {decision['type']} ({reason_str})")
 
         if decision["type"] == "replace":
             new_token = merge_token(token, decision["candidate"]["token"])
@@ -1934,12 +1950,15 @@ def choose_resolution(token, candidates, policy):
     score = best.get("adjusted_score", best["score"])
 
     if score >= policy.high_confidence:
-        return {"type": "replace", "candidate": best}
+        return {"type": "replace", "candidate": best, "score": score,
+                "threshold":policy.high_confidence}
 
     if score >= policy.medium_confidence and policy.annotate_medium:
-        return {"type": "annotate", "candidates": candidates}
+        return {"type": "annotate", "candidates": candidates,
+                "score":score, "threshold":policy.medium_confidence}
 
-    return {"type": "pass"}
+    return {"type": "pass","score":score,
+            "threshold":policy.medium_confidence}
 
 def merge_token(original, candidate_token):
     """
