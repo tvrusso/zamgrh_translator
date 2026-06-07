@@ -1,5 +1,4 @@
-"""
-translator.py
+"""translator.py
 
 Rule-based Zamgrh -> English translator.
 
@@ -16,6 +15,75 @@ GLOBAL PIPELINE INVARIANTS
 - Steps may modify / insert / remove tokens locally, but should not perform
   broad token reordering.
 - fix_verb_agreement is the final authority on verb/copula agreement.
+
+UNKNOWN TOKEN POLICY
+--------------------
+
+When a word does not appear in the dictionary, an attempt is made to
+find an approximate match using fuzzy matching (currently using normalized
+Indel similarity).  After attempted resolution a token falls into one of these
+categories:
+
+Unknown token categories
+------------------------
+
+1. Known
+   - unknown=False
+   - confidence=1.0
+
+2. Annotated
+   - unknown=True
+   - candidates present
+   - confidence in medium range
+
+3. Replaced
+   - unknown=False
+   - confidence inherited from matched candidate
+
+4. Fully unknown
+   - unknown=True
+   - no candidates
+
+(Note: explicit confidence values may not yet be present on all token
+types; this policy defines the intended semantics.)
+
+
+How unknown tokens are used
+-------------------------------
+- Unknown tokens have no inherent POS.
+- Unknown tokens may carry:
+  - candidate lists
+  - confidence scores
+  - future inferred metadata
+- Grammar stages should not assume POS information that is not
+  explicitly present on the token.
+- Fully unknown tokens participate minimally in grammar.
+- Unknowns may be used as fallback subject candidates when no known
+  candidate exists.
+- Context-derived POS is explicitly deferred.
+- Fallback POS is explicitly deferred.
+
+Current use of annotated unknowns
+----------------------------------
+Annotated tokens are currently treated the same as fully unknown
+tokens by grammar stages.
+
+Candidate lists and candidate POS information are retained for future
+use but are not currently consulted by grammar logic.
+
+Future development
+-------------------
+Future versions may use:
+- candidate POS information
+- confidence scores
+- context-derived POS inference
+
+to allow unknown tokens to participate in grammar decisions.
+
+Such behavior is not currently implemented and should not be assumed
+by grammar stages.
+
+
 """
 
 import sys
