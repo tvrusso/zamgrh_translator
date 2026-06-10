@@ -672,7 +672,7 @@ def insert_copula(words, lookup, eng_lookup, tokens, debug=0):
                         seen_verb = True
 
             # Noun + adjective copula insertion
-            if not seen_verb and is_noun and is_adj and not is_unknown:
+            if not seen_verb and is_noun and is_adj:
                 result.append(choose_copula(prev, prev_token))
                 result_tokens.append(make_token(choose_copula(prev, prev_token), pos={"aux"}))
 
