@@ -34,7 +34,7 @@ Unknown token categories
 2. Annotated
    - unknown=True
    - candidates present
-   - confidence in medium range
+   - confidence zero
 
 3. Replaced
    - unknown=False
@@ -43,6 +43,7 @@ Unknown token categories
 4. Fully unknown
    - unknown=True
    - no candidates
+   - confidence zero
 
 (Note: explicit confidence values may not yet be present on all token
 types; this policy defines the intended semantics.)
