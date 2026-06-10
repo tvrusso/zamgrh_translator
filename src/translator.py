@@ -1948,6 +1948,13 @@ def resolve_unknowns(tokens, lookup, eng_lookup, policy=None, debug=0):
             print(f"  token: {token}")
 
         if not token["unknown"] or not token.get("candidates"):
+            token=dict(token)
+            if token["unknown"]:
+                token["resolution_confidence"] = 0.0
+            else:
+                token["resolution_confidence"] = 1.0
+            if debug >= 3:
+                print(f"  token['resolution_confidence']: {token['resolution_confidence']}")
             resolved.append(token)
             continue
 
@@ -1989,6 +1996,7 @@ def resolve_unknowns(tokens, lookup, eng_lookup, policy=None, debug=0):
 
         if decision["type"] == "replace":
             new_token = merge_token(token, decision["candidate"]["token"])
+            new_token["resolution_confidence"] = decision["score"]
             gloss = select_gloss(lookup[new_token["base"]])
             new_token["word"] = render_gloss_with_features(
                 gloss,
@@ -2004,11 +2012,14 @@ def resolve_unknowns(tokens, lookup, eng_lookup, policy=None, debug=0):
 
         elif decision["type"] == "annotate":
             annotated = annotate_token(token, candidates)
+            annotated["resolution_confidence"] = 0.0
             if debug >= 2:
                 print(f"  annotated token: {annotated}")
             resolved.append(annotated)
 
         else:  # pass-through
+            token = dict(token)
+            token["resolution_confidence"] = 0.0
             resolved.append(token)
 
     return resolved
