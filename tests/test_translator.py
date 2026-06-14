@@ -301,7 +301,15 @@ TEST_GROUPS = {
         ("zambahz barg!ng bra!nz !z habbah", "Zombies eating brains are happy"),
         ("zambahz maz barg bra!nz", "Zombies must eat brains"),
         ("zambahz zmazh barragahz", "Zombies smash barricades"),
-        ("z!z !z zah anz ahb zah rarr", "This is the end of the world")
+        ("z!z !z zah anz ahb zah rarr", "This is the end of the world"),
+        # Tripwire for Milestone 4 Sprint 8 morphology work.
+        # Current behavior:
+        # Unknown !ng forms are NOT treated as gerunds because
+        # normalize_morphology does not add form=["ing"] to unknown tokens.
+        # If this test changes, review subject detection policy.
+        ("flarg!ng bra!nz !z n!z", "[flarg!ng] brains are nice"),
+        # Gerund overrides unknown in subject detection for verb agreement
+        ("barg!ng blargz !z n!z", "Eating [blargz] is nice")
     ],
     # =========================
     # INTERACTIONS (multi-feature)
@@ -1191,14 +1199,14 @@ HELPER_UNIT_TESTS = {
              }},
             (True, True)
         ),
-        # determiner + gerund → should NOT become subject
+        # determiner + gerund , gerund should become subject
         (
             {"word": "is",
              "result_so_far": ["the", "eating"],
              "token_overrides": {
                  "eating": {"pos": {"verb"}, "features": {"form": ["ing"]}}
              }},
-            (False, False)
+            (True, True)
         ),
         # unknown word becomes subject
         (
@@ -1467,6 +1475,67 @@ HELPER_UNIT_TESTS = {
              ("zombies", {"raw": "zombies", "word":"zombies", "base":"zombie",
                           "pos": {"noun"}, "features":{"form":["s"]}})
         ),
+        ## Tests of unknown precedence in subject detection
+        # gerund + noun: gerund is subject
+        (
+            {"word": "is",
+             "result_so_far": ["eating", "brains"],
+              "token_overrides": {
+                  "eating": {"pos": {"verb"}, "features":{"form":["ing"]}},
+                  "brains": {"pos": {"noun"}, "features": {"form": ["s"]}}
+                  }
+              },
+            ("eating", {"raw": "eating"})
+        ),
+        # gerund + unknown: gerund is subject
+        (
+            {"word": "is",
+             "result_so_far": ["eating", "blarg"],
+              "token_overrides": {
+                  "eating": {"pos": {"verb"}, "features":{"form":["ing"]}},
+                  "blarg": {"unknown": True, "features":{}},
+                  }
+              },
+            ("eating", {"raw": "eating"})
+        ),
+        ## determiner+ gerund+ noun -> noun is subject tested above with
+        ##"the eating zombies smash"
+        #
+        # noun + unknown -> noun is subject
+        # gerund + unknown: gerund is subject
+        (
+            {"word": "is",
+             "result_so_far": ["zombie", "blargz"],
+              "token_overrides": {
+                  "zombie": {"pos": {"noun"}, "features":{"form":["ing"]}},
+                  "blargz": {"unknown": True, "features":{"form":["s"]}},
+                  }
+              },
+            ("zombie", {"raw": "zombie"})
+        ),
+        # pronoun + unknown: pronoun is subject
+        (
+            {"word": "is",
+             "result_so_far": ["you", "blargz"],
+              "token_overrides": {
+                  "you": {"pos": {"pron"}, "features":{}},
+                  "blargz": {"unknown": True, "features":{"form":["s"]}},
+                  }
+              },
+            ("you", {"raw": "you"})
+        ),
+        # pure unknown with no better option: unknown is subject
+        (
+            {"word": "is",
+             "result_so_far": ["blargz"],
+              "token_overrides": {
+                  "blargz": {"unknown": True, "features":{"form":["s"]}},
+                  }
+              },
+            ("blargz", {"raw": "blargz"})
+        ),
+
+
     ],
     "inflect_verb": [
         # third person singular

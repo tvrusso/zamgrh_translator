@@ -871,6 +871,33 @@ def find_subject_head(context):
     - Depends on token POS
     POLICY:
     - Uses shallow, surface-based heuristics only (no deep syntax).
+
+    Subject precedence (highest to lowest):
+      1. Gerund subjects
+         - Leading "ing" forms are treated as subjects by default.
+         - Example:
+             "eating brains" -> subject = "eating"
+
+      2. Noun phrase heads
+         - A noun may override a preceding gerund only when
+           structural cues indicate a noun phrase.
+         - Example:
+             "the eating zombies" -> subject = "zombies"
+
+      3. Pronouns
+         - Subject pronouns are valid subject candidates when
+           no higher-precedence subject has been identified.
+
+      4. Unknown-token fallback
+         - Unknown tokens are eligible as subject candidates only
+           when no better subject candidate exists.
+         - Unknown tokens do not participate in POS-based subject
+           heuristics.
+
+    Notes:
+    - Determiners are used as a proxy signal for noun phrase structure.
+    - Does not attempt to distinguish gerunds vs participles beyond
+      these surface cues.
     - Leading gerunds ("ing" forms) are treated as subjects by default.
     - A following noun does NOT override a gerund unless structural
       cues (e.g., determiners) indicate a noun phrase.
@@ -890,9 +917,10 @@ def find_subject_head(context):
 
     idx = len(words) - 1
     candidate = None
-    fallback_candidate = None
-    candidate_token = None
-    fallback_token = None
+    gerund_candidate = None
+    unknown_candidate = None
+    gerund_token = None
+    unknown_token = None
 
     while idx >= 0:
         word = words[idx]
@@ -916,10 +944,9 @@ def find_subject_head(context):
         # so surface-form detection is allowed in this narrow scope.
         if "verb" in pos and "noun" not in pos and "aux" not in pos:
             if has_ing_suffix(word, token):
-                if fallback_candidate is None:
-                    fallback_candidate= word
-                    fallback_token = token
-                    fallback_idx = idx
+                if gerund_candidate is None:
+                    gerund_candidate= word
+                    gerund_token = token
                 idx -= 1
                 continue
             break
@@ -928,9 +955,8 @@ def find_subject_head(context):
         if is_unknown:
             # only store as fallback, NEVER block better candidates
             if candidate is None:
-                fallback_candidate = word
-                fallback_token = token
-                fallback_idx = idx
+                unknown_candidate = word
+                unknown_token = token
             idx -= 1
             continue
 
@@ -996,16 +1022,10 @@ def find_subject_head(context):
 
     if candidate is not None:
         return candidate, candidate_token
-    if fallback_candidate is not None:
-        idx = fallback_idx
-        if (
-                fallback_token
-                and has_ing_form(fallback_token.get("features"))
-                and idx > 0
-                and words[idx - 1] in DETERMINERS
-        ):
-            return None, None
-        return fallback_candidate, fallback_token
+    if gerund_candidate is not None:
+        return gerund_candidate, gerund_token
+    if unknown_candidate is not None:
+        return unknown_candidate, unknown_token
     return None, None
 
 def has_compound_subject(context):
